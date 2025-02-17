@@ -8,6 +8,20 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Connect to MongoDB with error handling
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("✅ MongoDB Connected!");
+    
+    // Start the server only after the database is connected
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+  })
+  .catch((error) => {
+    console.error("❌ MongoDB Connection Error:", error);
+    process.exit(1); // Stop the app if DB connection fails
+  });
+
 // Define a Movie Schema
 const movieSchema = new mongoose.Schema({
   title: String,
@@ -17,22 +31,12 @@ const movieSchema = new mongoose.Schema({
 
 const Movie = mongoose.model("Movie", movieSchema);
 
-// ✅ Create a test movie route (GET /api/movies)
-app.get("/api/movies", async (req, res) => {
-  try {
-    const movies = await Movie.find(); // Fetch all movies from MongoDB
-    res.json(movies);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch movies" });
-  }
-});
-
-// ✅ Create a test movie entry (POST /api/movies)
+// ✅ Create a movie entry (POST /api/movies)
 app.post("/api/movies", async (req, res) => {
   try {
-    console.log("Incoming request body:", req.body); // Log request data
-
+    console.log("Incoming request body:", req.body);
     const { title, wokeScore, description } = req.body;
+
     if (!title || wokeScore === undefined || !description) {
       console.log("❌ Missing fields:", req.body);
       return res.status(400).json({ error: "Missing required fields" });
@@ -46,8 +50,4 @@ app.post("/api/movies", async (req, res) => {
     res.status(500).json({ error: "Failed to add movie", details: error.message });
   }
 });
-
-// Start the server
-const PORT = process.env.PORT || 10000; // Ensure it's listening on the correct port
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 
