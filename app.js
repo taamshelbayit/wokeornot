@@ -1,5 +1,6 @@
 // app.js
 const express = require('express');
+const engine = require('ejs-mate'); // require ejs-mate
 const mongoose = require('mongoose');
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -8,8 +9,12 @@ const path = require('path');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
-// Initialize app
 const app = express();
+
+// Set ejs-mate as the rendering engine for .ejs files
+app.engine('ejs', engine);
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -19,32 +24,28 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
-// EJS setup
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Static Files
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Body Parser
+// Body Parser Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Express Session
+// Express Session Middleware
 app.use(session({
   secret: process.env.SESSION_SECRET || "secret",
   resave: true,
   saveUninitialized: true
 }));
 
-// Connect Flash
+// Connect Flash Middleware
 app.use(flash());
 
 // Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Global Variables for Flash & User Info
+// Global Variables for Flash Messages and User Info
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg   = req.flash('error_msg');
@@ -67,3 +68,4 @@ app.use('/admin', require('./routes/admin'));
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+

@@ -26,51 +26,51 @@ module.exports = function(passport) {
   }));
 
   // Google OAuth Strategy
-  passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
-  },
-  (accessToken, refreshToken, profile, done) => {
-    User.findOne({ googleId: profile.id })
-      .then(user => {
-        if(user) {
-          return done(null, user);
-        } else {
-          const newUser = new User({
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails[0].value,
-            role: 'user'
-          });
-          newUser.save().then(user => done(null, user)).catch(err => console.log(err));
-        }
-      });
-  }));
+//  passport.use(new GoogleStrategy({
+//    clientID: process.env.GOOGLE_CLIENT_ID,
+//    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  //  callbackURL: "/auth/google/callback"
+ // },
+ // (accessToken, refreshToken, profile, done) => {
+   // User.findOne({ googleId: profile.id })
+     // .then(user => {
+       // if(user) {
+         // return done(null, user);
+       // } else {
+         // const newUser = new User({
+           // googleId: profile.id,
+           // name: profile.displayName,
+           // email: profile.emails[0].value,
+           // role: 'user'
+         // });
+        //  newUser.save().then(user => done(null, user)).catch(err => console.log(err));
+      //  }
+    //  });
+//  }));
 
   // Facebook OAuth Strategy
-  passport.use(new FacebookStrategy({
-    clientID: process.env.FACEBOOK_APP_ID,
-    clientSecret: process.env.FACEBOOK_APP_SECRET,
-    callbackURL: "/auth/facebook/callback",
-    profileFields: ['id', 'displayName', 'emails']
-  },
-  (accessToken, refreshToken, profile, done) => {
-    User.findOne({ facebookId: profile.id })
-      .then(user => {
-        if(user) {
-          return done(null, user);
-        } else {
-          const newUser = new User({
-            facebookId: profile.id,
-            name: profile.displayName,
-            email: profile.emails ? profile.emails[0].value : '',
-            role: 'user'
-          });
-          newUser.save().then(user => done(null, user)).catch(err => console.log(err));
-        }
-      });
-  }));
+//  passport.use(new FacebookStrategy({
+  //  clientID: process.env.FACEBOOK_APP_ID,
+   // clientSecret: process.env.FACEBOOK_APP_SECRET,
+  //  callbackURL: "/auth/facebook/callback",
+  //  profileFields: ['id', 'displayName', 'emails']
+ // },
+ // (accessToken, refreshToken, profile, done) => {
+ //   User.findOne({ facebookId: profile.id })
+ //     .then(user => {
+  ///      if(user) {
+     //     return done(null, user);
+      //  } else {
+       //   const newUser = new User({
+        //    facebookId: profile.id,
+         //   name: profile.displayName,
+          //  email: profile.emails ? profile.emails[0].value : '',
+           // role: 'user'
+     //     });
+      //    newUser.save().then(user => done(null, user)).catch(err => console.log(err));
+      //  }
+    //  });
+ // }));
 
   // Serialize & Deserialize
   passport.serializeUser((user, done) => done(null, user.id));

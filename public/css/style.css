@@ -8,3 +8,32 @@ body {
 .movie-details h2 {
   margin-top: 0;
 }
+
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse; /* Ensures stars highlight properly on hover */
+  justify-content: flex-start; /* Or center, if you prefer */
+}
+
+.star-rating input[type="radio"] {
+  display: none; /* Hide the radio button itself */
+}
+
+.star-rating label {
+  position: relative;
+  width: 1.2em;
+  font-size: 2rem; /* Adjust size as needed */
+  color: #ccc;     /* Default star color */
+  cursor: pointer;
+}
+
+.star-rating label::before {
+  content: "\2605"; /* Unicode star character */
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input[type="radio"]:checked ~ label {
+  color: #f5b301; /* Highlight color (IMDb uses a golden/yellow tone) */
+}
+

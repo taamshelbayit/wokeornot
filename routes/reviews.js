@@ -7,14 +7,26 @@ const { ensureAuthenticated } = require('../utils/auth');
 
 // POST Add a Review for a Movie
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
-  const { rating, content, categories } = req.body;
-  const movieId = req.params.movieId;
-  // Convert comma-separated categories to an array
-  const categoryArray = categories ? categories.split(',').map(cat => cat.trim()) : [];
+  const { rating, content } = req.body;
+  let categories = req.body.categories;
+
+  // Normalize categories to always be an array
+  let categoryArray = [];
+  if (!categories) {
+    // No checkboxes selected
+    categoryArray = [];
+  } else if (Array.isArray(categories)) {
+    // Multiple checkboxes selected
+    categoryArray = categories;
+  } else {
+    // Only one checkbox selected => a single string
+    categoryArray = [categories];
+  }
 
   try {
+    // Create and save the new review
     const review = new Review({
-      movie: movieId,
+      movie: req.params.movieId,
       user: req.user._id,
       rating,
       content,
@@ -22,20 +34,25 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     });
     await review.save();
 
-    // Update Movie: add review reference and update average rating
-    const movie = await Movie.findById(movieId);
+    // Update the movie's average rating
+    const movie = await Movie.findById(req.params.movieId);
     movie.reviews.push(review._id);
     movie.ratings.push(rating);
-    movie.averageRating = movie.ratings.reduce((a, b) => a + b, 0) / movie.ratings.length;
+
+    // Calculate new average
+    const total = movie.ratings.reduce((sum, val) => sum + parseFloat(val), 0);
+    movie.averageRating = total / movie.ratings.length;
+
     await movie.save();
 
     req.flash('success_msg', 'Review added successfully');
-    res.redirect(`/movies/${movieId}`);
+    res.redirect(`/movies/${movie._id}`);
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error adding review');
-    res.redirect(`/movies/${movieId}`);
+    res.redirect(`/movies/${req.params.movieId}`);
   }
 });
 
 module.exports = router;
+

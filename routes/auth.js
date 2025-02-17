@@ -72,11 +72,11 @@ router.get('/logout', (req, res, next) => {
 });
 
 // Google OAuth Routes
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/auth/login', successRedirect: '/' }));
+//router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+//router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/auth/login', successRedirect: '/' }));
 
 // Facebook OAuth Routes
-router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
-router.get('/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/auth/login', successRedirect: '/' }));
+//router.get('/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+//router.get('/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/auth/login', successRedirect: '/' }));
 
 module.exports = router;
