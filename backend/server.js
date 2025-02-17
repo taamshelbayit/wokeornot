@@ -30,12 +30,20 @@ app.get("/api/movies", async (req, res) => {
 // ✅ Create a test movie entry (POST /api/movies)
 app.post("/api/movies", async (req, res) => {
   try {
+    console.log("Incoming request body:", req.body); // Log request data
+
     const { title, wokeScore, description } = req.body;
+    if (!title || wokeScore === undefined || !description) {
+      console.log("❌ Missing fields:", req.body);
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
     const newMovie = new Movie({ title, wokeScore, description });
     await newMovie.save();
     res.status(201).json(newMovie);
   } catch (error) {
-    res.status(500).json({ error: "Failed to add movie" });
+    console.error("❌ Error adding movie:", error);
+    res.status(500).json({ error: "Failed to add movie", details: error.message });
   }
 });
 
