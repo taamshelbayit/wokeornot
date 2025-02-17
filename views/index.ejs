@@ -1,0 +1,18 @@
+<% layout('layout') %>
+<h1>Trending Movies and TV Shows</h1>
+<div class="row">
+  <% trending.forEach(item => { %>
+    <div class="col-md-3">
+      <div class="card mb-4">
+        <% if(item.poster_path) { %>
+          <img src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>" class="card-img-top" alt="<%= item.title || item.name %>">
+        <% } %>
+        <div class="card-body">
+          <h5 class="card-title"><%= item.title || item.name %></h5>
+          <!-- Link to add the movie (or you could provide more details) -->
+          <a href="/movies/add?tmdbId=<%= item.id %>" class="btn btn-primary">Add Movie</a>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>
