@@ -1,0 +1,40 @@
+<!-- views/profile.ejs -->
+<% layout('layout') %>
+
+<div class="container mt-4">
+  <h2>Your Profile</h2>
+
+  <h4 class="mt-3">Your Reviews</h4>
+  <% if (reviews.length === 0) { %>
+    <p>You haven't reviewed anything yet.</p>
+  <% } else { %>
+    <div class="list-group">
+      <% reviews.forEach(review => { %>
+        <a
+          href="/movies/<%= review.movie._id %>"
+          class="list-group-item list-group-item-action"
+        >
+          <strong><%= review.movie.title %></strong> -
+          Rated <%= review.rating %>/10
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <h4 class="mt-4">Your Forum Comments</h4>
+  <% if (comments.length === 0) { %>
+    <p>You haven't commented on anything yet.</p>
+  <% } else { %>
+    <div class="list-group">
+      <% comments.forEach(comment => { %>
+        <a
+          href="/movies/<%= comment.movie._id %>"
+          class="list-group-item list-group-item-action"
+        >
+          <strong><%= comment.movie.title %></strong>:
+          <%= comment.content %>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</div>

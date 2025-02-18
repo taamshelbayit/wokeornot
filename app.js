@@ -64,6 +64,11 @@ app.use('/movies', require('./routes/movies'));
 app.use('/reviews', require('./routes/reviews'));
 app.use('/forum', require('./routes/forum'));
 app.use('/admin', require('./routes/admin'));
+// In app.js
+app.use('/search', require('./routes/search'));
+// In app.js
+app.use('/profile', require('./routes/profile'));
+
 
 // Start Server
 const PORT = process.env.PORT || 5000;

@@ -1,13 +1,13 @@
-<% /* movie.ejs */ %>
+<!-- views/movie.ejs -->
 <% layout('layout') %>
 
-<div class="movie-details">
+<div class="container mt-4 movie-details">
   <div class="row">
     <div class="col-md-4">
       <% if(movie.posterPath) { %>
-        <img 
-          src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>" 
-          class="img-fluid" 
+        <img
+          src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>"
+          class="img-fluid"
           alt="<%= movie.title %>"
         >
       <% } %>
@@ -16,7 +16,7 @@
       <h2><%= movie.title %></h2>
       <p><%= movie.description %></p>
       <p>
-        <strong>Average Woke Rating:</strong> 
+        <strong>Average Woke Rating:</strong>
         <%= movie.averageRating.toFixed(1) %>/10
       </p>
     </div>
@@ -26,42 +26,102 @@
 <hr>
 
 <!-- Review Form -->
-<div class="review-form mt-4">
+<div class="container review-form mt-4">
   <h3>Add Your Review</h3>
-  <form action="/reviews/add/<%= movie._id %>" method="POST">
-    <!-- Star Rating (1-10) -->
+  <form action="/reviews/add/<%= movie._id %>" method="POST" class="p-4 border bg-light">
+    <!-- Star Rating (1-10) with aria-label -->
     <div class="form-group">
       <label>Woke Rating (1-10)</label>
       <div class="star-rating">
-        <!-- Reverse order so hovering a star lights all to the left -->
-        <input type="radio" name="rating" id="rating-10" value="10" required>
+        <input
+          type="radio"
+          name="rating"
+          id="rating-10"
+          value="10"
+          required
+          aria-label="Rate 10 out of 10"
+        >
         <label for="rating-10" title="10 stars"></label>
 
-        <input type="radio" name="rating" id="rating-9" value="9">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-9"
+          value="9"
+          aria-label="Rate 9 out of 10"
+        >
         <label for="rating-9" title="9 stars"></label>
 
-        <input type="radio" name="rating" id="rating-8" value="8">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-8"
+          value="8"
+          aria-label="Rate 8 out of 10"
+        >
         <label for="rating-8" title="8 stars"></label>
 
-        <input type="radio" name="rating" id="rating-7" value="7">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-7"
+          value="7"
+          aria-label="Rate 7 out of 10"
+        >
         <label for="rating-7" title="7 stars"></label>
 
-        <input type="radio" name="rating" id="rating-6" value="6">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-6"
+          value="6"
+          aria-label="Rate 6 out of 10"
+        >
         <label for="rating-6" title="6 stars"></label>
 
-        <input type="radio" name="rating" id="rating-5" value="5">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-5"
+          value="5"
+          aria-label="Rate 5 out of 10"
+        >
         <label for="rating-5" title="5 stars"></label>
 
-        <input type="radio" name="rating" id="rating-4" value="4">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-4"
+          value="4"
+          aria-label="Rate 4 out of 10"
+        >
         <label for="rating-4" title="4 stars"></label>
 
-        <input type="radio" name="rating" id="rating-3" value="3">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-3"
+          value="3"
+          aria-label="Rate 3 out of 10"
+        >
         <label for="rating-3" title="3 stars"></label>
 
-        <input type="radio" name="rating" id="rating-2" value="2">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-2"
+          value="2"
+          aria-label="Rate 2 out of 10"
+        >
         <label for="rating-2" title="2 stars"></label>
 
-        <input type="radio" name="rating" id="rating-1" value="1">
+        <input
+          type="radio"
+          name="rating"
+          id="rating-1"
+          value="1"
+          aria-label="Rate 1 out of 10"
+        >
         <label for="rating-1" title="1 star"></label>
       </div>
     </div>
@@ -72,17 +132,17 @@
       <textarea name="content" class="form-control" required></textarea>
     </div>
 
-    <!-- Woke Categories (Checkbox List) -->
+    <!-- Woke Categories (Checkboxes) -->
     <div class="form-group">
       <label>Select Woke Categories:</label>
       <div class="checkbox-list">
         <% wokeCategories.forEach(category => { %>
           <div class="form-check">
-            <input 
-              class="form-check-input" 
-              type="checkbox" 
-              name="categories" 
-              value="<%= category %>" 
+            <input
+              class="form-check-input"
+              type="checkbox"
+              name="categories"
+              value="<%= category %>"
               id="<%= category %>"
             >
             <label class="form-check-label" for="<%= category %>">
@@ -99,18 +159,15 @@
 
 <hr>
 
-<!-- Display Existing Reviews -->
-<div class="reviews mt-4">
+<!-- Display Reviews -->
+<div class="container reviews mt-4">
   <h3>User Reviews</h3>
   <% movie.reviews.forEach(review => { %>
     <div class="card mb-3">
       <div class="card-body">
         <p><strong>Rating:</strong> <%= review.rating %>/10</p>
         <p><strong>Review:</strong> <%= review.content %></p>
-        <p>
-          <strong>Categories:</strong>
-          <%= review.categories.join(', ') %>
-        </p>
+        <p><strong>Categories:</strong> <%= review.categories.join(', ') %></p>
       </div>
     </div>
   <% }) %>
@@ -119,20 +176,20 @@
 <hr>
 
 <!-- Discussion Forum -->
-<div class="forum mt-4">
+<div class="container forum mt-4">
   <h3>Discussion Forum</h3>
-  <form action="/forum/add/<%= movie._id %>" method="POST">
+  <form action="/forum/add/<%= movie._id %>" method="POST" class="p-4 border bg-light">
     <div class="form-group">
-      <textarea 
-        name="content" 
-        class="form-control" 
-        placeholder="Join the discussion..." 
+      <textarea
+        name="content"
+        class="form-control"
+        placeholder="Join the discussion..."
         required
       ></textarea>
     </div>
     <button type="submit" class="btn btn-primary">Post Comment</button>
   </form>
-  
+
   <% movie.forum.forEach(comment => { %>
     <div class="card mt-2">
       <div class="card-body">
@@ -142,4 +199,3 @@
     </div>
   <% }) %>
 </div>
-

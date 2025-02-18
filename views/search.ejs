@@ -1,0 +1,57 @@
+<!-- views/search.ejs -->
+<% layout('layout') %>
+
+<div class="container mt-4">
+  <h2>Search for Movies/Shows</h2>
+  <form action="/search" method="GET" class="form-inline mb-4">
+    <div class="form-group mr-3">
+      <label for="minRating" class="mr-2">Min Woke Rating:</label>
+      <input
+        type="number"
+        name="minRating"
+        id="minRating"
+        class="form-control"
+        min="1"
+        max="10"
+      >
+    </div>
+    <div class="form-group mr-3">
+      <label for="category" class="mr-2">Category:</label>
+      <select name="category" id="category" class="form-control">
+        <option value="">Any</option>
+        <option value="Transgender Themes">Transgender Themes</option>
+        <option value="Gay Marriage">Gay Marriage</option>
+        <option value="Race Swapping">Race Swapping</option>
+        <option value="Feminist Agenda">Feminist Agenda</option>
+        <!-- Add more categories as needed -->
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  <% if (results) { %>
+    <h4>Results</h4>
+    <div class="row">
+      <% results.forEach(movie => { %>
+        <div class="col-md-3 col-sm-6 mb-4">
+          <div class="card h-100">
+            <% if (movie.posterPath) { %>
+              <img
+                src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>"
+                class="card-img-top"
+                alt="<%= movie.title %>"
+              >
+            <% } %>
+            <div class="card-body">
+              <h5 class="card-title"><%= movie.title %></h5>
+              <p>Average Woke Rating: <%= movie.averageRating.toFixed(1) %></p>
+              <a href="/movies/<%= movie._id %>" class="btn btn-primary">
+                View
+              </a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
