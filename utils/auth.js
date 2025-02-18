@@ -1,4 +1,5 @@
 // utils/auth.js
+// new comment
 module.exports = {
   ensureAuthenticated: function(req, res, next) {
     if(req.isAuthenticated()){
