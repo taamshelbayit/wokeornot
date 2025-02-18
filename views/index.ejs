@@ -1,10 +1,24 @@
-<!-- views/index.ejs -->
 <% layout('layout') %>
 
-<!-- Hero / Banner Section -->
-<div class="jumbotron jumbotron-fluid text-white"
-     style="background: url('/images/hero-bg.jpg') center/cover no-repeat;">
-  <div class="container py-5">
+<!-- Hero / Banner Section with Dark Overlay -->
+<div
+  class="jumbotron jumbotron-fluid position-relative text-white"
+  style="background: url('/images/hero-bg.jpg') center/cover no-repeat; margin-bottom: 0;"
+>
+  <!-- Semi-transparent overlay -->
+  <div
+    style="
+      background-color: rgba(0, 0, 0, 0.5);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    "
+  ></div>
+
+  <!-- Content on top of the overlay -->
+  <div class="container py-5 position-relative" style="z-index: 2;">
     <h1 class="display-4">Welcome to WokeOrNot</h1>
     <p class="lead">Rate the Wokeness of Your Favorite TV Shows & Movies</p>
     <a href="/auth/register" class="btn btn-warning btn-lg">Join Now</a>

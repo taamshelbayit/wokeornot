@@ -102,3 +102,23 @@ body {
   border-radius: 3px;
   font-size: 0.8rem;
 }
+
+/* Hero Section Styles */
+
+/* By default (light mode), set a dark text on a lighter background */
+.hero {
+  background-color: #ffffff; /* or a subtle light gray: #f1f1f1 */
+  color: #000000;
+}
+
+/* If you’re using a background image, you can do: */
+/* .hero {
+  background: url('/images/hero-bg.jpg') center/cover no-repeat;
+  color: #000;
+} */
+
+/* In dark mode, invert or change the colors for contrast */
+.dark-mode .hero {
+  background-color: #222222; /* darker background */
+  color: #ffffff;            /* light text */
+}
