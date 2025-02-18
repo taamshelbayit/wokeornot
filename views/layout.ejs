@@ -3,10 +3,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Ensures proper scaling on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>WokeOrNot</title>
 
-  <!-- Font Awesome for icons -->
+  <!-- Font Awesome for icons (optional) -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -20,18 +22,12 @@
 
   <!-- Your Custom Styles -->
   <link rel="stylesheet" href="/css/style.css">
-
-  <!-- (Optional) Basic SEO -->
-  <meta
-    name="description"
-    content="Rate the wokeness of your favorite shows and movies!"
-  >
 </head>
-
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <a class="navbar-brand d-flex align-items-center" href="/">
+      <!-- Replace with your actual logo if desired -->
       <img src="/images/logo.png" alt="WokeOrNot Logo" width="40" height="40" class="mr-2">
       <span>WokeOrNot</span>
     </a>
@@ -75,20 +71,20 @@
     </div>
   </nav>
 
-  <!-- Flash Messages (Global) -->
+  <!-- Flash Messages (Conditional) -->
   <div class="container mt-2">
-    <% if (success_msg) { %>
+    <% if (success_msg && success_msg.trim() !== '') { %>
       <div class="alert alert-success"><%= success_msg %></div>
     <% } %>
-    <% if (error_msg) { %>
+    <% if (error_msg && error_msg.trim() !== '') { %>
       <div class="alert alert-danger"><%= error_msg %></div>
     <% } %>
-    <% if (error) { %>
+    <% if (error && error.trim() !== '') { %>
       <div class="alert alert-danger"><%= error %></div>
     <% } %>
   </div>
 
-  <!-- Main Content (injected from child EJS files) -->
+  <!-- Main Content (Injected by Child Views) -->
   <%- body %>
 
   <!-- Footer -->
@@ -105,6 +101,8 @@
   <script
     src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js">
   </script>
+
+  <!-- Main JS (handles Dark Mode, etc.) -->
   <script src="/js/main.js"></script>
 </body>
 </html>
