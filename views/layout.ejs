@@ -1,4 +1,3 @@
-<!-- views/layout.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,16 +70,27 @@
     </div>
   </nav>
 
-  <!-- Flash Messages (Conditional) -->
+  <!-- Flash Messages (Loop through arrays) -->
   <div class="container mt-2">
-    <% if (success_msg && success_msg.trim() !== '') { %>
-      <div class="alert alert-success"><%= success_msg %></div>
+    <!-- success_msg array -->
+    <% if (success_msg && success_msg.length > 0) { %>
+      <% success_msg.forEach(function(msg){ %>
+        <div class="alert alert-success"><%= msg %></div>
+      <% }) %>
     <% } %>
-    <% if (error_msg && error_msg.trim() !== '') { %>
-      <div class="alert alert-danger"><%= error_msg %></div>
+
+    <!-- error_msg array -->
+    <% if (error_msg && error_msg.length > 0) { %>
+      <% error_msg.forEach(function(msg){ %>
+        <div class="alert alert-danger"><%= msg %></div>
+      <% }) %>
     <% } %>
-    <% if (error && error.trim() !== '') { %>
-      <div class="alert alert-danger"><%= error %></div>
+
+    <!-- error array -->
+    <% if (error && error.length > 0) { %>
+      <% error.forEach(function(msg){ %>
+        <div class="alert alert-danger"><%= msg %></div>
+      <% }) %>
     <% } %>
   </div>
 
