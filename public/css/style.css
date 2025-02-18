@@ -89,3 +89,16 @@ body {
 .star-rating input[type="radio"]:checked ~ label {
   color: var(--brand-secondary); /* highlight color */
 }
+
+/* Tooltips for Star Rating on hover */
+.star-rating label:hover::after {
+  content: attr(title); /* use the label's title attribute */
+  position: absolute;
+  top: -2rem; /* adjust as needed */
+  right: 0;
+  background: #333;
+  color: #fff;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
