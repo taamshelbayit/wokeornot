@@ -122,3 +122,8 @@ body {
   background-color: #222222; /* darker background */
   color: #ffffff;            /* light text */
 }
+
+.navbar-brand img:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
