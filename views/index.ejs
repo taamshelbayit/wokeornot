@@ -1,18 +1,38 @@
 <% layout('layout') %>
-<h1>Trending Movies and TV Shows</h1>
-<div class="row">
-  <% trending.forEach(item => { %>
-    <div class="col-md-3">
-      <div class="card mb-4">
-        <% if(item.poster_path) { %>
-          <img src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>" class="card-img-top" alt="<%= item.title || item.name %>">
-        <% } %>
-        <div class="card-body">
-          <h5 class="card-title"><%= item.title || item.name %></h5>
-          <!-- Link to add the movie (or you could provide more details) -->
-          <a href="/movies/add?tmdbId=<%= item.id %>" class="btn btn-primary">Rate Movie</a>
+
+<div class="container mt-4">
+  <!-- Flash Messages (optional; often placed in the layout) -->
+  <% if (success_msg) { %>
+    <div class="alert alert-success"><%= success_msg %></div>
+  <% } %>
+  <% if (error_msg) { %>
+    <div class="alert alert-danger"><%= error_msg %></div>
+  <% } %>
+  <% if (error) { %>
+    <div class="alert alert-danger"><%= error %></div>
+  <% } %>
+
+  <h1>Trending Movies and TV Shows</h1>
+  <div class="row">
+    <% trending.forEach(item => { %>
+      <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card h-100">
+          <% if(item.poster_path) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>"
+              class="card-img-top"
+              alt="<%= item.title || item.name %>"
+            >
+          <% } %>
+          <div class="card-body">
+            <h5 class="card-title"><%= item.title || item.name %></h5>
+            <!-- Link to add the movie -->
+            <a href="/movies/add?tmdbId=<%= item.id %>" class="btn btn-primary">
+              Rate Movie
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-  <% }) %>
+    <% }) %>
+  </div>
 </div>

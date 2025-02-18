@@ -1,0 +1,31 @@
+<!-- views/partials/header.ejs -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+  <a class="navbar-brand d-flex align-items-center" href="/">
+    <!-- Replace with your actual logo -->
+    <img src="/images/logo.png" alt="WokeOrNot Logo" width="40" height="40" class="mr-2">
+    <span>WokeOrNot</span>
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarContent">
+    <ul class="navbar-nav ml-auto">
+      <% if (user) { %>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Hello, <%= user.name %></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/auth/logout">Logout</a>
+        </li>
+      <% } else { %>
+        <li class="nav-item">
+          <a class="nav-link" href="/auth/login">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/auth/register">Register</a>
+        </li>
+      <% } %>
+    </ul>
+  </div>
+</nav>
