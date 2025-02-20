@@ -3,14 +3,6 @@
 /* ------------------------------------
    1) Light & Dark Mode Variables
 ------------------------------------ */
-:root {
-  --background-color: #f8f9fa;
-  --text-color: #212529;
-  --navbar-bg: #343a40;
-  --brand-accent: #dc3545;
-  --brand-secondary: #f5b301;
-}
-
 .dark-mode {
   --background-color: #212529;
   --text-color: #f8f9fa;
@@ -18,32 +10,85 @@
   --brand-accent: #bb2d3b;
   --brand-secondary: #dba001;
 }
+/* public/css/style.css */
 
+/* ------------------------------------
+   IMDb-Inspired Color Palette
+------------------------------------ */
+:root {
+  --background-dark: #1a1a1a;
+  --imdb-yellow: #f5c518;
+  --text-light: #ffffff;
+  --text-dark: #000000;
+  --hover-gray: #333333;
+}
+
+/* Optional if you want to keep your old dark-mode approach, you can integrate it:
+.dark-mode {
+  ...
+}
+*/
+
+/* Body & Navbar */
 body {
-  background-color: var(--background-color);
-  color: var(--text-color);
+  background-color: var(--background-dark);
+  color: var(--text-light);
+  font-family: "Helvetica Neue", Arial, sans-serif;
 }
 .navbar-dark.bg-dark {
-  background-color: var(--navbar-bg) !important;
-}
-.btn-primary {
-  background-color: var(--brand-accent);
-  border-color: var(--brand-accent);
+  background-color: #000 !important;
 }
 
-/* ------------------------------------
-   2) Hero / Jumbotron
------------------------------------- */
+/* Buttons - IMDb style (yellow with black text) */
+.btn-warning {
+  background-color: var(--imdb-yellow);
+  border-color: var(--imdb-yellow);
+  color: var(--text-dark);
+  font-weight: bold;
+}
+.btn-warning:hover {
+  background-color: #e5b50f;
+  border-color: #e5b50f;
+  color: #000;
+}
+
+/* Outline button for small "Find & Rate" link */
+.btn-outline-warning {
+  color: var(--imdb-yellow);
+  border-color: var(--imdb-yellow);
+}
+.btn-outline-warning:hover {
+  background-color: var(--imdb-yellow);
+  color: #000;
+}
+
+/* Card Hover Zoom */
+.hover-zoom {
+  transition: transform 0.3s ease;
+}
+.hover-zoom:hover {
+  transform: scale(1.05);
+}
+
+/* Animated Button */
+.animated-button {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.animated-button:hover {
+  background-color: #e5b50f;
+  color: #000;
+}
+
+/* Jumbotron */
 .jumbotron {
-  color: #fff;
+  background-color: #000; /* or a gradient */
+  color: var(--text-light);
   margin-bottom: 0;
   position: relative;
-  /* We add a default gradient, can override in-line */
+  border-bottom: 1px solid #444;
 }
 
-/* ------------------------------------
-   3) Star Rating
------------------------------------- */
+/* Star Rating */
 .star-rating {
   display: flex;
   flex-direction: row-reverse;
@@ -56,7 +101,7 @@ body {
   position: relative;
   width: 1.2em;
   font-size: 2rem;
-  color: #bbb;
+  color: #ccc;
   cursor: pointer;
 }
 .star-rating label::before {
@@ -65,8 +110,9 @@ body {
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input[type="radio"]:checked ~ label {
-  color: var(--brand-secondary);
+  color: var(--imdb-yellow);
 }
+/* Tooltip for star rating */
 .star-rating label:hover::after {
   content: attr(title);
   position: absolute;
@@ -79,14 +125,12 @@ body {
   font-size: 0.8rem;
 }
 
-/* ------------------------------------
-   4) Rating Badge on Thumbnails
------------------------------------- */
+/* Rating Badge */
 .rating-badge {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #ffc107;
+  background: var(--imdb-yellow);
   color: #000;
   padding: 0.3rem 0.6rem;
   font-weight: bold;
@@ -94,29 +138,35 @@ body {
   font-size: 0.9rem;
 }
 
-/* ------------------------------------
-   5) Card Hover
------------------------------------- */
+/* Card Hover Shadow */
 .card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+  box-shadow: 0 8px 16px rgba(255, 255, 255, 0.1);
 }
 
-/* ------------------------------------
-   6) Forms, spacing, etc.
------------------------------------- */
+/* Form Inline */
 .form-inline .form-group {
   margin-right: 1rem;
   margin-bottom: 1rem;
 }
-.checkbox-list .form-check {
-  margin-bottom: 0.5rem;
+
+/* Footer */
+footer {
+  background-color: #000;
+  color: #999;
+  border-top: 1px solid #444;
 }
-.movie-details h2 {
-  margin-top: 0;
+footer p {
+  margin: 0;
 }
-.navbar-brand img:hover {
-  transform: scale(1.05);
-  transition: transform 0.2s ease;
+
+/* Admin Panel Cards */
+.admin-card {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #ccc;
+}
+
+/* Tooltips Example (if using bootstrap tooltips) */
+[data-toggle="tooltip"] {
+  cursor: pointer;
 }
