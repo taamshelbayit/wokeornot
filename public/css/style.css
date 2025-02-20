@@ -1,172 +1,88 @@
 /* public/css/style.css */
 
-/* ------------------------------------
-   1) Light & Dark Mode Variables
------------------------------------- */
-.dark-mode {
-  --background-color: #212529;
-  --text-color: #f8f9fa;
-  --navbar-bg: #000000;
-  --brand-accent: #bb2d3b;
-  --brand-secondary: #dba001;
-}
-/* public/css/style.css */
-
-/* ------------------------------------
-   IMDb-Inspired Color Palette
------------------------------------- */
-:root {
-  --background-dark: #1a1a1a;
-  --imdb-yellow: #f5c518;
-  --text-light: #ffffff;
-  --text-dark: #000000;
-  --hover-gray: #333333;
-}
-
-/* Optional if you want to keep your old dark-mode approach, you can integrate it:
-.dark-mode {
-  ...
-}
-*/
-
-/* Body & Navbar */
+/* Global Fonts: Use Bebas Neue for headings, Montserrat for body */
 body {
-  background-color: var(--background-dark);
-  color: var(--text-light);
-  font-family: "Helvetica Neue", Arial, sans-serif;
-}
-.navbar-dark.bg-dark {
-  background-color: #000 !important;
+  font-family: 'Montserrat', sans-serif;
+  background-color: #0f0f0f; /* deep black/gray */
+  color: #fff;
+  margin: 0;
+  padding: 0;
 }
 
-/* Buttons - IMDb style (yellow with black text) */
+/* Brand Title Font */
+.brand-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+  color: #f5c518; /* IMDb yellow */
+  position: relative;
+}
+
+/* Optional brand-title animation (shimmer) */
+.brand-title::after {
+  content: "";
+  position: absolute;
+  left: -100%;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.6), transparent);
+  transform: skewX(-20deg);
+}
+.brand-title:hover::after {
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* Navbar Tweaks */
+.navbar {
+  font-family: 'Montserrat', sans-serif;
+  border-bottom: 1px solid #333;
+}
+.nav-link {
+  color: #f5c518 !important;
+  margin-right: 1rem;
+}
+.nav-link:hover {
+  color: #fff !important;
+  text-decoration: underline;
+}
+
+/* Jumbotron / Hero */
+.jumbotron {
+  background: #000;
+  color: #fff;
+  margin-bottom: 0;
+  border-bottom: 2px solid #333;
+}
+
+/* Buttons */
 .btn-warning {
-  background-color: var(--imdb-yellow);
-  border-color: var(--imdb-yellow);
-  color: var(--text-dark);
+  background-color: #f5c518;
+  border-color: #f5c518;
+  color: #000;
   font-weight: bold;
 }
 .btn-warning:hover {
   background-color: #e5b50f;
   border-color: #e5b50f;
+}
+.btn-primary {
+  background-color: #f5c518;
+  border-color: #f5c518;
   color: #000;
-}
-
-/* Outline button for small "Find & Rate" link */
-.btn-outline-warning {
-  color: var(--imdb-yellow);
-  border-color: var(--imdb-yellow);
-}
-.btn-outline-warning:hover {
-  background-color: var(--imdb-yellow);
-  color: #000;
-}
-
-/* Card Hover Zoom */
-.hover-zoom {
-  transition: transform 0.3s ease;
-}
-.hover-zoom:hover {
-  transform: scale(1.05);
-}
-
-/* Animated Button */
-.animated-button {
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-.animated-button:hover {
-  background-color: #e5b50f;
-  color: #000;
-}
-
-/* Jumbotron */
-.jumbotron {
-  background-color: #000; /* or a gradient */
-  color: var(--text-light);
-  margin-bottom: 0;
-  position: relative;
-  border-bottom: 1px solid #444;
-}
-
-/* Star Rating */
-.star-rating {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-}
-.star-rating input[type="radio"] {
-  display: none;
-}
-.star-rating label {
-  position: relative;
-  width: 1.2em;
-  font-size: 2rem;
-  color: #ccc;
-  cursor: pointer;
-}
-.star-rating label::before {
-  content: "\2605";
-}
-.star-rating label:hover,
-.star-rating label:hover ~ label,
-.star-rating input[type="radio"]:checked ~ label {
-  color: var(--imdb-yellow);
-}
-/* Tooltip for star rating */
-.star-rating label:hover::after {
-  content: attr(title);
-  position: absolute;
-  top: -2rem;
-  right: 0;
-  background: #333;
-  color: #fff;
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-size: 0.8rem;
-}
-
-/* Rating Badge */
-.rating-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: var(--imdb-yellow);
-  color: #000;
-  padding: 0.3rem 0.6rem;
   font-weight: bold;
-  border-radius: 4px;
-  font-size: 0.9rem;
 }
+.btn-primary:hover {
+  background-color: #e5b50f;
+  border-color: #e5
 
-/* Card Hover Shadow */
-.card:hover {
-  box-shadow: 0 8px 16px rgba(255, 255, 255, 0.1);
-}
-
-/* Form Inline */
-.form-inline .form-group {
-  margin-right: 1rem;
-  margin-bottom: 1rem;
-}
-
-/* Footer */
-footer {
-  background-color: #000;
-  color: #999;
-  border-top: 1px solid #444;
-}
-footer p {
-  margin: 0;
-}
-
-/* Admin Panel Cards */
-.admin-card {
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  color: #ccc;
-}
-
-/* Tooltips Example (if using bootstrap tooltips) */
-[data-toggle="tooltip"] {
-  cursor: pointer;
+.movie-details {
+  background-color: #141414; /* dark grey */
+  color: #fff; /* ensure text is readable */
+  padding: 1rem;
+  border-radius: 5px;
 }
