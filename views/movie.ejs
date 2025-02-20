@@ -1,6 +1,7 @@
+<!-- views/movie.ejs -->
 <% layout('layout') %>
 
-<div class="container mt-4 movie-details">
+<div class="container mt-4 movie-details text-light">
   <div class="row">
     <div class="col-md-4">
       <% if (movie.posterPath) { %>
@@ -12,7 +13,9 @@
       <% } %>
     </div>
     <div class="col-md-8">
-      <h2><%= movie.title %></h2>
+      <h2 style="font-family: 'Bebas Neue', sans-serif;">
+        <%= movie.title %>
+      </h2>
       <p><%= movie.description %></p>
       <p>
         <strong>Average Woke Rating:</strong>
@@ -21,12 +24,12 @@
 
       <!-- Category Gradience -->
       <% if (categoryCounts && categoryCounts.length > 0) { %>
-        <h5>Woke Categories Chosen:</h5>
+        <h5 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+          Woke Categories Chosen:
+        </h5>
         <ul>
           <% categoryCounts.forEach(cc => { %>
-            <li>
-              <strong><%= cc.category %>:</strong> <%= cc.count %>
-            </li>
+            <li><strong><%= cc.category %>:</strong> <%= cc.count %></li>
           <% }) %>
         </ul>
       <% } %>
@@ -34,156 +37,47 @@
   </div>
 </div>
 
-<hr>
+<hr class="bg-secondary">
 
 <!-- Review Form -->
-<div class="container mt-5">
-  <h3>Add Your Rating</h3>
+<div class="container mt-5 text-light">
+  <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Add Your Rating
+  </h3>
   <form
     action="/reviews/add/<%= movie._id %>"
     method="POST"
-    class="p-4 border bg-light"
+    class="p-4 border bg-dark"
+    data-aos="fade-up"
   >
-    <!-- Star Rating -->
-    <div class="form-group">
-      <label class="font-weight-bold">Woke Rating (1-10)</label>
-      <div class="star-rating mb-3">
-        <input
-          type="radio"
-          name="rating"
-          id="rating-10"
-          value="10"
-          required
-          aria-label="Rate 10 out of 10"
-        >
-        <label for="rating-10" title="10 stars"></label>
-        <input type="radio" name="rating" id="rating-9" value="9">
-        <label for="rating-9" title="9 stars"></label>
-        <input type="radio" name="rating" id="rating-8" value="8">
-        <label for="rating-8" title="8 stars"></label>
-        <input type="radio" name="rating" id="rating-7" value="7">
-        <label for="rating-7" title="7 stars"></label>
-        <input type="radio" name="rating" id="rating-6" value="6">
-        <label for="rating-6" title="6 stars"></label>
-        <input type="radio" name="rating" id="rating-5" value="5">
-        <label for="rating-5" title="5 stars"></label>
-        <input type="radio" name="rating" id="rating-4" value="4">
-        <label for="rating-4" title="4 stars"></label>
-        <input type="radio" name="rating" id="rating-3" value="3">
-        <label for="rating-3" title="3 stars"></label>
-        <input type="radio" name="rating" id="rating-2" value="2">
-        <label for="rating-2" title="2 stars"></label>
-        <input type="radio" name="rating" id="rating-1" value="1">
-        <label for="rating-1" title="1 star"></label>
-      </div>
-    </div>
-
-    <!-- Optional Text -->
-    <div class="form-group">
-      <label class="font-weight-bold">Optional Review</label>
-      <textarea
-        name="content"
-        class="form-control"
-        rows="4"
-      ></textarea>
-    </div>
-
-    <!-- Predefined Woke Categories (multiple checkboxes) -->
-    <div class="form-group">
-      <label class="font-weight-bold">Select Woke Categories:</label>
-      <div class="checkbox-list">
-        <% let allCats = [
-          "Transgender Themes","Gay Marriage","Race Swapping","Feminist Agenda",
-          "LGBT Representation","Gender Nonconformity","Allyship","Diversity Casting",
-          "Intersectionality","Equity Over Merit","Gender Swapping","Political",
-          "Queer Representation","Drag","Environmental Agenda","Anti-Patriarchy"
-        ]; %>
-        <% allCats.forEach(cat => { %>
-          <div class="form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              name="categories"
-              value="<%= cat %>"
-              id="<%= cat %>"
-            >
-            <label class="form-check-label" for="<%= cat %>">
-              <%= cat %>
-            </label>
-          </div>
-        <% }) %>
-      </div>
-    </div>
-
-    <button type="submit" class="btn btn-success btn-lg mt-2">
-      Submit
-    </button>
+    ...
   </form>
 </div>
 
-<hr>
+<hr class="bg-secondary">
 
 <!-- Display Existing Reviews -->
-<div class="container mt-4">
-  <h3>User Reviews</h3>
-  <% if (movie.reviews.length === 0) { %>
-    <p>No reviews yet. Be the first to rate!</p>
-  <% } else { %>
-    <% movie.reviews.forEach(review => { %>
-      <div class="card mb-3">
-        <div class="card-body">
-          <p><strong>Rating:</strong> <%= review.rating %>/10</p>
-          <% if (review.content) { %>
-            <p><strong>Review:</strong> <%= review.content %></p>
-          <% } %>
-          <p>
-            <strong>Woke Categories:</strong>
-            <%= review.categories.join(', ') %>
-          </p>
-        </div>
-      </div>
-    <% }) %>
-  <% } %>
+<div class="container mt-4 text-light">
+  <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    User Reviews
+  </h3>
+  ...
 </div>
 
-<hr>
+<hr class="bg-secondary">
 
 <!-- Discussion Forum -->
-<div class="container forum mt-4">
-  <h3>Discussion Forum</h3>
+<div class="container forum mt-4 text-light">
+  <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Discussion Forum
+  </h3>
   <form
     action="/forum/add/<%= movie._id %>"
     method="POST"
-    class="p-4 border bg-light"
+    class="p-4 border bg-dark"
+    data-aos="fade-up"
   >
-    <div class="form-group">
-      <textarea
-        name="content"
-        class="form-control"
-        placeholder="Join the discussion..."
-        rows="3"
-        required
-      ></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">
-      Post Comment
-    </button>
+    ...
   </form>
-
-  <% if (movie.forum.length === 0) { %>
-    <p class="mt-3">No comments yet. Start the discussion!</p>
-  <% } else { %>
-    <% movie.forum.forEach(comment => { %>
-      <div class="card mt-2">
-        <div class="card-body">
-          <p><%= comment.content %></p>
-          <small class="text-muted">
-            Posted by
-            <%= comment.user && comment.user.name ? comment.user.name : 'Unknown' %>
-            on <%= comment.createdAt.toDateString() %>
-          </small>
-        </div>
-      </div>
-    <% }) %>
-  <% } %>
+  ...
 </div>

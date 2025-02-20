@@ -3,13 +3,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Mobile Responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WokeOrNot</title>
 
-  <!-- Google Fonts (Funky + Readable) -->
+  <!-- Google Fonts: e.g. "Bebas Neue" for headings, "Poppins" for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap"
     rel="stylesheet"
   >
 
@@ -25,22 +26,28 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   >
 
+  <!-- AOS for scroll animations -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/aos@next/dist/aos.css"
+  >
+
   <!-- Custom Styles -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <a class="navbar-brand d-flex align-items-center" href="/">
-      <!-- Funky animated logo text -->
+    <a class="navbar-brand d-flex align-items-center funky-logo" href="/">
+      <!-- Use your vibrant logo or text -->
       <img
         src="/images/logo.webp"
         alt="WokeOrNot Logo"
-        width="80"
-        height="80"
+        width="50"
+        height="50"
         class="mr-2"
       >
-      <span class="brand-title">WokeOrNot</span>
+      <span>WokeOrNot</span>
     </a>
     <button
       class="navbar-toggler"
@@ -52,21 +59,19 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarContent">
-      <!-- Left Nav: Movies, TV, Kids -->
-      <ul class="navbar-nav mr-auto">
+      <ul class="navbar-nav ml-auto">
+        <!-- Direct links to Movies, TV, Kids -->
         <li class="nav-item">
           <a class="nav-link" href="/movies?type=Movie">Movies</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/movies?type=TV">TV Shows</a>
+          <a class="nav-link" href="/movies?type=TV">TV</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/movies?type=Kids">Kids</a>
         </li>
-      </ul>
 
-      <!-- Right Nav: Auth -->
-      <ul class="navbar-nav ml-auto">
+        <!-- If user is logged in -->
         <% if (user) { %>
           <li class="nav-item">
             <a class="nav-link" href="#">Hello, <%= user.name %></a>
@@ -76,7 +81,9 @@
           </li>
           <% if (user.role === 'admin') { %>
             <li class="nav-item">
-              <a class="nav-link text-warning" href="/admin">Admin Panel</a>
+              <a class="nav-link text-warning font-weight-bold" href="/admin">
+                Admin Panel
+              </a>
             </li>
           <% } %>
         <% } else { %>
@@ -91,7 +98,7 @@
     </div>
   </nav>
 
-  <!-- Flash Messages -->
+  <!-- Flash messages -->
   <div class="container mt-2">
     <% if (success_msg && success_msg.length > 0) { %>
       <% success_msg.forEach(msg => { %>
@@ -116,16 +123,23 @@
   <!-- Footer -->
   <footer class="bg-dark text-light py-4 mt-5">
     <div class="container text-center">
-      <p class="mb-0">&copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.</p>
+      <p class="mb-0">
+        &copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.
+      </p>
     </div>
   </footer>
 
-  <!-- Bootstrap JS -->
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script
     src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js">
   </script>
-  <!-- Main JS -->
+  <script
+    src="https://unpkg.com/aos@next/dist/aos.js">
+  </script>
+  <script>
+    AOS.init(); // Initialize AOS for scroll animations
+  </script>
   <script src="/js/main.js"></script>
 </body>
 </html>

@@ -1,10 +1,19 @@
+<!-- views/index.ejs -->
 <% layout('layout') %>
 
-<!-- Hero / Banner Section (IMDb-style black/yellow) -->
-<div class="jumbotron jumbotron-fluid mb-0 bg-dark text-light position-relative">
+<!-- Vibrant Hero Banner (Dark BG, bright text) -->
+<div
+  class="jumbotron jumbotron-fluid text-white mb-0 position-relative hero-banner"
+  style="
+    background: linear-gradient(45deg, #7928CA, #FF0080);
+    min-height: 300px;
+  "
+>
   <div class="container py-5 text-center">
-    <h1 class="display-4 font-weight-bold text-warning">WokeOrNot</h1>
-    <p class="lead text-white-50">
+    <h1 class="display-4 font-weight-bold" style="font-family: 'Bebas Neue', sans-serif;">
+      WokeOrNot
+    </h1>
+    <p class="lead" style="font-family: 'Poppins', sans-serif;">
       Rate the Wokeness of Your Favorite TV Shows & Movies
     </p>
     <a href="/auth/register" class="btn btn-warning btn-lg animated-button">
@@ -13,16 +22,16 @@
   </div>
 </div>
 
-<!-- Display trending items in a horizontal scroll or grid -->
+<!-- Trending Items from TMDb -->
 <div class="container mt-4">
-  <h3 class="text-warning mb-3">
+  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     <i class="fas fa-fire"></i> Trending This Week
   </h3>
   <div class="row">
     <% trending.forEach(item => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative">
+      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
         <div class="card h-100 hover-zoom">
-          <% if (item.poster_path) { %>
+          <% if(item.poster_path) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>"
               class="card-img-top"
@@ -30,10 +39,10 @@
             >
           <% } %>
           <div class="card-body">
-            <h6 class="card-title">
+            <h6 class="card-title" style="font-family: 'Poppins', sans-serif;">
               <%= item.title || item.name %>
             </h6>
-            <!-- We won't have an average rating for trending items unless you store them in DB -->
+            <!-- Link to search page so user can rate it -->
             <a
               href="/search?q=<%= item.title || item.name %>"
               class="btn btn-sm btn-outline-warning"
@@ -47,21 +56,33 @@
   </div>
 </div>
 
-<!-- Category Links (Movies, TV, Kids) -->
+<!-- Quick Category Links -->
 <div class="container mt-4">
   <div class="row text-center">
-    <div class="col-md-4 mb-3">
-      <a href="/movies?type=Movie" class="btn btn-warning btn-block py-3 animated-button">
+    <div class="col-md-4 mb-3" data-aos="zoom-in">
+      <a
+        href="/movies?type=Movie"
+        class="btn btn-warning btn-block py-3 animated-button"
+        style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;"
+      >
         Browse Movies
       </a>
     </div>
-    <div class="col-md-4 mb-3">
-      <a href="/movies?type=TV" class="btn btn-warning btn-block py-3 animated-button">
+    <div class="col-md-4 mb-3" data-aos="zoom-in" data-aos-delay="100">
+      <a
+        href="/movies?type=TV"
+        class="btn btn-warning btn-block py-3 animated-button"
+        style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;"
+      >
         Browse TV
       </a>
     </div>
-    <div class="col-md-4 mb-3">
-      <a href="/movies?type=Kids" class="btn btn-warning btn-block py-3 animated-button">
+    <div class="col-md-4 mb-3" data-aos="zoom-in" data-aos-delay="200">
+      <a
+        href="/movies?type=Kids"
+        class="btn btn-warning btn-block py-3 animated-button"
+        style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;"
+      >
         Browse Kids
       </a>
     </div>
@@ -69,8 +90,8 @@
 </div>
 
 <!-- Quick Search -->
-<div class="container my-4">
-  <h3 class="text-warning">Quick Search</h3>
+<div class="container my-4" data-aos="fade-up">
+  <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Quick Search</h3>
   <form action="/search" method="GET" class="form-inline">
     <input
       type="text"
