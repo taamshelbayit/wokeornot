@@ -1,14 +1,15 @@
 // app.js
 const express = require('express');
 const path = require('path');
+const mongoose = require('mongoose');
 const session = require('express-session');
 const flash = require('connect-flash');
 const passport = require('passport');
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
 const ejsMate = require('ejs-mate');
 require('dotenv').config();
 
+// Initialize Express
 const app = express();
 
 // Passport config
@@ -34,7 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Express Session
+// Express session
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secret',
   resave: true,
@@ -45,15 +46,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Connect Flash
+// Connect flash
 app.use(flash());
 
-// Global vars for flash & user
+// Global vars
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg');
-  res.locals.error_msg = req.flash('error_msg');
-  res.locals.error = req.flash('error');
-  res.locals.user = req.user || null;
+  res.locals.error_msg   = req.flash('error_msg');
+  res.locals.error       = req.flash('error');
+  res.locals.user        = req.user || null;
   next();
 });
 

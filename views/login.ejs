@@ -1,8 +1,11 @@
+<!-- views/login.ejs -->
 <% layout('layout') %>
 
-<div class="container mt-4">
-  <h2>Login</h2>
-  <form action="/auth/login" method="POST" class="p-4 border bg-light">
+<div class="container mt-4 text-light">
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Login
+  </h2>
+  <form action="/auth/login" method="POST" class="p-4 border bg-dark">
     <div class="form-group">
       <label>Email</label>
       <input type="email" name="email" class="form-control" required>
@@ -11,6 +14,6 @@
       <label>Password</label>
       <input type="password" name="password" class="form-control" required>
     </div>
-    <button type="submit" class="btn btn-primary">Login</button>
+    <button type="submit" class="btn btn-warning">Login</button>
   </form>
 </div>

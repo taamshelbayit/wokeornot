@@ -1,20 +1,25 @@
+<!-- views/list.ejs -->
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h2>
-    <% if (contentType === 'TV') { %>
-      Popular TV Shows
-    <% } else if (contentType === 'Kids') { %>
-      Popular Kids Content
-    <% } else { %>
+  <% if (contentType === 'TV') { %>
+    <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+      Popular TV
+    </h2>
+  <% } else if (contentType === 'Kids') { %>
+    <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+      Popular Kids Titles
+    </h2>
+  <% } else { %>
+    <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
       Popular Movies
-    <% } %>
-  </h2>
+    </h2>
+  <% } %>
 
   <div class="row">
     <% movies.forEach(item => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative">
-        <div class="card h-100">
+      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
+        <div class="card h-100 hover-zoom">
           <% if (item.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= item.posterPath %>"
@@ -22,13 +27,16 @@
               alt="<%= item.title %>"
             >
           <% } %>
-          <!-- Rating Badge -->
           <span class="badge rating-badge">
-            <%= item.averageRating.toFixed(1) %>/10
+            <% if (item.ratings.length > 0) { %>
+              <%= item.averageRating.toFixed(1) %>/10
+            <% } else { %>
+              No Ratings
+            <% } %>
           </span>
           <div class="card-body">
             <h5 class="card-title"><%= item.title %></h5>
-            <a href="/movies/<%= item._id %>" class="btn btn-primary btn-sm">
+            <a href="/movies/<%= item._id %>" class="btn btn-sm btn-outline-warning">
               View
             </a>
           </div>

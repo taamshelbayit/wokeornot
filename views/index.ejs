@@ -1,28 +1,29 @@
 <!-- views/index.ejs -->
 <% layout('layout') %>
 
-<!-- Vibrant Hero Banner (Dark BG, bright text) -->
+<!-- Sleek Black & Gold Banner -->
 <div
-  class="jumbotron jumbotron-fluid text-white mb-0 position-relative hero-banner"
+  class="jumbotron jumbotron-fluid text-light mb-0 hero-banner"
   style="
-    background: linear-gradient(45deg, #7928CA, #FF0080);
-    min-height: 300px;
+    background: linear-gradient(45deg, #000 0%, #333 100%);
+    min-height: 200px;
   "
 >
-  <div class="container py-5 text-center">
+  <div class="container py-4 text-center">
     <h1 class="display-4 font-weight-bold" style="font-family: 'Bebas Neue', sans-serif;">
       WokeOrNot
     </h1>
     <p class="lead" style="font-family: 'Poppins', sans-serif;">
       Rate the Wokeness of Your Favorite TV Shows & Movies
     </p>
-    <a href="/auth/register" class="btn btn-warning btn-lg animated-button">
-      Join Now
-    </a>
+    <% if (!user) { %>
+      <a href="/auth/register" class="btn btn-warning btn-lg animated-button">
+        Join Now
+      </a>
+    <% } %>
   </div>
 </div>
 
-<!-- Trending Items from TMDb -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     <i class="fas fa-fire"></i> Trending This Week
@@ -38,73 +39,28 @@
               alt="<%= item.title || item.name %>"
             >
           <% } %>
+          <!-- Rating Badge -->
+          <span class="badge rating-badge">
+            <% if (item.averageRating !== null) { %>
+              <%= item.averageRating.toFixed(1) %>/10
+            <% } else { %>
+              No Ratings
+            <% } %>
+          </span>
           <div class="card-body">
             <h6 class="card-title" style="font-family: 'Poppins', sans-serif;">
               <%= item.title || item.name %>
             </h6>
-            <!-- Link to search page so user can rate it -->
+            <!-- One-click rating -->
             <a
-              href="/search?q=<%= item.title || item.name %>"
+              href="/movies/trending/<%= item.id %>"
               class="btn btn-sm btn-outline-warning"
             >
-              Find & Rate
+              Rate Now
             </a>
           </div>
         </div>
       </div>
     <% }) %>
   </div>
-</div>
-
-<!-- Quick Category Links -->
-<div class="container mt-4">
-  <div class="row text-center">
-    <div class="col-md-4 mb-3" data-aos="zoom-in">
-      <a
-        href="/movies?type=Movie"
-        class="btn btn-warning btn-block py-3 animated-button"
-        style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;"
-      >
-        Browse Movies
-      </a>
-    </div>
-    <div class="col-md-4 mb-3" data-aos="zoom-in" data-aos-delay="100">
-      <a
-        href="/movies?type=TV"
-        class="btn btn-warning btn-block py-3 animated-button"
-        style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;"
-      >
-        Browse TV
-      </a>
-    </div>
-    <div class="col-md-4 mb-3" data-aos="zoom-in" data-aos-delay="200">
-      <a
-        href="/movies?type=Kids"
-        class="btn btn-warning btn-block py-3 animated-button"
-        style="font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;"
-      >
-        Browse Kids
-      </a>
-    </div>
-  </div>
-</div>
-
-<!-- Quick Search -->
-<div class="container my-4" data-aos="fade-up">
-  <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Quick Search</h3>
-  <form action="/search" method="GET" class="form-inline">
-    <input
-      type="text"
-      name="q"
-      class="form-control mr-2"
-      placeholder="Search by title..."
-    >
-    <select name="contentType" class="form-control mr-2">
-      <option value="">Any Type</option>
-      <option value="Movie">Movies</option>
-      <option value="TV">TV</option>
-      <option value="Kids">Kids</option>
-    </select>
-    <button type="submit" class="btn btn-warning">Search</button>
-  </form>
 </div>

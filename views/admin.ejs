@@ -1,7 +1,10 @@
+<!-- views/admin.ejs -->
 <% layout('layout') %>
 
-<div class="container mt-4">
-  <h2 class="text-warning">Admin Panel</h2>
+<div class="container mt-4 text-light">
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Admin Panel
+  </h2>
 
   <ul class="nav nav-tabs" id="adminTab" role="tablist">
     <li class="nav-item">
@@ -19,22 +22,17 @@
         Users
       </a>
     </li>
-    <li class="nav-item">
-      <a class="nav-link" id="monetization-tab" data-toggle="tab" href="#monetization" role="tab">
-        Monetization
-      </a>
-    </li>
   </ul>
 
   <div class="tab-content mt-3">
     <!-- Flagged Comments -->
     <div class="tab-pane fade show active" id="comments" role="tabpanel">
-      <h4>Flagged Comments</h4>
+      <h4 class="text-warning">Flagged Comments</h4>
       <% if (comments.length === 0) { %>
         <p>No flagged comments.</p>
       <% } else { %>
         <% comments.forEach(comment => { %>
-          <div class="card mb-3 bg-dark text-light">
+          <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
             <div class="card-body">
               <p><strong>Movie:</strong> <%= comment.movie.title %></p>
               <p><strong>User:</strong> <%= comment.user.name %></p>
@@ -52,12 +50,12 @@
 
     <!-- All Reviews -->
     <div class="tab-pane fade" id="reviews" role="tabpanel">
-      <h4>All Reviews</h4>
+      <h4 class="text-warning">All Reviews</h4>
       <% if (reviews.length === 0) { %>
         <p>No reviews found.</p>
       <% } else { %>
         <% reviews.forEach(review => { %>
-          <div class="card mb-3 bg-dark text-light">
+          <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
             <div class="card-body">
               <p><strong>Movie:</strong> <%= review.movie.title %></p>
               <p><strong>User:</strong> <%= review.user.name %></p>
@@ -75,7 +73,7 @@
 
     <!-- Users -->
     <div class="tab-pane fade" id="users" role="tabpanel">
-      <h4>All Users</h4>
+      <h4 class="text-warning">All Users</h4>
       <% if (users.length === 0) { %>
         <p>No users found.</p>
       <% } else { %>
@@ -114,23 +112,6 @@
           </tbody>
         </table>
       <% } %>
-    </div>
-
-    <!-- Monetization -->
-    <div class="tab-pane fade" id="monetization" role="tabpanel">
-      <h4>Monetization Settings</h4>
-      <form action="/admin/monetization" method="POST">
-        <!-- Example fields for ad codes, affiliate links, etc. -->
-        <div class="form-group">
-          <label>AdSense Code</label>
-          <textarea class="form-control" name="adsenseCode" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Affiliate Link</label>
-          <input type="text" class="form-control" name="affiliateLink">
-        </div>
-        <button type="submit" class="btn btn-warning">Save Settings</button>
-      </form>
     </div>
   </div>
 </div>

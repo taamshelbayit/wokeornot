@@ -7,7 +7,7 @@ router.get('/', async (req, res) => {
   const { q, minRating, category, contentType } = req.query;
   let query = {};
 
-  // Filter by contentType if provided
+  // Filter by contentType
   if (contentType && ['Movie','TV','Kids'].includes(contentType)) {
     query.contentType = contentType;
   }
@@ -17,13 +17,13 @@ router.get('/', async (req, res) => {
     query.averageRating = { $gte: parseFloat(minRating) };
   }
 
-  // Filter by category
+  // Filter by category (in wokeCategoryCounts)
   if (category && category.trim() !== '') {
     const fieldName = `wokeCategoryCounts.${category}`;
     query[fieldName] = { $gt: 0 };
   }
 
-  // Title partial match
+  // Partial title match
   if (q && q.trim() !== '') {
     query.title = { $regex: q.trim(), $options: 'i' };
   }

@@ -1,4 +1,3 @@
-<!-- views/layout.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WokeOrNot</title>
 
-  <!-- Google Fonts: e.g. "Bebas Neue" for headings, "Poppins" for body -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -14,7 +13,7 @@
     rel="stylesheet"
   >
 
-  <!-- Font Awesome (optional) -->
+  <!-- Font Awesome -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -26,79 +25,101 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   >
 
-  <!-- AOS for scroll animations -->
+  <!-- AOS for animations -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/aos@next/dist/aos.css"
   >
 
-  <!-- Custom Styles -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-    <a class="navbar-brand d-flex align-items-center funky-logo" href="/">
-      <!-- Use your vibrant logo or text -->
-      <img
-        src="/images/logo.webp"
-        alt="WokeOrNot Logo"
-        width="50"
-        height="50"
-        class="mr-2"
+
+  <!-- Top Nav Bar (IMDb-like) -->
+  <nav class="navbar navbar-dark bg-dark navbar-expand-lg imdb-topbar">
+    <div class="container-fluid">
+      <!-- Logo left -->
+      <a class="navbar-brand funky-logo d-flex align-items-center" href="/">
+        <img
+          src="/images/logo.webp"
+          alt="WokeOrNot Logo"
+          width="50"
+          height="50"
+          class="mr-2"
+        >
+        <span>WokeOrNot</span>
+      </a>
+
+      <!-- Big Search center -->
+      <form
+        action="/search"
+        method="GET"
+        class="d-none d-lg-flex mx-auto w-50"
+        style="max-width: 500px;"
       >
-      <span>WokeOrNot</span>
-    </a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-toggle="collapse"
-      data-target="#navbarContent"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
+        <input
+          type="text"
+          name="q"
+          class="form-control"
+          placeholder="Search for movies, TV shows, or kids titles..."
+          aria-label="Search"
+        >
+        <button class="btn btn-warning" type="submit">
+          <i class="fas fa-search"></i>
+        </button>
+      </form>
 
-    <div class="collapse navbar-collapse" id="navbarContent">
-      <ul class="navbar-nav ml-auto">
-        <!-- Direct links to Movies, TV, Kids -->
-        <li class="nav-item">
-          <a class="nav-link" href="/movies?type=Movie">Movies</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/movies?type=TV">TV</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/movies?type=Kids">Kids</a>
-        </li>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarContent"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-        <!-- If user is logged in -->
-        <% if (user) { %>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+        <ul class="navbar-nav">
+          <!-- Movies/TV/Kids links on the right -->
           <li class="nav-item">
-            <a class="nav-link" href="#">Hello, <%= user.name %></a>
+            <a class="nav-link" href="/movies?type=Movie">Movies</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/auth/logout">Logout</a>
+            <a class="nav-link" href="/movies?type=TV">TV</a>
           </li>
-          <% if (user.role === 'admin') { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/movies?type=Kids">Kids</a>
+          </li>
+
+          <% if (user) { %>
             <li class="nav-item">
-              <a class="nav-link text-warning font-weight-bold" href="/admin">
-                Admin Panel
-              </a>
+              <a class="nav-link" href="#">Hello, <%= user.name %></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/logout">Logout</a>
+            </li>
+            <% if (user.role === 'admin') { %>
+              <li class="nav-item">
+                <a class="nav-link text-warning font-weight-bold" href="/admin">
+                  Admin Panel
+                </a>
+              </li>
+            <% } %>
+          <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/login">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/register">Register</a>
             </li>
           <% } %>
-        <% } else { %>
-          <li class="nav-item">
-            <a class="nav-link" href="/auth/login">Login</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/auth/register">Register</a>
-          </li>
-        <% } %>
-      </ul>
+        </ul>
+      </div>
     </div>
   </nav>
 
-  <!-- Flash messages -->
+  <!-- Flash Messages -->
   <div class="container mt-2">
     <% if (success_msg && success_msg.length > 0) { %>
       <% success_msg.forEach(msg => { %>
@@ -117,19 +138,14 @@
     <% } %>
   </div>
 
-  <!-- Main Content -->
   <%- body %>
 
-  <!-- Footer -->
   <footer class="bg-dark text-light py-4 mt-5">
     <div class="container text-center">
-      <p class="mb-0">
-        &copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.
-      </p>
+      <p class="mb-0">&copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.</p>
     </div>
   </footer>
 
-  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script
     src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js">
@@ -138,7 +154,7 @@
     src="https://unpkg.com/aos@next/dist/aos.js">
   </script>
   <script>
-    AOS.init(); // Initialize AOS for scroll animations
+    AOS.init();
   </script>
   <script src="/js/main.js"></script>
 </body>

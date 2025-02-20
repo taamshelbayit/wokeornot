@@ -5,6 +5,7 @@ const Comment = require('../models/Comment');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
+// POST /forum/add/:movieId => Add comment to a movie's forum
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
   const { content } = req.body;
   try {
@@ -15,7 +16,6 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     });
     await comment.save();
 
-    // link to movie
     const movie = await Movie.findById(req.params.movieId);
     movie.forum.push(comment._id);
     await movie.save();

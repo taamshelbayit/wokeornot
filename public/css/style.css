@@ -1,6 +1,6 @@
 /* public/css/style.css */
 
-/* 1) Global Fonts & Base */
+/* Fonts & Body */
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
@@ -8,28 +8,28 @@ body {
   color: #fff;
 }
 
-/* 2) Navbar */
-.navbar-brand {
+/* Navbar top bar - IMDb style */
+.imdb-topbar {
+  border-bottom: 2px solid #444;
+}
+.funky-logo {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 1.8rem;
-}
-.navbar-nav .nav-link {
-  font-family: 'Poppins', sans-serif;
-  font-size: 1rem;
-  margin-right: 1rem;
+  text-transform: uppercase;
 }
 
-/* 3) Hero Banner & Jumbotron */
+/* Hero Banner */
 .hero-banner {
+  background-color: #000;
   color: #fff;
   margin-bottom: 0;
   position: relative;
   border-bottom: 2px solid #444;
 }
 
-/* 4) Buttons */
+/* Buttons */
 .btn-warning {
-  background-color: #f5c518; /* IMDb-like yellow */
+  background-color: #f5c518;
   border-color: #f5c518;
   color: #000;
   font-weight: bold;
@@ -48,7 +48,7 @@ body {
   color: #000;
 }
 
-/* Animated Button */
+/* Animated button effect */
 .animated-button {
   transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
@@ -58,13 +58,15 @@ body {
   transform: scale(1.05);
 }
 
-/* 5) Card Hover & Rating Badge */
+/* Card hover zoom */
 .hover-zoom {
   transition: transform 0.3s ease;
 }
 .hover-zoom:hover {
   transform: scale(1.05);
 }
+
+/* Rating badge */
 .rating-badge {
   position: absolute;
   top: 8px;
@@ -77,7 +79,7 @@ body {
   font-size: 0.9rem;
 }
 
-/* 6) Star Rating */
+/* Star rating */
 .star-rating {
   display: flex;
   flex-direction: row-reverse;
@@ -113,38 +115,24 @@ body {
   font-size: 0.8rem;
 }
 
-/* 7) Admin Cards, etc. */
+/* Cards & Admin */
 .card {
   border: none;
   background-color: #1e1e1e;
   color: #fff;
 }
-.admin-card {
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  color: #ccc;
-}
 
-/* 8) Footer */
+/* Footer */
 footer {
   background-color: #000;
   color: #999;
   border-top: 2px solid #444;
 }
 
-/* 9) Additional spacing, forms, etc. */
+/* Additional spacing */
 .form-inline .form-group {
   margin-right: 1rem;
   margin-bottom: 1rem;
-}
-.bg-dark {
-  background-color: #1e1e1e !important;
-}
-.text-light {
-  color: #fff !important;
-}
-.text-warning {
-  color: #f5c518 !important;
 }
 hr.bg-secondary {
   border-top: 1px solid #444;

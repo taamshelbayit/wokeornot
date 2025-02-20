@@ -5,7 +5,7 @@ const Review = require('../models/Review');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
-// POST Add a Review
+// POST /reviews/add/:movieId => Add rating & categories
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
   const { rating, content, categories } = req.body;
   let categoryArray = [];
@@ -19,7 +19,6 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
   }
 
   try {
-    // Create a new review
     const review = new Review({
       movie: req.params.movieId,
       user: req.user._id,
@@ -32,7 +31,7 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     // Update movie rating
     const movie = await Movie.findById(req.params.movieId);
     movie.ratings.push(rating);
-    let total = movie.ratings.reduce((sum, val) => sum + Number(val), 0);
+    let total = movie.ratings.reduce((sum, val) => sum + parseFloat(val), 0);
     movie.averageRating = total / movie.ratings.length;
 
     // Increment wokeCategoryCounts
@@ -42,7 +41,6 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     });
 
     movie.reviews.push(review._id);
-
     await movie.save();
 
     req.flash('success_msg', 'Review added successfully');

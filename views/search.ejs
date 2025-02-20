@@ -1,15 +1,16 @@
+<!-- views/search.ejs -->
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h2>Advanced Search</h2>
+  <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    Advanced Search
+  </h2>
   <form action="/search" method="GET" class="form-inline mb-4">
-    <!-- Title -->
     <div class="form-group mr-2">
       <label for="q" class="mr-2">Title:</label>
       <input type="text" name="q" id="q" class="form-control">
     </div>
 
-    <!-- Type -->
     <div class="form-group mr-2">
       <label for="contentType" class="mr-2">Type:</label>
       <select name="contentType" id="contentType" class="form-control">
@@ -20,7 +21,6 @@
       </select>
     </div>
 
-    <!-- Min Woke Rating -->
     <div class="form-group mr-2">
       <label for="minRating" class="mr-2">Min Woke Rating:</label>
       <input
@@ -33,7 +33,6 @@
       >
     </div>
 
-    <!-- Category -->
     <div class="form-group mr-2">
       <label for="category" class="mr-2">Category:</label>
       <select name="category" id="category" class="form-control">
@@ -43,19 +42,19 @@
         <option value="Race Swapping">Race Swapping</option>
         <option value="Feminist Agenda">Feminist Agenda</option>
         <option value="Political">Political</option>
-        <!-- add more as you like -->
+        <!-- Add more as needed -->
       </select>
     </div>
 
-    <button type="submit" class="btn btn-dark">Search</button>
+    <button type="submit" class="btn btn-warning">Search</button>
   </form>
 
   <% if (results) { %>
-    <h4>Results</h4>
+    <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Results</h4>
     <div class="row">
       <% results.forEach(movie => { %>
-        <div class="col-md-3 col-sm-6 mb-4 position-relative">
-          <div class="card h-100">
+        <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
+          <div class="card h-100 hover-zoom">
             <% if (movie.posterPath) { %>
               <img
                 src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>"
@@ -64,11 +63,15 @@
               >
             <% } %>
             <span class="badge rating-badge">
-              <%= movie.averageRating.toFixed(1) %>/10
+              <% if (movie.ratings.length > 0) { %>
+                <%= movie.averageRating.toFixed(1) %>/10
+              <% } else { %>
+                No Ratings
+              <% } %>
             </span>
             <div class="card-body">
               <h5 class="card-title"><%= movie.title %></h5>
-              <a href="/movies/<%= movie._id %>" class="btn btn-primary">
+              <a href="/movies/<%= movie._id %>" class="btn btn-sm btn-outline-warning">
                 View
               </a>
             </div>

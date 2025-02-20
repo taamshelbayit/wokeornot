@@ -1,8 +1,11 @@
+<!-- views/register.ejs -->
 <% layout('layout') %>
 
-<div class="container mt-4">
-  <h2>Register</h2>
-  <form action="/auth/register" method="POST" class="p-4 border bg-light">
+<div class="container mt-4 text-light">
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Register
+  </h2>
+  <form action="/auth/register" method="POST" class="p-4 border bg-dark">
     <div class="form-group">
       <label>Name</label>
       <input type="text" name="name" class="form-control" required>
@@ -19,6 +22,6 @@
       <label>Confirm Password</label>
       <input type="password" name="password2" class="form-control" required>
     </div>
-    <button type="submit" class="btn btn-primary">Register</button>
+    <button type="submit" class="btn btn-warning">Register</button>
   </form>
 </div>
