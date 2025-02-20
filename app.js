@@ -15,6 +15,8 @@ const app = express();
 app.engine('ejs', engine);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
