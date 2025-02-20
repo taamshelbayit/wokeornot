@@ -1,19 +1,14 @@
-/* public/css/style.css */
-
-/* ------------------------
-   Light Mode (Default)
-   ------------------------ */
+/* ------------------------------------
+   1) Light & Dark Mode Variables
+------------------------------------ */
 :root {
   --background-color: #f8f9fa;
   --text-color: #212529;
   --navbar-bg: #343a40;
-  --brand-accent: #dc3545; /* used for btn-primary */
-  --brand-secondary: #f5b301; /* used for star highlights */
+  --brand-accent: #dc3545;   /* used for btn-primary */
+  --brand-secondary: #f5b301;/* used for star highlights */
 }
 
-/* ------------------------
-   Dark Mode Overrides
-   ------------------------ */
 .dark-mode {
   --background-color: #212529;
   --text-color: #f8f9fa;
@@ -22,56 +17,53 @@
   --brand-secondary: #dba001;
 }
 
-/* ------------------------
-   Base Styles
-   ------------------------ */
+/* Base styles for body, navbar, etc. */
 body {
   background-color: var(--background-color);
   color: var(--text-color);
 }
-
 .navbar-dark.bg-dark {
   background-color: var(--navbar-bg) !important;
 }
-
-/* Buttons */
 .btn-primary {
   background-color: var(--brand-accent);
   border-color: var(--brand-accent);
 }
 
-/* Movie details page heading spacing */
-.movie-details h2 {
-  margin-top: 0;
+/* ------------------------------------
+   2) Vibrant Jumbotron & Rating Badge
+------------------------------------ */
+.jumbotron {
+  color: #fff;
+  margin-bottom: 0;
+  position: relative;
+  background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+  /* or you can keep your own hero background */
 }
 
-/* Navbar brand image spacing */
-.navbar-brand img {
-  margin-right: 10px;
+.rating-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ffc107; /* or var(--brand-secondary) if you want */
+  color: #000;
+  padding: 0.3rem 0.6rem;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
-/* ------------------------
-   Card Hover Effect
-   ------------------------ */
-.card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
-}
-
-/* ------------------------
-   Star Rating
-   ------------------------ */
+/* ------------------------------------
+   3) Star Rating
+------------------------------------ */
 .star-rating {
   display: flex;
   flex-direction: row-reverse;
   justify-content: flex-start;
 }
-
 .star-rating input[type="radio"] {
   display: none;
 }
-
 .star-rating label {
   position: relative;
   width: 1.2em;
@@ -79,22 +71,20 @@ body {
   color: #bbb; /* default star color */
   cursor: pointer;
 }
-
 .star-rating label::before {
   content: "\2605"; /* star unicode */
 }
-
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input[type="radio"]:checked ~ label {
-  color: var(--brand-secondary); /* highlight color */
+  color: var(--brand-secondary);
 }
 
-/* Tooltips for Star Rating on hover */
+/* optional star hover tooltip */
 .star-rating label:hover::after {
-  content: attr(title); /* use the label's title attribute */
+  content: attr(title);
   position: absolute;
-  top: -2rem; /* adjust as needed */
+  top: -2rem;
   right: 0;
   background: #333;
   color: #fff;
@@ -103,26 +93,28 @@ body {
   font-size: 0.8rem;
 }
 
-/* Hero Section Styles */
-
-/* By default (light mode), set a dark text on a lighter background */
-.hero {
-  background-color: #ffffff; /* or a subtle light gray: #f1f1f1 */
-  color: #000000;
+/* ------------------------------------
+   4) Card Hover Effect
+------------------------------------ */
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
 }
 
-/* If you’re using a background image, you can do: */
-/* .hero {
-  background: url('/images/hero-bg.jpg') center/cover no-repeat;
-  color: #000;
-} */
-
-/* In dark mode, invert or change the colors for contrast */
-.dark-mode .hero {
-  background-color: #222222; /* darker background */
-  color: #ffffff;            /* light text */
+/* ------------------------------------
+   5) Misc / Form Inline
+------------------------------------ */
+.form-inline .form-group {
+  margin-right: 1rem;
+  margin-bottom: 1rem;
 }
-
+.checkbox-list .form-check {
+  margin-bottom: 0.5rem;
+}
+.movie-details h2 {
+  margin-top: 0;
+}
 .navbar-brand img:hover {
   transform: scale(1.05);
   transition: transform 0.2s ease;

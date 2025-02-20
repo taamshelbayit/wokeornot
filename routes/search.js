@@ -4,27 +4,37 @@ const router = express.Router();
 const Movie = require('../models/Movie');
 
 router.get('/', async (req, res) => {
-  const { minRating, category } = req.query;
+  const { q, minRating, category, contentType } = req.query;
+
   let query = {};
 
-  // Filter by rating if provided
+  // Filter by contentType if provided
+  if (contentType && ['Movie','TV','Kids'].includes(contentType)) {
+    query.contentType = contentType;
+  }
+
+  // Filter by minRating if provided
   if (minRating) {
     query.averageRating = { $gte: parseFloat(minRating) };
   }
 
   // Filter by category if provided
-  // This depends on how you store categories in your Movie or Review schema.
-  // If you store an array of categories in Movie, e.g. movie.categories = [...]
-  // Then you can do:
-  if (category && category.trim() !== "") {
-    query["reviews.categories"] = category;
-    // or query.categories = category if categories are stored directly in Movie
+  // We stored categories in reviews, but also aggregated them in movie.wokeCategoryCounts
+  // If we want to find movies that have a certain category count > 0:
+  if (category && category.trim() !== '') {
+    // Mongoose doesn't do a direct query on Map fields easily
+    // We can do a workaround using the field name "wokeCategoryCounts.<category>"
+    const fieldName = `wokeCategoryCounts.${category}`;
+    query[fieldName] = { $gt: 0 };
+  }
+
+  // Title search (case-insensitive partial)
+  if (q && q.trim() !== '') {
+    query.title = { $regex: q.trim(), $options: 'i' };
   }
 
   try {
-    // Possibly need a .populate('reviews') or an aggregation if categories are in reviews
-    // For simplicity, we assume categories are in the Movie doc.
-    const results = await Movie.find(query).limit(30);
+    const results = await Movie.find(query).limit(50);
     res.render('search', { results });
   } catch (err) {
     console.error(err);

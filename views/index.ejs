@@ -1,52 +1,57 @@
 <% layout('layout') %>
 
-<!-- Hero / Banner Section with Dark Overlay -->
+<!-- Hero / Banner Section with Vibrant Background -->
 <div
-  class="jumbotron jumbotron-fluid position-relative text-white"
-  style="background: url('/images/hero-bg.jpg') center/cover no-repeat; margin-bottom: 0;"
+  class="jumbotron jumbotron-fluid text-white mb-0 position-relative"
+  style="
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    min-height: 400px;
+  "
 >
-  <!-- Semi-transparent overlay -->
-  <div
-    style="
-      background-color: rgba(0, 0, 0, 0.5);
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    "
-  ></div>
-
-  <!-- Content on top of the overlay -->
-  <div class="container py-5 position-relative" style="z-index: 2;">
+  <div class="container d-flex flex-column justify-content-center align-items-center py-5">
     <h1 class="display-4">Welcome to WokeOrNot</h1>
     <p class="lead">Rate the Wokeness of Your Favorite TV Shows & Movies</p>
     <a href="/auth/register" class="btn btn-warning btn-lg">Join Now</a>
   </div>
 </div>
 
-<!-- Trending Movies/Shows -->
+<!-- Category Links -->
 <div class="container mt-4">
-  <h2>Trending Movies and TV Shows</h2>
-  <div class="row">
-    <% trending.forEach(item => { %>
-      <div class="col-md-3 col-sm-6 mb-4">
-        <div class="card h-100">
-          <% if(item.poster_path) { %>
-            <img
-              src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>"
-              class="card-img-top"
-              alt="<%= item.title || item.name %>"
-            >
-          <% } %>
-          <div class="card-body">
-            <h5 class="card-title"><%= item.title || item.name %></h5>
-            <a href="/movies/add?tmdbId=<%= item.id %>" class="btn btn-primary">
-              Rate Movie
-            </a>
-          </div>
-        </div>
-      </div>
-    <% }) %>
+  <div class="row text-center">
+    <div class="col-md-4 mb-3">
+      <a href="/movies?type=Movie" class="btn btn-info btn-block py-3">
+        Browse Movies
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="/movies?type=TV" class="btn btn-primary btn-block py-3">
+        Browse TV
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="/movies?type=Kids" class="btn btn-success btn-block py-3">
+        Browse Kids
+      </a>
+    </div>
   </div>
+</div>
+
+<!-- Simple Search Bar -->
+<div class="container my-4">
+  <h3>Quick Search</h3>
+  <form action="/search" method="GET" class="form-inline">
+    <input
+      type="text"
+      name="q"
+      class="form-control mr-2"
+      placeholder="Search by title..."
+    >
+    <select name="contentType" class="form-control mr-2">
+      <option value="">Any Type</option>
+      <option value="Movie">Movies</option>
+      <option value="TV">TV</option>
+      <option value="Kids">Kids</option>
+    </select>
+    <button type="submit" class="btn btn-dark">Search</button>
+  </form>
 </div>

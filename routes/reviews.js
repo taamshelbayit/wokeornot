@@ -7,24 +7,20 @@ const { ensureAuthenticated } = require('../utils/auth');
 
 // POST Add a Review for a Movie
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
-  const { rating, content } = req.body;
-  let categories = req.body.categories;
-
-  // Normalize categories to always be an array
+  const { rating, content, categories } = req.body;
   let categoryArray = [];
-  if (!categories) {
-    // No checkboxes selected
-    categoryArray = [];
-  } else if (Array.isArray(categories)) {
-    // Multiple checkboxes selected
-    categoryArray = categories;
-  } else {
-    // Only one checkbox selected => a single string
-    categoryArray = [categories];
+
+  if (categories) {
+    if (Array.isArray(categories)) {
+      categoryArray = categories;
+    } else {
+      // If only one checkbox was selected, Express gives a string
+      categoryArray = [categories];
+    }
   }
 
   try {
-    // Create and save the new review
+    // Create and save new review
     const review = new Review({
       movie: req.params.movieId,
       user: req.user._id,
@@ -34,14 +30,22 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     });
     await review.save();
 
-    // Update the movie's average rating
+    // Update the movie's average rating & wokeCategoryCounts
     const movie = await Movie.findById(req.params.movieId);
-    movie.reviews.push(review._id);
-    movie.ratings.push(rating);
 
-    // Calculate new average
+    // 1) Push rating
+    movie.ratings.push(rating);
     const total = movie.ratings.reduce((sum, val) => sum + parseFloat(val), 0);
     movie.averageRating = total / movie.ratings.length;
+
+    // 2) Increment category counts
+    categoryArray.forEach(cat => {
+      const currentCount = movie.wokeCategoryCounts.get(cat) || 0;
+      movie.wokeCategoryCounts.set(cat, currentCount + 1);
+    });
+
+    // 3) Link the review
+    movie.reviews.push(review._id);
 
     await movie.save();
 
@@ -55,4 +59,3 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
 });
 
 module.exports = router;
-
