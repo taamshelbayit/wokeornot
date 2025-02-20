@@ -5,7 +5,7 @@ const Review = require('../models/Review');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
-// POST Add a Review for a Movie
+// POST Add a Review
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
   const { rating, content, categories } = req.body;
   let categoryArray = [];
@@ -14,13 +14,12 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     if (Array.isArray(categories)) {
       categoryArray = categories;
     } else {
-      // If only one checkbox was selected, Express gives a string
       categoryArray = [categories];
     }
   }
 
   try {
-    // Create and save new review
+    // Create a new review
     const review = new Review({
       movie: req.params.movieId,
       user: req.user._id,
@@ -30,21 +29,18 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     });
     await review.save();
 
-    // Update the movie's average rating & wokeCategoryCounts
+    // Update movie rating
     const movie = await Movie.findById(req.params.movieId);
-
-    // 1) Push rating
     movie.ratings.push(rating);
-    const total = movie.ratings.reduce((sum, val) => sum + parseFloat(val), 0);
+    let total = movie.ratings.reduce((sum, val) => sum + Number(val), 0);
     movie.averageRating = total / movie.ratings.length;
 
-    // 2) Increment category counts
+    // Increment wokeCategoryCounts
     categoryArray.forEach(cat => {
-      const currentCount = movie.wokeCategoryCounts.get(cat) || 0;
-      movie.wokeCategoryCounts.set(cat, currentCount + 1);
+      const current = movie.wokeCategoryCounts.get(cat) || 0;
+      movie.wokeCategoryCounts.set(cat, current + 1);
     });
 
-    // 3) Link the review
     movie.reviews.push(review._id);
 
     await movie.save();

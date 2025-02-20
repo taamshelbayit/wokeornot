@@ -1,20 +1,22 @@
 <% layout('layout') %>
-<h2>Admin Panel</h2>
-<h3>Flagged Comments</h3>
-<% if(comments.length === 0) { %>
-  <p>No flagged comments.</p>
-<% } %>
-<% comments.forEach(comment => { %>
-  <div class="card mb-3">
-    <div class="card-body">
-      <p><strong>Movie:</strong> <%= comment.movie.title %></p>
-      <p><strong>User:</strong> <%= comment.user.name %></p>
-      <p><%= comment.content %></p>
-      <form action="/admin/remove/<%= comment._id %>" method="POST">
-        <button type="submit" class="btn btn-danger">Remove Comment</button>
-      </form>
-    </div>
 
-  </div>
-
-<% }) %>
+<div class="container mt-4">
+  <h2>Admin Panel</h2>
+  <h3>Flagged Comments</h3>
+  <% if (comments.length === 0) { %>
+    <p>No flagged comments.</p>
+  <% } else { %>
+    <% comments.forEach(comment => { %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <p><strong>Movie:</strong> <%= comment.movie.title %></p>
+          <p><strong>User:</strong> <%= comment.user.name %></p>
+          <p><%= comment.content %></p>
+          <form action="/admin/remove/<%= comment._id %>" method="POST">
+            <button type="submit" class="btn btn-danger">Remove Comment</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>

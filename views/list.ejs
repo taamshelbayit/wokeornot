@@ -1,20 +1,23 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h2><%= contentType === 'Movie' ? 'Movies' : contentType === 'TV' ? 'TV Shows' : 'Kids' %></h2>
+  <h2>
+    <% if (contentType === 'TV') { %>
+      Popular TV Shows
+    <% } else if (contentType === 'Kids') { %>
+      Popular Kids Content
+    <% } else { %>
+      Popular Movies
+    <% } %>
+  </h2>
+
   <div class="row">
     <% movies.forEach(item => { %>
       <div class="col-md-3 col-sm-6 mb-4 position-relative">
         <div class="card h-100">
-          <% if(item.posterPath) { %>
+          <% if (item.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= item.posterPath %>"
-              class="card-img-top"
-              alt="<%= item.title %>"
-            >
-          <% } else { %>
-            <img
-              src="/images/no-poster.png"
               class="card-img-top"
               alt="<%= item.title %>"
             >

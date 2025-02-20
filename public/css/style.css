@@ -1,3 +1,5 @@
+/* public/css/style.css */
+
 /* ------------------------------------
    1) Light & Dark Mode Variables
 ------------------------------------ */
@@ -5,8 +7,8 @@
   --background-color: #f8f9fa;
   --text-color: #212529;
   --navbar-bg: #343a40;
-  --brand-accent: #dc3545;   /* used for btn-primary */
-  --brand-secondary: #f5b301;/* used for star highlights */
+  --brand-accent: #dc3545;
+  --brand-secondary: #f5b301;
 }
 
 .dark-mode {
@@ -17,7 +19,6 @@
   --brand-secondary: #dba001;
 }
 
-/* Base styles for body, navbar, etc. */
 body {
   background-color: var(--background-color);
   color: var(--text-color);
@@ -31,26 +32,13 @@ body {
 }
 
 /* ------------------------------------
-   2) Vibrant Jumbotron & Rating Badge
+   2) Hero / Jumbotron
 ------------------------------------ */
 .jumbotron {
   color: #fff;
   margin-bottom: 0;
   position: relative;
-  background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-  /* or you can keep your own hero background */
-}
-
-.rating-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #ffc107; /* or var(--brand-secondary) if you want */
-  color: #000;
-  padding: 0.3rem 0.6rem;
-  font-weight: bold;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  /* We add a default gradient, can override in-line */
 }
 
 /* ------------------------------------
@@ -68,19 +56,17 @@ body {
   position: relative;
   width: 1.2em;
   font-size: 2rem;
-  color: #bbb; /* default star color */
+  color: #bbb;
   cursor: pointer;
 }
 .star-rating label::before {
-  content: "\2605"; /* star unicode */
+  content: "\2605";
 }
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input[type="radio"]:checked ~ label {
   color: var(--brand-secondary);
 }
-
-/* optional star hover tooltip */
 .star-rating label:hover::after {
   content: attr(title);
   position: absolute;
@@ -94,7 +80,22 @@ body {
 }
 
 /* ------------------------------------
-   4) Card Hover Effect
+   4) Rating Badge on Thumbnails
+------------------------------------ */
+.rating-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #ffc107;
+  color: #000;
+  padding: 0.3rem 0.6rem;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* ------------------------------------
+   5) Card Hover
 ------------------------------------ */
 .card:hover {
   transform: scale(1.02);
@@ -103,7 +104,7 @@ body {
 }
 
 /* ------------------------------------
-   5) Misc / Form Inline
+   6) Forms, spacing, etc.
 ------------------------------------ */
 .form-inline .form-group {
   margin-right: 1rem;

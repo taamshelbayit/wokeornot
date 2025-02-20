@@ -5,7 +5,6 @@ const Movie = require('../models/Movie');
 
 router.get('/', async (req, res) => {
   const { q, minRating, category, contentType } = req.query;
-
   let query = {};
 
   // Filter by contentType if provided
@@ -13,22 +12,18 @@ router.get('/', async (req, res) => {
     query.contentType = contentType;
   }
 
-  // Filter by minRating if provided
+  // Filter by minRating
   if (minRating) {
     query.averageRating = { $gte: parseFloat(minRating) };
   }
 
-  // Filter by category if provided
-  // We stored categories in reviews, but also aggregated them in movie.wokeCategoryCounts
-  // If we want to find movies that have a certain category count > 0:
+  // Filter by category
   if (category && category.trim() !== '') {
-    // Mongoose doesn't do a direct query on Map fields easily
-    // We can do a workaround using the field name "wokeCategoryCounts.<category>"
     const fieldName = `wokeCategoryCounts.${category}`;
     query[fieldName] = { $gt: 0 };
   }
 
-  // Title search (case-insensitive partial)
+  // Title partial match
   if (q && q.trim() !== '') {
     query.title = { $regex: q.trim(), $options: 'i' };
   }

@@ -5,83 +5,96 @@ const axios = require('axios');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
-// GET Add a Movie
-router.get('/add', ensureAuthenticated, async (req, res) => {
-  try {
-    const { tmdbId } = req.query;
-    if (!tmdbId) {
-      req.flash('error_msg', 'No TMDb ID provided.');
-      return res.redirect('/');
-    }
-
-    // Check if the movie already exists
-    let movie = await Movie.findOne({ tmdbId });
-    if (movie) {
-      return res.redirect(`/movies/${movie._id}`);
-    }
-
-    // Fetch details from TMDb
-    const apiKey = process.env.TMDB_API_KEY;
-    const response = await axios.get(
-      `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}`
-    );
-    const data = response.data;
-
-    // Create new Movie doc
-    movie = new Movie({
-      title: data.title,
-      tmdbId,
-      description: data.overview,
-      releaseDate: data.release_date,
-      posterPath: data.poster_path,
-      // Default contentType is 'Movie', but you could add logic to set it
-    });
-
-    await movie.save();
-    req.flash('success_msg', 'Movie added successfully');
-    res.redirect(`/movies/${movie._id}`);
-  } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error adding movie');
-    res.redirect('/');
-  }
-});
-
-// GET /movies?type=Movie/TV/Kids => Show a list of that content type
+/**
+ * GET /movies?type=Movie or TV or Kids
+ * 1) Fetch from TMDb if not already in DB
+ * 2) Store in DB
+ * 3) Render list.ejs
+ */
 router.get('/', async (req, res) => {
   try {
     const contentType = req.query.type || 'Movie';
+
+    // Decide which TMDb endpoint to call
+    // For "Kids," we'll use discover with genre 10751 (Family)
+    // For "TV," we call tv/popular
+    // For "Movie," we call movie/popular
+    const apiKey = process.env.TMDB_API_KEY;
+    let tmdbUrl = '';
+
+    if (contentType === 'TV') {
+      tmdbUrl = `https://api.themoviedb.org/3/tv/popular?api_key=${apiKey}&language=en-US&page=1`;
+    } else if (contentType === 'Kids') {
+      // Use "discover" with family genre = 10751
+      tmdbUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=10751&language=en-US&page=1`;
+    } else {
+      // Default to movie/popular
+      tmdbUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`;
+    }
+
+    // Fetch popular titles from TMDb
+    const response = await axios.get(tmdbUrl);
+    const tmdbResults = response.data.results || [];
+
+    // For each item, upsert into our DB
+    for (let item of tmdbResults) {
+      let tmdbId = item.id.toString();
+      let existing = await Movie.findOne({ tmdbId });
+
+      if (!existing) {
+        // Create a new doc
+        let title = item.title || item.name || 'Untitled';
+        let releaseDate = item.release_date || item.first_air_date;
+        let posterPath = item.poster_path;
+        let description = item.overview || '';
+
+        let newMovie = new Movie({
+          title,
+          tmdbId,
+          description,
+          releaseDate,
+          posterPath,
+          contentType // "Movie", "TV", or "Kids"
+        });
+
+        await newMovie.save();
+      }
+    }
+
+    // Now query our DB for items with that contentType
     const movies = await Movie.find({ contentType })
       .sort({ averageRating: -1 })
       .limit(50);
 
-    // We'll render a new "list.ejs" that shows all items for the chosen type
     res.render('list', { movies, contentType });
   } catch (err) {
     console.error(err);
-    req.flash('error_msg', 'Error fetching movies');
+    req.flash('error_msg', 'Error fetching items from TMDb');
     res.redirect('/');
   }
 });
 
-// GET /movies/:id => Show a single movie details
+/**
+ * GET /movies/:id => show detail page
+ * Converts wokeCategoryCounts map to array for easy display
+ */
 router.get('/:id', async (req, res) => {
   try {
     const movie = await Movie.findById(req.params.id)
       .populate('reviews')
       .populate('forum');
+
     if (!movie) {
       req.flash('error_msg', 'Movie not found');
       return res.redirect('/');
     }
 
-    // Convert wokeCategoryCounts (Map) to an array for easier display
+    // Convert wokeCategoryCounts map to array
     const categoryCounts = [];
     for (let [cat, count] of movie.wokeCategoryCounts) {
       categoryCounts.push({ category: cat, count });
     }
 
-    // Pass both movie and the categoryCounts
     res.render('movie', { movie, categoryCounts });
   } catch (err) {
     console.error(err);

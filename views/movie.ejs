@@ -3,7 +3,7 @@
 <div class="container mt-4 movie-details">
   <div class="row">
     <div class="col-md-4">
-      <% if(movie.posterPath) { %>
+      <% if (movie.posterPath) { %>
         <img
           src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>"
           class="img-fluid mb-3"
@@ -19,12 +19,14 @@
         <%= movie.averageRating.toFixed(1) %>/10
       </p>
 
-      <!-- WokeCategory Gradience -->
+      <!-- Category Gradience -->
       <% if (categoryCounts && categoryCounts.length > 0) { %>
         <h5>Woke Categories Chosen:</h5>
         <ul>
           <% categoryCounts.forEach(cc => { %>
-            <li><strong><%= cc.category %>:</strong> <%= cc.count %></li>
+            <li>
+              <strong><%= cc.category %>:</strong> <%= cc.count %>
+            </li>
           <% }) %>
         </ul>
       <% } %>
@@ -34,15 +36,15 @@
 
 <hr>
 
-<!-- Add Your Review -->
+<!-- Review Form -->
 <div class="container mt-5">
-  <h3>Add Your Review</h3>
+  <h3>Add Your Rating</h3>
   <form
     action="/reviews/add/<%= movie._id %>"
     method="POST"
     class="p-4 border bg-light"
   >
-    <!-- Star Rating (1-10) -->
+    <!-- Star Rating -->
     <div class="form-group">
       <label class="font-weight-bold">Woke Rating (1-10)</label>
       <div class="star-rating mb-3">
@@ -76,30 +78,27 @@
       </div>
     </div>
 
-    <!-- Review Text -->
+    <!-- Optional Text -->
     <div class="form-group">
-      <label class="font-weight-bold">Your Review</label>
+      <label class="font-weight-bold">Optional Review</label>
       <textarea
         name="content"
         class="form-control"
         rows="4"
-        required
       ></textarea>
     </div>
 
-    <!-- Woke Categories -->
+    <!-- Predefined Woke Categories (multiple checkboxes) -->
     <div class="form-group">
       <label class="font-weight-bold">Select Woke Categories:</label>
       <div class="checkbox-list">
-        <!-- Example categories. Adjust as needed or pass from route. -->
-        <% let allCategories = [
+        <% let allCats = [
           "Transgender Themes","Gay Marriage","Race Swapping","Feminist Agenda",
           "LGBT Representation","Gender Nonconformity","Allyship","Diversity Casting",
           "Intersectionality","Equity Over Merit","Gender Swapping","Political",
           "Queer Representation","Drag","Environmental Agenda","Anti-Patriarchy"
         ]; %>
-
-        <% allCategories.forEach(cat => { %>
+        <% allCats.forEach(cat => { %>
           <div class="form-check">
             <input
               class="form-check-input"
@@ -117,7 +116,7 @@
     </div>
 
     <button type="submit" class="btn btn-success btn-lg mt-2">
-      Submit Review
+      Submit
     </button>
   </form>
 </div>
@@ -128,14 +127,19 @@
 <div class="container mt-4">
   <h3>User Reviews</h3>
   <% if (movie.reviews.length === 0) { %>
-    <p>No reviews yet. Be the first to review!</p>
+    <p>No reviews yet. Be the first to rate!</p>
   <% } else { %>
     <% movie.reviews.forEach(review => { %>
       <div class="card mb-3">
         <div class="card-body">
           <p><strong>Rating:</strong> <%= review.rating %>/10</p>
-          <p><strong>Review:</strong> <%= review.content %></p>
-          <p><strong>Categories:</strong> <%= review.categories.join(', ') %></p>
+          <% if (review.content) { %>
+            <p><strong>Review:</strong> <%= review.content %></p>
+          <% } %>
+          <p>
+            <strong>Woke Categories:</strong>
+            <%= review.categories.join(', ') %>
+          </p>
         </div>
       </div>
     <% }) %>

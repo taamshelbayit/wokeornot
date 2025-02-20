@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Ensures proper scaling on mobile devices -->
+  <!-- For mobile responsiveness -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>WokeOrNot</title>
 
-  <!-- Font Awesome for icons (optional) -->
+  <!-- Font Awesome (optional for icons) -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -19,15 +19,19 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   >
 
-  <!-- Your Custom Styles -->
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <a class="navbar-brand d-flex align-items-center" href="/">
-      <!-- Replace with your actual logo if desired -->
-      <img src="/images/logo.webp" alt="WokeOrNot Logo" width="80" height="80" class="mr-2">
+      <img
+        src="/images/logo.png"
+        alt="WokeOrNot Logo"
+        width="60"
+        height="60"
+        class="mr-2"
+      >
       <span>WokeOrNot</span>
     </a>
     <button
@@ -46,11 +50,13 @@
             <a class="nav-link" href="#">Hello, <%= user.name %></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/profile">Profile</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link" href="/auth/logout">Logout</a>
           </li>
+          <% if (user.role === 'admin') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin">Admin Panel</a>
+            </li>
+          <% } %>
         <% } else { %>
           <li class="nav-item">
             <a class="nav-link" href="/auth/login">Login</a>
@@ -59,45 +65,35 @@
             <a class="nav-link" href="/auth/register">Register</a>
           </li>
         <% } %>
-        <!-- Dark Mode Toggle Button -->
-        <button
-          id="darkModeToggle"
-          class="btn btn-outline-light ml-3"
-        >
+        <!-- Example: Dark Mode Toggle (if you want) -->
+        <button id="darkModeToggle" class="btn btn-outline-light ml-3">
           Dark Mode
         </button>
       </ul>
     </div>
   </nav>
 
-  <!-- Flash Messages (Loop through arrays) -->
+  <!-- Flash messages -->
   <div class="container mt-2">
-    <!-- success_msg array -->
     <% if (success_msg && success_msg.length > 0) { %>
-      <% success_msg.forEach(function(msg){ %>
+      <% success_msg.forEach(msg => { %>
         <div class="alert alert-success"><%= msg %></div>
       <% }) %>
     <% } %>
-
-    <!-- error_msg array -->
     <% if (error_msg && error_msg.length > 0) { %>
-      <% error_msg.forEach(function(msg){ %>
+      <% error_msg.forEach(msg => { %>
         <div class="alert alert-danger"><%= msg %></div>
       <% }) %>
     <% } %>
-
-    <!-- error array -->
     <% if (error && error.length > 0) { %>
-      <% error.forEach(function(msg){ %>
+      <% error.forEach(msg => { %>
         <div class="alert alert-danger"><%= msg %></div>
       <% }) %>
     <% } %>
   </div>
 
-  <!-- Main Content (Injected by Child Views) -->
   <%- body %>
 
-  <!-- Footer -->
   <footer class="bg-dark text-light py-4 mt-5">
     <div class="container text-center">
       <p class="mb-0">
@@ -111,8 +107,7 @@
   <script
     src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js">
   </script>
-
-  <!-- Main JS (handles Dark Mode, etc.) -->
+  <!-- Main JS -->
   <script src="/js/main.js"></script>
 </body>
 </html>

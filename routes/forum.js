@@ -5,29 +5,27 @@ const Comment = require('../models/Comment');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
-// POST Add a Forum Comment for a Movie
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
   const { content } = req.body;
-  const movieId = req.params.movieId;
   try {
     const comment = new Comment({
-      movie: movieId,
+      movie: req.params.movieId,
       user: req.user._id,
       content
     });
     await comment.save();
 
-    // Add comment to the movie's forum array
-    const movie = await Movie.findById(movieId);
+    // link to movie
+    const movie = await Movie.findById(req.params.movieId);
     movie.forum.push(comment._id);
     await movie.save();
 
     req.flash('success_msg', 'Comment added successfully');
-    res.redirect(`/movies/${movieId}`);
+    res.redirect(`/movies/${movie._id}`);
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error adding comment');
-    res.redirect(`/movies/${movieId}`);
+    res.redirect(`/movies/${req.params.movieId}`);
   }
 });
 

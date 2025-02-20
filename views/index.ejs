@@ -1,14 +1,11 @@
 <% layout('layout') %>
 
-<!-- Hero / Banner Section with Vibrant Background -->
+<!-- Hero / Banner Section -->
 <div
-  class="jumbotron jumbotron-fluid text-white mb-0 position-relative"
-  style="
-    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-    min-height: 400px;
-  "
+  class="jumbotron jumbotron-fluid text-white"
+  style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%); min-height: 300px;"
 >
-  <div class="container d-flex flex-column justify-content-center align-items-center py-5">
+  <div class="container py-5 text-center">
     <h1 class="display-4">Welcome to WokeOrNot</h1>
     <p class="lead">Rate the Wokeness of Your Favorite TV Shows & Movies</p>
     <a href="/auth/register" class="btn btn-warning btn-lg">Join Now</a>
@@ -36,7 +33,7 @@
   </div>
 </div>
 
-<!-- Simple Search Bar -->
+<!-- Simple Search -->
 <div class="container my-4">
   <h3>Quick Search</h3>
   <form action="/search" method="GET" class="form-inline">

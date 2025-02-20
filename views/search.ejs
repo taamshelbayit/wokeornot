@@ -3,14 +3,14 @@
 <div class="container mt-4">
   <h2>Advanced Search</h2>
   <form action="/search" method="GET" class="form-inline mb-4">
-    <!-- Title Field -->
-    <div class="form-group mr-3">
+    <!-- Title -->
+    <div class="form-group mr-2">
       <label for="q" class="mr-2">Title:</label>
       <input type="text" name="q" id="q" class="form-control">
     </div>
 
-    <!-- Type (Movie, TV, Kids) -->
-    <div class="form-group mr-3">
+    <!-- Type -->
+    <div class="form-group mr-2">
       <label for="contentType" class="mr-2">Type:</label>
       <select name="contentType" id="contentType" class="form-control">
         <option value="">Any</option>
@@ -20,8 +20,8 @@
       </select>
     </div>
 
-    <!-- Min Rating -->
-    <div class="form-group mr-3">
+    <!-- Min Woke Rating -->
+    <div class="form-group mr-2">
       <label for="minRating" class="mr-2">Min Woke Rating:</label>
       <input
         type="number"
@@ -34,7 +34,7 @@
     </div>
 
     <!-- Category -->
-    <div class="form-group mr-3">
+    <div class="form-group mr-2">
       <label for="category" class="mr-2">Category:</label>
       <select name="category" id="category" class="form-control">
         <option value="">Any</option>
@@ -43,7 +43,7 @@
         <option value="Race Swapping">Race Swapping</option>
         <option value="Feminist Agenda">Feminist Agenda</option>
         <option value="Political">Political</option>
-        <!-- ... more categories ... -->
+        <!-- add more as you like -->
       </select>
     </div>
 
@@ -63,7 +63,6 @@
                 alt="<%= movie.title %>"
               >
             <% } %>
-            <!-- Rating Badge -->
             <span class="badge rating-badge">
               <%= movie.averageRating.toFixed(1) %>/10
             </span>

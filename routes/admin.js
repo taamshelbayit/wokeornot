@@ -4,7 +4,7 @@ const router = express.Router();
 const Comment = require('../models/Comment');
 const { ensureAuthenticated, ensureAdmin } = require('../utils/auth');
 
-// GET Admin Panel – View flagged (or negative) comments
+// GET Admin Panel => list flagged comments
 router.get('/', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     const comments = await Comment.find({ flagged: true })
