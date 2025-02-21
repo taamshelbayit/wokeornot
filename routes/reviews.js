@@ -5,11 +5,11 @@ const Review = require('../models/Review');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
-// POST /reviews/add/:movieId => Add rating & categories
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
-  const { rating, content, categories } = req.body;
-  let categoryArray = [];
+  const { rating, content, categories, notWoke } = req.body;
+  // "notWoke" will be "on" if user checked "Mark as Not Woke"
 
+  let categoryArray = [];
   if (categories) {
     if (Array.isArray(categories)) {
       categoryArray = categories;
@@ -19,27 +19,44 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
   }
 
   try {
-    const review = new Review({
+    const reviewData = {
       movie: req.params.movieId,
       user: req.user._id,
-      rating,
       content,
       categories: categoryArray
-    });
+    };
+
+    // If user chose "Not Woke", skip star rating
+    if (notWoke === 'on') {
+      reviewData.rating = 0; // or you can store null if your schema allows
+    } else {
+      // user picked a star rating
+      reviewData.rating = rating;
+    }
+
+    const review = new Review(reviewData);
     await review.save();
 
-    // Update movie rating
+    // Update the movie doc
     const movie = await Movie.findById(req.params.movieId);
-    movie.ratings.push(rating);
-    let total = movie.ratings.reduce((sum, val) => sum + parseFloat(val), 0);
-    movie.averageRating = total / movie.ratings.length;
 
-    // Increment wokeCategoryCounts
-    categoryArray.forEach(cat => {
-      const current = movie.wokeCategoryCounts.get(cat) || 0;
-      movie.wokeCategoryCounts.set(cat, current + 1);
-    });
+    // If "Not Woke" => increment notWokeCount
+    if (notWoke === 'on') {
+      movie.notWokeCount += 1;
+    } else {
+      // star rating logic
+      movie.ratings.push(rating);
+      const total = movie.ratings.reduce((sum, val) => sum + parseFloat(val), 0);
+      movie.averageRating = total / movie.ratings.length;
 
+      // increment wokeCategoryCounts
+      categoryArray.forEach(cat => {
+        const current = movie.wokeCategoryCounts.get(cat) || 0;
+        movie.wokeCategoryCounts.set(cat, current + 1);
+      });
+    }
+
+    // link the review
     movie.reviews.push(review._id);
     await movie.save();
 

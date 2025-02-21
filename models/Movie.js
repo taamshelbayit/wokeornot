@@ -18,7 +18,10 @@ const MovieSchema = new mongoose.Schema({
     type: Map,
     of: Number,
     default: {}
-  }
+  },
+
+  // NEW: track how many users marked this as "Not Woke"
+  notWokeCount: { type: Number, default: 0 }
 });
 
 module.exports = mongoose.model('Movie', MovieSchema);

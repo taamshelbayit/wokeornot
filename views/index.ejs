@@ -1,6 +1,6 @@
 <% layout('layout') %>
 
-<!-- Sleek Banner -->
+<!-- Hero Banner -->
 <div
   class="jumbotron jumbotron-fluid text-light mb-0 hero-banner"
   style="
@@ -23,6 +23,7 @@
   </div>
 </div>
 
+<!-- Trending (limited to 5 in the route) -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     <i class="fas fa-fire"></i> Trending This Week
@@ -49,7 +50,6 @@
             <h6 class="card-title" style="font-family: 'Poppins', sans-serif;">
               <%= item.title || item.name %>
             </h6>
-            <!-- One-click rating => /movies/trending/:tmdbId -->
             <a
               href="/movies/trending/<%= item.id %>"
               class="btn btn-sm btn-outline-warning"
@@ -128,7 +128,7 @@
 </div>
 
 <!-- Top 5 Most Woke Kids -->
-<div class="container mt-4 mb-4">
+<div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Most Woke Kids Titles
   </h3>
@@ -149,6 +149,46 @@
           <div class="card-body">
             <h5 class="card-title"><%= k.title %></h5>
             <a href="/movies/<%= k._id %>" class="btn btn-sm btn-outline-warning">
+              View
+            </a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<!-- Top 5 Not Woke -->
+<div class="container mt-4 mb-4">
+  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    Top 5 Not Woke Titles
+  </h3>
+  <div class="row">
+    <% topNotWoke.forEach(n => { %>
+      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
+        <div class="card h-100 hover-zoom">
+          <% if(n.posterPath) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= n.posterPath %>"
+              class="card-img-top"
+              alt="<%= n.title %>"
+            >
+          <% } %>
+          <span class="badge rating-badge">
+            <%= n.notWokeCount %> Not Woke
+          </span>
+          <div class="card-body">
+            <h5 class="card-title"><%= n.title %></h5>
+            <p class="text-muted">
+              <!-- If you also want to show average rating here, do: -->
+              Rating:
+              <% if (n.ratings.length > 0) { %>
+                <%= n.averageRating.toFixed(1) %>/10
+              <% } else { %>
+                No Ratings
+              <% } %>
+            </p>
+            <a href="/movies/<%= n._id %>" class="btn btn-sm btn-outline-warning">
               View
             </a>
           </div>
