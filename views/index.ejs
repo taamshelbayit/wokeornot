@@ -1,90 +1,66 @@
 <% layout('layout') %>
 
-<!-- Hero Banner -->
-<div
-  class="jumbotron jumbotron-fluid text-light mb-0 hero-banner"
-  style="
-    background: linear-gradient(45deg, #000 0%, #333 100%);
-    min-height: 200px;
-  "
->
-  <div class="container py-4 text-center">
-    <h1 class="display-4 font-weight-bold" style="font-family: 'Bebas Neue', sans-serif;">
-      WokeOrNot
-    </h1>
-    <p class="lead" style="font-family: 'Poppins', sans-serif;">
-      Rate the Wokeness of Your Favorite TV Shows & Movies
-    </p>
-    <% if (!user) { %>
-      <a href="/auth/register" class="btn btn-warning btn-lg animated-button">
-        Join Now
-      </a>
-    <% } %>
-  </div>
-</div>
+<!-- Hero Carousel -->
+<div id="heroCarousel" class="carousel slide carousel-fade" data-ride="carousel">
+  <ol class="carousel-indicators">
+    <li data-target="#heroCarousel" data-slide-to="0" class="active"></li>
+    <li data-target="#heroCarousel" data-slide-to="1"></li>
+    <li data-target="#heroCarousel" data-slide-to="2"></li>
+  </ol>
+  <div class="carousel-inner">
 
-<!-- "Advanced Search" Button -->
-<div class="container mt-3 text-center">
-  <a href="/search" class="btn btn-secondary btn-lg">
-    Advanced Search
-  </a>
-</div>
+    <%
+      // For the hero, let's show the first 3 from topMovies or topTV
+      // or any array you want. We'll assume topMovies is guaranteed to have at least 3.
+      let heroItems = topMovies.slice(0, 3);
+    %>
 
-<!-- Trending (limited to 5 in the route) -->
-<div class="container mt-4">
-  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
-    <i class="fas fa-fire"></i> Trending This Week
-  </h3>
-  <div class="row">
-    <% trending.forEach(item => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
-        <div class="card h-100 hover-zoom">
-          <% if(item.poster_path) { %>
-            <img
-              src="https://image.tmdb.org/t/p/w500<%= item.poster_path %>"
-              class="card-img-top"
-              alt="<%= item.title || item.name %>"
-            >
-          <% } %>
-          <span class="badge rating-badge">
-            <% if (item.ratings && item.ratings.length > 0 && item.notWokeCount > 0) { %>
-              <%= item.averageRating.toFixed(1) %>/10 - <%= item.notWokeCount %> Not Woke
-            <% } else if (item.ratings && item.ratings.length > 0) { %>
-              <%= item.averageRating.toFixed(1) %>/10
-            <% } else if (item.notWokeCount > 0) { %>
-              <%= item.notWokeCount %> Not Woke
+    <% heroItems.forEach((movie, index) => { %>
+      <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+        <!-- Big background or partial image -->
+        <div class="hero-slide d-flex align-items-center justify-content-center"
+          style="background: url('https://image.tmdb.org/t/p/original<%= movie.posterPath %>') center/cover no-repeat;
+                 min-height: 400px;"
+        >
+          <div class="container text-center text-light">
+            <h1 style="font-family: 'Bebas Neue', sans-serif;"><%= movie.title %></h1>
+            <% if (movie.ratings.length > 0) { %>
+              <p class="mb-3">Average Rating: <%= movie.averageRating.toFixed(1) %>/10</p>
             <% } else { %>
-              No Ratings
+              <p class="mb-3">No Ratings</p>
             <% } %>
-          </span>
-          <div class="card-body">
-            <h6 class="card-title" style="font-family: 'Poppins', sans-serif;">
-              <%= item.title || item.name %>
-            </h6>
-            <a
-              href="/movies/trending/<%= item.id %>"
-              class="btn btn-sm btn-outline-warning"
-            >
+            <a href="/movies/<%= movie._id %>" class="btn btn-warning btn-lg animated-button">
               Rate Now
             </a>
           </div>
         </div>
       </div>
     <% }) %>
+
   </div>
+  <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+  </a>
+  <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+  </a>
 </div>
 
 <hr class="bg-secondary">
 
-<!-- Top 5 Most Woke Movies -->
+<!-- Horizontal Scroll for each "Top 5" section -->
+<!-- Example: Top 5 Movies -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Most Woke Movies
   </h3>
-  <div class="row">
-    <% topMovies.forEach(m => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
-        <div class="card h-100 hover-zoom">
+  <div class="scroll-container position-relative">
+    <button class="scroll-btn left-btn" data-target="topMoviesScroll">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="scroll-wrapper" id="topMoviesScroll">
+      <% topMovies.forEach(m => { %>
+        <div class="scroll-item card hover-zoom" data-aos="fade-up">
           <% if(m.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= m.posterPath %>"
@@ -92,38 +68,53 @@
               alt="<%= m.title %>"
             >
           <% } %>
-          <span class="badge rating-badge">
-            <% if (m.ratings && m.ratings.length > 0 && m.notWokeCount > 0) { %>
-              <%= m.averageRating.toFixed(1) %>/10 - <%= m.notWokeCount %> Not Woke
-            <% } else if (m.ratings && m.ratings.length > 0) { %>
-              <%= m.averageRating.toFixed(1) %>/10
-            <% } else if (m.notWokeCount > 0) { %>
-              <%= m.notWokeCount %> Not Woke
-            <% } else { %>
-              No Ratings
-            <% } %>
-          </span>
           <div class="card-body">
             <h5 class="card-title"><%= m.title %></h5>
+            <!-- Woke Meter progress bar -->
+            <% if (m.ratings && m.ratings.length > 0) { %>
+              <div class="woke-meter mb-2">
+                <div
+                  class="woke-meter-fill"
+                  style="width: <%= (m.averageRating / 10) * 100 %>%"
+                ></div>
+              </div>
+              <p class="mb-1 text-muted">
+                <%= m.averageRating.toFixed(1) %>/10
+                <% if (m.notWokeCount > 0) { %>
+                  - <%= m.notWokeCount %> Not Woke
+                <% } %>
+              </p>
+            <% } else if (m.notWokeCount > 0) { %>
+              <p><%= m.notWokeCount %> Not Woke</p>
+            <% } else { %>
+              <p>No Ratings</p>
+            <% } %>
+
             <a href="/movies/<%= m._id %>" class="btn btn-sm btn-outline-warning">
               View
             </a>
           </div>
         </div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
+    <button class="scroll-btn right-btn" data-target="topMoviesScroll">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 </div>
 
-<!-- Top 5 Most Woke TV -->
+<!-- Repeat the same "scroll-container" pattern for TV, Kids, Not Woke, etc. -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Most Woke TV Shows
   </h3>
-  <div class="row">
-    <% topTV.forEach(t => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
-        <div class="card h-100 hover-zoom">
+  <div class="scroll-container position-relative">
+    <button class="scroll-btn left-btn" data-target="topTVScroll">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="scroll-wrapper" id="topTVScroll">
+      <% topTV.forEach(t => { %>
+        <div class="scroll-item card hover-zoom" data-aos="fade-up">
           <% if(t.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= t.posterPath %>"
@@ -131,38 +122,52 @@
               alt="<%= t.title %>"
             >
           <% } %>
-          <span class="badge rating-badge">
-            <% if (t.ratings && t.ratings.length > 0 && t.notWokeCount > 0) { %>
-              <%= t.averageRating.toFixed(1) %>/10 - <%= t.notWokeCount %> Not Woke
-            <% } else if (t.ratings && t.ratings.length > 0) { %>
-              <%= t.averageRating.toFixed(1) %>/10
-            <% } else if (t.notWokeCount > 0) { %>
-              <%= t.notWokeCount %> Not Woke
-            <% } else { %>
-              No Ratings
-            <% } %>
-          </span>
           <div class="card-body">
             <h5 class="card-title"><%= t.title %></h5>
+            <% if (t.ratings && t.ratings.length > 0) { %>
+              <div class="woke-meter mb-2">
+                <div
+                  class="woke-meter-fill"
+                  style="width: <%= (t.averageRating / 10) * 100 %>%"
+                ></div>
+              </div>
+              <p class="mb-1 text-muted">
+                <%= t.averageRating.toFixed(1) %>/10
+                <% if (t.notWokeCount > 0) { %>
+                  - <%= t.notWokeCount %> Not Woke
+                <% } %>
+              </p>
+            <% } else if (t.notWokeCount > 0) { %>
+              <p><%= t.notWokeCount %> Not Woke</p>
+            <% } else { %>
+              <p>No Ratings</p>
+            <% } %>
+
             <a href="/movies/<%= t._id %>" class="btn btn-sm btn-outline-warning">
               View
             </a>
           </div>
         </div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
+    <button class="scroll-btn right-btn" data-target="topTVScroll">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 </div>
 
-<!-- Top 5 Most Woke Kids -->
+<!-- Kids... -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Most Woke Kids Titles
   </h3>
-  <div class="row">
-    <% topKids.forEach(k => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
-        <div class="card h-100 hover-zoom">
+  <div class="scroll-container position-relative">
+    <button class="scroll-btn left-btn" data-target="topKidsScroll">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="scroll-wrapper" id="topKidsScroll">
+      <% topKids.forEach(k => { %>
+        <div class="scroll-item card hover-zoom" data-aos="fade-up">
           <% if(k.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= k.posterPath %>"
@@ -170,38 +175,52 @@
               alt="<%= k.title %>"
             >
           <% } %>
-          <span class="badge rating-badge">
-            <% if (k.ratings && k.ratings.length > 0 && k.notWokeCount > 0) { %>
-              <%= k.averageRating.toFixed(1) %>/10 - <%= k.notWokeCount %> Not Woke
-            <% } else if (k.ratings && k.ratings.length > 0) { %>
-              <%= k.averageRating.toFixed(1) %>/10
-            <% } else if (k.notWokeCount > 0) { %>
-              <%= k.notWokeCount %> Not Woke
-            <% } else { %>
-              No Ratings
-            <% } %>
-          </span>
           <div class="card-body">
             <h5 class="card-title"><%= k.title %></h5>
+            <% if (k.ratings && k.ratings.length > 0) { %>
+              <div class="woke-meter mb-2">
+                <div
+                  class="woke-meter-fill"
+                  style="width: <%= (k.averageRating / 10) * 100 %>%"
+                ></div>
+              </div>
+              <p class="mb-1 text-muted">
+                <%= k.averageRating.toFixed(1) %>/10
+                <% if (k.notWokeCount > 0) { %>
+                  - <%= k.notWokeCount %> Not Woke
+                <% } %>
+              </p>
+            <% } else if (k.notWokeCount > 0) { %>
+              <p><%= k.notWokeCount %> Not Woke</p>
+            <% } else { %>
+              <p>No Ratings</p>
+            <% } %>
+
             <a href="/movies/<%= k._id %>" class="btn btn-sm btn-outline-warning">
               View
             </a>
           </div>
         </div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
+    <button class="scroll-btn right-btn" data-target="topKidsScroll">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 </div>
 
-<!-- Top 5 Not Woke -->
+<!-- Not Woke... -->
 <div class="container mt-4 mb-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Not Woke Titles
   </h3>
-  <div class="row">
-    <% topNotWoke.forEach(n => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
-        <div class="card h-100 hover-zoom">
+  <div class="scroll-container position-relative">
+    <button class="scroll-btn left-btn" data-target="topNotWokeScroll">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="scroll-wrapper" id="topNotWokeScroll">
+      <% topNotWoke.forEach(n => { %>
+        <div class="scroll-item card hover-zoom" data-aos="fade-up">
           <% if(n.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= n.posterPath %>"
@@ -209,33 +228,33 @@
               alt="<%= n.title %>"
             >
           <% } %>
-          <span class="badge rating-badge">
-            <% if (n.ratings && n.ratings.length > 0 && n.notWokeCount > 0) { %>
-              <%= n.averageRating.toFixed(1) %>/10 - <%= n.notWokeCount %> Not Woke
-            <% } else if (n.ratings && n.ratings.length > 0) { %>
-              <%= n.averageRating.toFixed(1) %>/10
-            <% } else if (n.notWokeCount > 0) { %>
-              <%= n.notWokeCount %> Not Woke
-            <% } else { %>
-              No Ratings
-            <% } %>
-          </span>
           <div class="card-body">
             <h5 class="card-title"><%= n.title %></h5>
-            <p class="text-muted">
-              Rating:
-              <% if (n.ratings && n.ratings.length > 0) { %>
+            <% if (n.ratings && n.ratings.length > 0) { %>
+              <div class="woke-meter mb-2">
+                <div
+                  class="woke-meter-fill"
+                  style="width: <%= (n.averageRating / 10) * 100 %>%"
+                ></div>
+              </div>
+              <p class="mb-1 text-muted">
                 <%= n.averageRating.toFixed(1) %>/10
-              <% } else { %>
-                No Ratings
-              <% } %>
-            </p>
+                - <%= n.notWokeCount %> Not Woke
+              </p>
+            <% } else if (n.notWokeCount > 0) { %>
+              <p><%= n.notWokeCount %> Not Woke</p>
+            <% } else { %>
+              <p>No Ratings</p>
+            <% } %>
             <a href="/movies/<%= n._id %>" class="btn btn-sm btn-outline-warning">
               View
             </a>
           </div>
         </div>
-      </div>
-    <% }) %>
+      <% }) %>
+    </div>
+    <button class="scroll-btn right-btn" data-target="topNotWokeScroll">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 </div>

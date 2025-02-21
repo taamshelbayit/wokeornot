@@ -1,14 +1,13 @@
 /* public/css/style.css */
 
-/* Fonts & Body */
+/* 1) Base Fonts & Body */
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background-color: #121212;
+  background-color: #121212; /* keep dark background */
   color: #fff;
 }
 
-/* Navbar top bar - IMDb style */
 .imdb-topbar {
   border-bottom: 2px solid #444;
 }
@@ -18,16 +17,16 @@ body {
   text-transform: uppercase;
 }
 
-/* Hero Banner */
-.hero-banner {
-  background-color: #000;
-  color: #fff;
-  margin-bottom: 0;
-  position: relative;
-  border-bottom: 2px solid #444;
+/* 2) Carousel & Hero Slides */
+.carousel-item {
+  height: 500px; /* or auto if you prefer */
+}
+.hero-slide {
+  height: 100%;
+  width: 100%;
 }
 
-/* Buttons */
+/* 3) Buttons & Brand Colors */
 .btn-warning {
   background-color: #f5c518;
   border-color: #f5c518;
@@ -47,8 +46,6 @@ body {
   background-color: #f5c518;
   color: #000;
 }
-
-/* Animated button effect */
 .animated-button {
   transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
@@ -58,87 +55,112 @@ body {
   transform: scale(1.05);
 }
 
-/* Card hover zoom */
+/* 4) Card Hover Zoom & Micro Interaction */
 .hover-zoom {
   transition: transform 0.3s ease;
 }
 .hover-zoom:hover {
-  transform: scale(1.05);
+  transform: scale(1.02) rotate(0.5deg);
 }
 
-/* Rating badge */
-.rating-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #f5c518;
-  color: #000;
-  padding: 0.3rem 0.6rem;
-  font-weight: bold;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-/* Star rating */
-.star-rating {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-}
-.star-rating input[type="radio"] {
-  display: none;
-}
-.star-rating label {
-  position: relative;
-  width: 1.2em;
-  font-size: 2rem;
-  color: #555;
-  cursor: pointer;
-}
-.star-rating label::before {
-  content: "\2605";
-}
+/* 5) Star Rating Animations (detail page) */
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input[type="radio"]:checked ~ label {
+  transform: scale(1.1);
   color: #f5c518;
-}
-.star-rating label:hover::after {
-  content: attr(title);
-  position: absolute;
-  top: -2rem;
-  right: 0;
-  background: #333;
-  color: #fff;
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-size: 0.8rem;
+  transition: transform 0.2s ease;
 }
 
-/* Cards & Admin */
+/* 6) Woke Meter (progress bar) */
+.woke-meter {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background-color: #444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.woke-meter-fill {
+  height: 100%;
+  background-color: #f5c518;
+  transition: width 0.3s ease;
+}
+
+/* 7) Horizontal Scroll for Top 5 sections */
+.scroll-container {
+  overflow: hidden; /* hide the scrollbar area */
+  padding: 0 40px;  /* space for the arrow buttons */
+}
+.scroll-wrapper {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 8px 0;
+}
+.scroll-item {
+  min-width: 200px;
+  flex: 0 0 auto;
+  margin-right: 8px;
+  background-color: #1e1e1e;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  width: 200px;
+}
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  z-index: 2;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.left-btn {
+  left: 0;
+}
+.right-btn {
+  right: 0;
+}
+.scroll-btn:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+/* 8) Skeleton Placeholder (optional) */
+.skeleton {
+  background: linear-gradient(90deg, #333 25%, #444 37%, #333 63%);
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+  border-radius: 4px;
+}
+@keyframes skeleton-loading {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* Example usage:
+<div class="skeleton" style="width: 100px; height: 150px;"></div>
+*/
+
+/* 9) Additional styling, spacing, etc. */
+hr.bg-secondary {
+  border-top: 1px solid #444;
+}
 .card {
   border: none;
   background-color: #1e1e1e;
-  color: #fff;
 }
-
-/* Footer */
 footer {
   background-color: #000;
   color: #999;
   border-top: 2px solid #444;
-}
-
-/* Additional spacing */
-.form-inline .form-group {
-  margin-right: 1rem;
-  margin-bottom: 1rem;
-}
-hr.bg-secondary {
-  border-top: 1px solid #444;
-}
-
-/* Animations or custom transitions */
-[data-aos="fade-up"] {
-  transition: transform 0.3s ease, opacity 0.3s ease;
 }

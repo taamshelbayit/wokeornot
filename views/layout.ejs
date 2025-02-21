@@ -37,13 +37,13 @@
 </head>
 <body>
 
-  <!-- Top Nav Bar (IMDb-like) -->
+  <!-- Top Nav Bar with a mini "mega menu" style -->
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg imdb-topbar">
     <div class="container-fluid">
       <!-- Logo on the left -->
       <a class="navbar-brand funky-logo d-flex align-items-center" href="/">
         <img
-          src="/images/logo.webp"
+          src="/images/logo.png"
           alt="WokeOrNot Logo"
           width="50"
           height="50"
@@ -52,7 +52,7 @@
         <span>WokeOrNot</span>
       </a>
 
-      <!-- Big Search in the center (desktop) + small "Advanced Search" btn -->
+      <!-- Big Search in the center (desktop) + small "Advanced" btn -->
       <form
         action="/search"
         method="GET"
@@ -92,15 +92,62 @@
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
         <ul class="navbar-nav">
-          <!-- Direct links to Movies, TV, Kids -->
-          <li class="nav-item">
-            <a class="nav-link" href="/movies?type=Movie">Movies</a>
+          <!-- "Mega menu" style for Movies/TV/Kids -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="moviesDropdown"
+              role="button"
+              data-toggle="dropdown"
+            >
+              Movies
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="/movies?type=Movie">All Movies</a>
+              <div class="dropdown-divider"></div>
+              <!-- Example sub-categories if you want them: -->
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Comedy</a>
+              <a class="dropdown-item" href="#">Drama</a>
+            </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/movies?type=TV">TV</a>
+
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="tvDropdown"
+              role="button"
+              data-toggle="dropdown"
+            >
+              TV
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="/movies?type=TV">All TV Shows</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#">Action</a>
+              <a class="dropdown-item" href="#">Comedy</a>
+              <a class="dropdown-item" href="#">Reality</a>
+            </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/movies?type=Kids">Kids</a>
+
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="kidsDropdown"
+              role="button"
+              data-toggle="dropdown"
+            >
+              Kids
+            </a>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="/movies?type=Kids">All Kids</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="#">Animated</a>
+              <a class="dropdown-item" href="#">Live Action</a>
+            </div>
           </li>
 
           <!-- If user is logged in -->
