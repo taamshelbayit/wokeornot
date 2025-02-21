@@ -52,12 +52,12 @@
         <span>WokeOrNot</span>
       </a>
 
-      <!-- Big Search in the center -->
+      <!-- Big Search in the center (desktop) + small "Advanced Search" btn -->
       <form
         action="/search"
         method="GET"
-        class="d-none d-lg-flex mx-auto w-50"
-        style="max-width: 500px;"
+        class="d-none d-lg-flex mx-auto w-50 align-items-center"
+        style="max-width: 600px;"
       >
         <input
           type="text"
@@ -69,6 +69,15 @@
         <button class="btn btn-warning" type="submit">
           <i class="fas fa-search"></i>
         </button>
+
+        <!-- Small Advanced Search button -->
+        <a
+          href="/search"
+          class="btn btn-outline-secondary ml-2"
+          style="white-space: nowrap;"
+        >
+          Advanced
+        </a>
       </form>
 
       <!-- Mobile toggler -->
@@ -137,6 +146,14 @@
           <button class="btn btn-warning" type="submit">
             <i class="fas fa-search"></i>
           </button>
+          <!-- Mobile version of the Advanced button -->
+          <a
+            href="/search"
+            class="btn btn-outline-secondary ml-2 mt-2 mt-sm-0"
+            style="white-space: nowrap;"
+          >
+            Advanced
+          </a>
         </form>
       </div>
     </div>
