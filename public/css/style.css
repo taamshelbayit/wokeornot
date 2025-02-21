@@ -4,10 +4,11 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background-color: #121212; /* keep dark background */
+  background-color: #121212; /* dark background */
   color: #fff;
 }
 
+/* Navbar top bar - IMDb style */
 .imdb-topbar {
   border-bottom: 2px solid #444;
 }
@@ -20,10 +21,35 @@ body {
 /* 2) Carousel & Hero Slides */
 .carousel-item {
   height: 500px; /* or auto if you prefer */
+  position: relative;
 }
-.hero-slide {
-  height: 100%;
-  width: 100%;
+
+/* The overlay to ensure text is visible on bright images */
+.hero-slide::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.6) 0%,
+    rgba(0,0,0,0.6) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+.hero-slide-content {
+  position: relative;
+  z-index: 2; /* text above overlay */
+}
+.hero-slide h1,
+.hero-slide p {
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+}
+
+/* Darken carousel controls so they're visible on bright images */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.8));
 }
 
 /* 3) Buttons & Brand Colors */
@@ -63,16 +89,7 @@ body {
   transform: scale(1.02) rotate(0.5deg);
 }
 
-/* 5) Star Rating Animations (detail page) */
-.star-rating label:hover,
-.star-rating label:hover ~ label,
-.star-rating input[type="radio"]:checked ~ label {
-  transform: scale(1.1);
-  color: #f5c518;
-  transition: transform 0.2s ease;
-}
-
-/* 6) Woke Meter (progress bar) */
+/* 5) Woke Meter (progress bar) */
 .woke-meter {
   position: relative;
   width: 100%;
@@ -87,10 +104,10 @@ body {
   transition: width 0.3s ease;
 }
 
-/* 7) Horizontal Scroll for Top 5 sections */
+/* 6) Horizontal Scroll for Top 5 sections */
 .scroll-container {
   overflow: hidden; /* hide the scrollbar area */
-  padding: 0 40px;  /* space for the arrow buttons */
+  padding: 0 40px;  /* space for arrow buttons */
 }
 .scroll-wrapper {
   display: flex;
@@ -102,12 +119,12 @@ body {
 .scroll-item {
   min-width: 200px;
   flex: 0 0 auto;
-  margin-right: 8px;
   background-color: #1e1e1e;
   color: #fff;
   border: none;
   border-radius: 5px;
   width: 200px;
+  margin-right: 8px;
 }
 .scroll-btn {
   position: absolute;
@@ -135,23 +152,7 @@ body {
   background: rgba(0,0,0,0.8);
 }
 
-/* 8) Skeleton Placeholder (optional) */
-.skeleton {
-  background: linear-gradient(90deg, #333 25%, #444 37%, #333 63%);
-  background-size: 400% 100%;
-  animation: skeleton-loading 1.4s ease infinite;
-  border-radius: 4px;
-}
-@keyframes skeleton-loading {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
-}
-
-/* Example usage:
-<div class="skeleton" style="width: 100px; height: 150px;"></div>
-*/
-
-/* 9) Additional styling, spacing, etc. */
+/* 7) Additional styling, spacing, etc. */
 hr.bg-secondary {
   border-top: 1px solid #444;
 }
@@ -163,4 +164,13 @@ footer {
   background-color: #000;
   color: #999;
   border-top: 2px solid #444;
+}
+
+/* 8) Example star rating (if needed in detail pages) */
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input[type="radio"]:checked ~ label {
+  transform: scale(1.1);
+  color: #f5c518;
+  transition: transform 0.2s ease;
 }

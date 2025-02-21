@@ -1,6 +1,6 @@
 <% layout('layout') %>
 
-<!-- Hero Carousel -->
+<!-- Bootstrap Carousel with overlay for hero slides -->
 <div id="heroCarousel" class="carousel slide carousel-fade" data-ride="carousel">
   <ol class="carousel-indicators">
     <li data-target="#heroCarousel" data-slide-to="0" class="active"></li>
@@ -10,21 +10,26 @@
   <div class="carousel-inner">
 
     <%
-      // For the hero, let's show the first 3 from topMovies or topTV
-      // or any array you want. We'll assume topMovies is guaranteed to have at least 3.
+      // For the hero, let's show the first 3 from topMovies (or whichever array you want).
       let heroItems = topMovies.slice(0, 3);
     %>
 
     <% heroItems.forEach((movie, index) => { %>
-      <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
-        <!-- Big background or partial image -->
-        <div class="hero-slide d-flex align-items-center justify-content-center"
-          style="background: url('https://image.tmdb.org/t/p/original<%= movie.posterPath %>') center/cover no-repeat;
-                 min-height: 400px;"
+      <div class="carousel-item hero-slide <%= index === 0 ? 'active' : '' %>">
+        <!-- The background overlay is handled in CSS with .hero-slide::before -->
+        <div
+          class="hero-slide-content d-flex align-items-center justify-content-center"
+          style="
+            background: url('https://image.tmdb.org/t/p/original<%= movie.posterPath %>')
+                      center/cover no-repeat;
+            min-height: 450px;
+          "
         >
           <div class="container text-center text-light">
-            <h1 style="font-family: 'Bebas Neue', sans-serif;"><%= movie.title %></h1>
-            <% if (movie.ratings.length > 0) { %>
+            <h1 style="font-family: 'Bebas Neue', sans-serif;">
+              <%= movie.title %>
+            </h1>
+            <% if (movie.ratings && movie.ratings.length > 0) { %>
               <p class="mb-3">Average Rating: <%= movie.averageRating.toFixed(1) %>/10</p>
             <% } else { %>
               <p class="mb-3">No Ratings</p>
@@ -49,12 +54,14 @@
 <hr class="bg-secondary">
 
 <!-- Horizontal Scroll for each "Top 5" section -->
-<!-- Example: Top 5 Movies -->
+
+<!-- Top 5 Movies -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Most Woke Movies
   </h3>
   <div class="scroll-container position-relative">
+    <!-- Arrow Buttons -->
     <button class="scroll-btn left-btn" data-target="topMoviesScroll">
       <i class="fas fa-chevron-left"></i>
     </button>
@@ -70,12 +77,13 @@
           <% } %>
           <div class="card-body">
             <h5 class="card-title"><%= m.title %></h5>
-            <!-- Woke Meter progress bar -->
+
+            <!-- Woke Meter or "No Ratings" -->
             <% if (m.ratings && m.ratings.length > 0) { %>
               <div class="woke-meter mb-2">
                 <div
                   class="woke-meter-fill"
-                  style="width: <%= (m.averageRating / 10) * 100 %>%"
+                  style="width: <%= (m.averageRating / 10) * 100 %>%;"
                 ></div>
               </div>
               <p class="mb-1 text-muted">
@@ -103,7 +111,7 @@
   </div>
 </div>
 
-<!-- Repeat the same "scroll-container" pattern for TV, Kids, Not Woke, etc. -->
+<!-- Top 5 TV -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Most Woke TV Shows
@@ -128,7 +136,7 @@
               <div class="woke-meter mb-2">
                 <div
                   class="woke-meter-fill"
-                  style="width: <%= (t.averageRating / 10) * 100 %>%"
+                  style="width: <%= (t.averageRating / 10) * 100 %>%;"
                 ></div>
               </div>
               <p class="mb-1 text-muted">
@@ -156,7 +164,7 @@
   </div>
 </div>
 
-<!-- Kids... -->
+<!-- Top 5 Kids -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Most Woke Kids Titles
@@ -181,7 +189,7 @@
               <div class="woke-meter mb-2">
                 <div
                   class="woke-meter-fill"
-                  style="width: <%= (k.averageRating / 10) * 100 %>%"
+                  style="width: <%= (k.averageRating / 10) * 100 %>%;"
                 ></div>
               </div>
               <p class="mb-1 text-muted">
@@ -209,7 +217,7 @@
   </div>
 </div>
 
-<!-- Not Woke... -->
+<!-- Top 5 Not Woke -->
 <div class="container mt-4 mb-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Top 5 Not Woke Titles
@@ -234,7 +242,7 @@
               <div class="woke-meter mb-2">
                 <div
                   class="woke-meter-fill"
-                  style="width: <%= (n.averageRating / 10) * 100 %>%"
+                  style="width: <%= (n.averageRating / 10) * 100 %>%;"
                 ></div>
               </div>
               <p class="mb-1 text-muted">

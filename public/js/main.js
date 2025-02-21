@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-target');
       const wrapper = document.getElementById(targetId);
-      // Scroll left by 300px
       wrapper.scrollBy({ left: -300, behavior: 'smooth' });
     });
   });
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-target');
       const wrapper = document.getElementById(targetId);
-      // Scroll right by 300px
       wrapper.scrollBy({ left: 300, behavior: 'smooth' });
     });
   });
