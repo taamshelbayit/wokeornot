@@ -23,6 +23,13 @@
   </div>
 </div>
 
+<!-- "Advanced Search" Button -->
+<div class="container mt-3 text-center">
+  <a href="/search" class="btn btn-secondary btn-lg">
+    Advanced Search
+  </a>
+</div>
+
 <!-- Trending (limited to 5 in the route) -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
@@ -40,8 +47,12 @@
             >
           <% } %>
           <span class="badge rating-badge">
-            <% if (item.averageRating !== null) { %>
+            <% if (item.ratings && item.ratings.length > 0 && item.notWokeCount > 0) { %>
+              <%= item.averageRating.toFixed(1) %>/10 - <%= item.notWokeCount %> Not Woke
+            <% } else if (item.ratings && item.ratings.length > 0) { %>
               <%= item.averageRating.toFixed(1) %>/10
+            <% } else if (item.notWokeCount > 0) { %>
+              <%= item.notWokeCount %> Not Woke
             <% } else { %>
               No Ratings
             <% } %>
@@ -82,7 +93,15 @@
             >
           <% } %>
           <span class="badge rating-badge">
-            <%= m.averageRating.toFixed(1) %>/10
+            <% if (m.ratings && m.ratings.length > 0 && m.notWokeCount > 0) { %>
+              <%= m.averageRating.toFixed(1) %>/10 - <%= m.notWokeCount %> Not Woke
+            <% } else if (m.ratings && m.ratings.length > 0) { %>
+              <%= m.averageRating.toFixed(1) %>/10
+            <% } else if (m.notWokeCount > 0) { %>
+              <%= m.notWokeCount %> Not Woke
+            <% } else { %>
+              No Ratings
+            <% } %>
           </span>
           <div class="card-body">
             <h5 class="card-title"><%= m.title %></h5>
@@ -113,7 +132,15 @@
             >
           <% } %>
           <span class="badge rating-badge">
-            <%= t.averageRating.toFixed(1) %>/10
+            <% if (t.ratings && t.ratings.length > 0 && t.notWokeCount > 0) { %>
+              <%= t.averageRating.toFixed(1) %>/10 - <%= t.notWokeCount %> Not Woke
+            <% } else if (t.ratings && t.ratings.length > 0) { %>
+              <%= t.averageRating.toFixed(1) %>/10
+            <% } else if (t.notWokeCount > 0) { %>
+              <%= t.notWokeCount %> Not Woke
+            <% } else { %>
+              No Ratings
+            <% } %>
           </span>
           <div class="card-body">
             <h5 class="card-title"><%= t.title %></h5>
@@ -144,7 +171,15 @@
             >
           <% } %>
           <span class="badge rating-badge">
-            <%= k.averageRating.toFixed(1) %>/10
+            <% if (k.ratings && k.ratings.length > 0 && k.notWokeCount > 0) { %>
+              <%= k.averageRating.toFixed(1) %>/10 - <%= k.notWokeCount %> Not Woke
+            <% } else if (k.ratings && k.ratings.length > 0) { %>
+              <%= k.averageRating.toFixed(1) %>/10
+            <% } else if (k.notWokeCount > 0) { %>
+              <%= k.notWokeCount %> Not Woke
+            <% } else { %>
+              No Ratings
+            <% } %>
           </span>
           <div class="card-body">
             <h5 class="card-title"><%= k.title %></h5>
@@ -175,14 +210,21 @@
             >
           <% } %>
           <span class="badge rating-badge">
-            <%= n.notWokeCount %> Not Woke
+            <% if (n.ratings && n.ratings.length > 0 && n.notWokeCount > 0) { %>
+              <%= n.averageRating.toFixed(1) %>/10 - <%= n.notWokeCount %> Not Woke
+            <% } else if (n.ratings && n.ratings.length > 0) { %>
+              <%= n.averageRating.toFixed(1) %>/10
+            <% } else if (n.notWokeCount > 0) { %>
+              <%= n.notWokeCount %> Not Woke
+            <% } else { %>
+              No Ratings
+            <% } %>
           </span>
           <div class="card-body">
             <h5 class="card-title"><%= n.title %></h5>
             <p class="text-muted">
-              <!-- If you also want to show average rating here, do: -->
               Rating:
-              <% if (n.ratings.length > 0) { %>
+              <% if (n.ratings && n.ratings.length > 0) { %>
                 <%= n.averageRating.toFixed(1) %>/10
               <% } else { %>
                 No Ratings

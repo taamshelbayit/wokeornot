@@ -27,9 +27,14 @@
               alt="<%= item.title %>"
             >
           <% } %>
+          <!-- Unified badge snippet -->
           <span class="badge rating-badge">
-            <% if (item.ratings.length > 0) { %>
+            <% if (item.ratings && item.ratings.length > 0 && item.notWokeCount > 0) { %>
+              <%= item.averageRating.toFixed(1) %>/10 - <%= item.notWokeCount %> Not Woke
+            <% } else if (item.ratings && item.ratings.length > 0) { %>
               <%= item.averageRating.toFixed(1) %>/10
+            <% } else if (item.notWokeCount > 0) { %>
+              <%= item.notWokeCount %> Not Woke
             <% } else { %>
               No Ratings
             <% } %>
