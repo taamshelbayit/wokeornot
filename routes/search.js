@@ -4,13 +4,21 @@ const router = express.Router();
 const axios = require('axios');
 const Movie = require('../models/Movie');
 
+/**
+ * GET /search
+ * If user doesn't specify contentType, we search local DB (all contentTypes)
+ * and also do BOTH /search/movie and /search/tv from TMDb.
+ * If user picks "Movie", we do local DB with { contentType: 'Movie' } + TMDb /search/movie.
+ * If user picks "TV", we do local DB with { contentType: 'TV' } + TMDb /search/tv.
+ * If user picks "Kids", we do local DB with { contentType: 'Kids' } + TMDb /search/movie.
+ */
 router.get('/', async (req, res) => {
   const { q, minRating, category, contentType } = req.query;
 
-  // 1) Build a query for local DB
+  // 1) Build local DB query
   let localQuery = {};
 
-  // Filter by contentType (Movie, TV, Kids) if provided
+  // If contentType is one of Movie, TV, Kids, use it
   if (contentType && ['Movie', 'TV', 'Kids'].includes(contentType)) {
     localQuery.contentType = contentType;
   }
@@ -20,7 +28,7 @@ router.get('/', async (req, res) => {
     localQuery.averageRating = { $gte: parseFloat(minRating) };
   }
 
-  // Filter by category (in wokeCategoryCounts map)
+  // Filter by woke category in wokeCategoryCounts
   if (category && category.trim() !== '') {
     const fieldName = `wokeCategoryCounts.${category}`;
     localQuery[fieldName] = { $gt: 0 };
@@ -35,55 +43,66 @@ router.get('/', async (req, res) => {
     // 2) Search local DB
     let localResults = await Movie.find(localQuery).limit(50);
 
-    // 3) Also fetch from TMDb if user typed a search query (q)
+    // 3) Also fetch from TMDb if user typed a query
     let tmdbResults = [];
     if (q && q.trim() !== '') {
-      // Decide endpoint: by default, let's use /search/movie
-      // (You can adapt for /search/tv if contentType === 'TV')
       const apiKey = process.env.TMDB_API_KEY;
-      let endpoint = 'search/movie';
-      if (contentType === 'TV') {
-        endpoint = 'search/tv';
-      }
-      // For Kids, we can just do search/movie. Or add a discover param for family genre.
+      let movieEndpoint = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`;
+      let tvEndpoint = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`;
 
-      const tmdbUrl = `https://api.themoviedb.org/3/${endpoint}?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`;
-      const tmdbResp = await axios.get(tmdbUrl);
-      tmdbResults = tmdbResp.data.results || [];
+      if (!contentType) {
+        // No contentType => do both /search/movie and /search/tv
+        let [movieResp, tvResp] = await Promise.all([
+          axios.get(movieEndpoint),
+          axios.get(tvEndpoint)
+        ]);
+        tmdbResults = [
+          ...(movieResp.data.results || []),
+          ...(tvResp.data.results || [])
+        ];
+      } else if (contentType === 'TV') {
+        // contentType=TV => only /search/tv
+        let tvResp = await axios.get(tvEndpoint);
+        tmdbResults = tvResp.data.results || [];
+      } else {
+        // contentType=Movie or Kids => do /search/movie
+        let movieResp = await axios.get(movieEndpoint);
+        tmdbResults = movieResp.data.results || [];
+      }
     }
 
-    // 4) Convert localResults to a consistent format
-    // We'll mark them with db: true
+    // 4) Convert localResults => array with db=true
     let finalLocal = localResults.map(l => ({
       db: true,
-      _id: l._id,               // local DB id
+      _id: l._id,
       title: l.title,
       posterPath: l.posterPath,
       averageRating: (l.ratings.length > 0) ? l.averageRating : null,
+      notWokeCount: l.notWokeCount || 0,
+      ratings: l.ratings // if we need the array length
     }));
 
-    // 5) Convert TMDb results, skipping any that exist in local DB
+    // 5) Convert TMDb results => skip if found in DB
     let finalExternal = [];
     for (let item of tmdbResults) {
-      // Check if we already have it
       let found = await Movie.findOne({ tmdbId: item.id.toString() });
       if (!found) {
-        // Not in DB => show "Rate Now"
         finalExternal.push({
           db: false,
           tmdbId: item.id,
           title: item.title || item.name || 'Untitled',
           posterPath: item.poster_path,
-          averageRating: null // "No Ratings" until user upserts
+          averageRating: null,
+          notWokeCount: 0,
+          ratings: []
         });
       }
-      // if found, user can see it in finalLocal already
     }
 
-    // 6) Merge local + external
+    // 6) Combine
     let combinedResults = [...finalLocal, ...finalExternal];
 
-    // Render
+    // Render search.ejs
     res.render('search', { combinedResults });
   } catch (err) {
     console.error(err);
