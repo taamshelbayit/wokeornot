@@ -66,6 +66,8 @@ app.use('/reviews', require('./routes/reviews'));
 app.use('/forum', require('./routes/forum'));
 app.use('/admin', require('./routes/admin'));
 app.use('/search', require('./routes/search'));
+app.use('/profile', require('./routes/profile'));
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

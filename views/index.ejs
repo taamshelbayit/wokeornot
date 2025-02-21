@@ -1,7 +1,6 @@
-<!-- views/index.ejs -->
 <% layout('layout') %>
 
-<!-- Sleek Black & Gold Banner -->
+<!-- Sleek Banner -->
 <div
   class="jumbotron jumbotron-fluid text-light mb-0 hero-banner"
   style="
@@ -39,7 +38,6 @@
               alt="<%= item.title || item.name %>"
             >
           <% } %>
-          <!-- Rating Badge -->
           <span class="badge rating-badge">
             <% if (item.averageRating !== null) { %>
               <%= item.averageRating.toFixed(1) %>/10
@@ -51,12 +49,107 @@
             <h6 class="card-title" style="font-family: 'Poppins', sans-serif;">
               <%= item.title || item.name %>
             </h6>
-            <!-- One-click rating -->
+            <!-- One-click rating => /movies/trending/:tmdbId -->
             <a
               href="/movies/trending/<%= item.id %>"
               class="btn btn-sm btn-outline-warning"
             >
               Rate Now
+            </a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<hr class="bg-secondary">
+
+<!-- Top 5 Most Woke Movies -->
+<div class="container mt-4">
+  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    Top 5 Most Woke Movies
+  </h3>
+  <div class="row">
+    <% topMovies.forEach(m => { %>
+      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
+        <div class="card h-100 hover-zoom">
+          <% if(m.posterPath) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= m.posterPath %>"
+              class="card-img-top"
+              alt="<%= m.title %>"
+            >
+          <% } %>
+          <span class="badge rating-badge">
+            <%= m.averageRating.toFixed(1) %>/10
+          </span>
+          <div class="card-body">
+            <h5 class="card-title"><%= m.title %></h5>
+            <a href="/movies/<%= m._id %>" class="btn btn-sm btn-outline-warning">
+              View
+            </a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<!-- Top 5 Most Woke TV -->
+<div class="container mt-4">
+  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    Top 5 Most Woke TV Shows
+  </h3>
+  <div class="row">
+    <% topTV.forEach(t => { %>
+      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
+        <div class="card h-100 hover-zoom">
+          <% if(t.posterPath) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= t.posterPath %>"
+              class="card-img-top"
+              alt="<%= t.title %>"
+            >
+          <% } %>
+          <span class="badge rating-badge">
+            <%= t.averageRating.toFixed(1) %>/10
+          </span>
+          <div class="card-body">
+            <h5 class="card-title"><%= t.title %></h5>
+            <a href="/movies/<%= t._id %>" class="btn btn-sm btn-outline-warning">
+              View
+            </a>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+<!-- Top 5 Most Woke Kids -->
+<div class="container mt-4 mb-4">
+  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    Top 5 Most Woke Kids Titles
+  </h3>
+  <div class="row">
+    <% topKids.forEach(k => { %>
+      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
+        <div class="card h-100 hover-zoom">
+          <% if(k.posterPath) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= k.posterPath %>"
+              class="card-img-top"
+              alt="<%= k.title %>"
+            >
+          <% } %>
+          <span class="badge rating-badge">
+            <%= k.averageRating.toFixed(1) %>/10
+          </span>
+          <div class="card-body">
+            <h5 class="card-title"><%= k.title %></h5>
+            <a href="/movies/<%= k._id %>" class="btn btn-sm btn-outline-warning">
+              View
             </a>
           </div>
         </div>

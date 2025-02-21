@@ -1,40 +1,60 @@
-<!-- views/profile.ejs -->
 <% layout('layout') %>
 
-<div class="container mt-4">
-  <h2>Your Profile</h2>
-
-  <h4 class="mt-3">Your Reviews</h4>
-  <% if (reviews.length === 0) { %>
-    <p>You haven't reviewed anything yet.</p>
+<div class="container mt-4 text-light">
+  <% if (profileUser._id.toString() === (user && user._id.toString())) { %>
+    <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+      Your Profile
+    </h2>
   <% } else { %>
-    <div class="list-group">
-      <% reviews.forEach(review => { %>
-        <a
-          href="/movies/<%= review.movie._id %>"
-          class="list-group-item list-group-item-action"
-        >
-          <strong><%= review.movie.title %></strong> -
-          Rated <%= review.rating %>/10
-        </a>
-      <% }) %>
-    </div>
+    <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+      <%= profileUser.name %>'s Profile
+    </h2>
+    <!-- Follow/Unfollow -->
+    <% if (typeof isFollowing !== 'undefined') { %>
+      <% if (!isFollowing) { %>
+        <form action="/profile/follow/<%= profileUser._id %>" method="POST">
+          <button class="btn btn-warning mb-3">Follow</button>
+        </form>
+      <% } else { %>
+        <form action="/profile/unfollow/<%= profileUser._id %>" method="POST">
+          <button class="btn btn-danger mb-3">Unfollow</button>
+        </form>
+      <% } %>
+    <% } %>
   <% } %>
 
-  <h4 class="mt-4">Your Forum Comments</h4>
-  <% if (comments.length === 0) { %>
-    <p>You haven't commented on anything yet.</p>
+  <!-- Display user reviews -->
+  <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Recent Reviews</h4>
+  <% if (reviews.length === 0) { %>
+    <p>No reviews yet.</p>
   <% } else { %>
-    <div class="list-group">
-      <% comments.forEach(comment => { %>
-        <a
-          href="/movies/<%= comment.movie._id %>"
-          class="list-group-item list-group-item-action"
-        >
-          <strong><%= comment.movie.title %></strong>:
-          <%= comment.content %>
-        </a>
-      <% }) %>
-    </div>
+    <% reviews.forEach(r => { %>
+      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+        <div class="card-body">
+          <p><strong>Movie/Show:</strong> <%= r.movie.title %></p>
+          <p><strong>Rating:</strong> <%= r.rating %>/10</p>
+          <% if (r.content) { %>
+            <p><strong>Review:</strong> <%= r.content %></p>
+          <% } %>
+          <p><strong>Categories:</strong> <%= r.categories.join(', ') %></p>
+          <small class="text-muted">Created: <%= r.createdAt.toDateString() %></small>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <!-- If it's your own profile, show who you follow -->
+  <% if (profileUser._id.toString() === (user && user._id.toString())) { %>
+    <hr class="bg-secondary">
+    <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">You Follow</h4>
+    <% if (profileUser.following.length === 0) { %>
+      <p>You are not following anyone.</p>
+    <% } else { %>
+      <ul>
+        <% profileUser.following.forEach(f => { %>
+          <li><a href="/profile/<%= f._id %>" class="text-warning"><%= f.name %></a></li>
+        <% }) %>
+      </ul>
+    <% } %>
   <% } %>
 </div>

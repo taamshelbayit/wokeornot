@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Ensures proper scaling on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WokeOrNot</title>
 
@@ -13,7 +14,7 @@
     rel="stylesheet"
   >
 
-  <!-- Font Awesome -->
+  <!-- Font Awesome (for icons) -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -25,7 +26,7 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   >
 
-  <!-- AOS for animations -->
+  <!-- AOS (Animate On Scroll) for animations -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/aos@next/dist/aos.css"
@@ -39,10 +40,10 @@
   <!-- Top Nav Bar (IMDb-like) -->
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg imdb-topbar">
     <div class="container-fluid">
-      <!-- Logo left -->
+      <!-- Logo on the left -->
       <a class="navbar-brand funky-logo d-flex align-items-center" href="/">
         <img
-          src="/images/logo.webp"
+          src="/images/logo.png"
           alt="WokeOrNot Logo"
           width="50"
           height="50"
@@ -51,7 +52,7 @@
         <span>WokeOrNot</span>
       </a>
 
-      <!-- Big Search center -->
+      <!-- Big Search in the center -->
       <form
         action="/search"
         method="GET"
@@ -70,6 +71,7 @@
         </button>
       </form>
 
+      <!-- Mobile toggler -->
       <button
         class="navbar-toggler"
         type="button"
@@ -81,7 +83,7 @@
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
         <ul class="navbar-nav">
-          <!-- Movies/TV/Kids links on the right -->
+          <!-- Direct links to Movies, TV, Kids -->
           <li class="nav-item">
             <a class="nav-link" href="/movies?type=Movie">Movies</a>
           </li>
@@ -92,9 +94,12 @@
             <a class="nav-link" href="/movies?type=Kids">Kids</a>
           </li>
 
+          <!-- If user is logged in -->
           <% if (user) { %>
             <li class="nav-item">
-              <a class="nav-link" href="#">Hello, <%= user.name %></a>
+              <a class="nav-link" href="/profile">
+                Hello, <%= user.name %>
+              </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/auth/logout">Logout</a>
@@ -115,6 +120,24 @@
             </li>
           <% } %>
         </ul>
+
+        <!-- For mobile view, show the big search bar below the nav links -->
+        <form
+          action="/search"
+          method="GET"
+          class="form-inline d-lg-none mt-2"
+          style="width: 100%;"
+        >
+          <input
+            type="text"
+            name="q"
+            class="form-control mr-2"
+            placeholder="Search..."
+          >
+          <button class="btn btn-warning" type="submit">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
       </div>
     </div>
   </nav>
@@ -138,14 +161,19 @@
     <% } %>
   </div>
 
+  <!-- Main Content (injected by child views) -->
   <%- body %>
 
+  <!-- Footer -->
   <footer class="bg-dark text-light py-4 mt-5">
     <div class="container text-center">
-      <p class="mb-0">&copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.</p>
+      <p class="mb-0">
+        &copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.
+      </p>
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script
     src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js">
@@ -154,7 +182,7 @@
     src="https://unpkg.com/aos@next/dist/aos.js">
   </script>
   <script>
-    AOS.init();
+    AOS.init(); // Initialize scroll animations
   </script>
   <script src="/js/main.js"></script>
 </body>
