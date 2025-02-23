@@ -7,12 +7,13 @@ const Movie = require('../models/Movie');
 router.get('/', async (req, res) => {
   const { q, minRating, category, contentType, genre, sort, lang } = req.query;
 
-  // default language to en-US
+  // Default to en-US
   const language = lang || 'en-US';
+  // Extract the two-letter code from something like "en-US" => "en"
+  const originalLang = language.split('-')[0]; // "en"
 
   // 1) local DB filter
   let localQuery = {};
-
   if (contentType && ['Movie', 'TV', 'Kids'].includes(contentType)) {
     localQuery.contentType = contentType;
   }
@@ -34,19 +35,18 @@ router.get('/', async (req, res) => {
     const apiKey = process.env.TMDB_API_KEY;
     let tmdbResults = [];
 
-    // If user typed q => do search calls, else if only genre => do discover
+    // If user typed q => we do search. If only genre => discover
     if (q && q.trim() !== '') {
+      // user typed a title => search
       if (contentType === 'TV') {
-        // search/tv
         const tvUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
         const tvResp = await axios.get(tvUrl);
         tmdbResults = tvResp.data.results || [];
-        // if user also selected genre => filter by genre_ids
+        // filter by genre if provided
         if (genre) {
           tmdbResults = tmdbResults.filter(r => r.genre_ids.includes(parseInt(genre)));
         }
       } else if (contentType === 'Kids') {
-        // search/movie
         const kidsUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
         const kidsResp = await axios.get(kidsUrl);
         tmdbResults = kidsResp.data.results || [];
@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
         }
       }
     } else if (genre) {
-      // no q => do discover with genre
+      // no q => do discover
       if (contentType === 'TV') {
         const tvDiscover = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}`;
         const tvResp = await axios.get(tvDiscover);
@@ -73,14 +73,23 @@ router.get('/', async (req, res) => {
         const kdResp = await axios.get(kidsDisc);
         tmdbResults = kdResp.data.results || [];
       } else {
-        // discover movie
+        // default => discover movie
         const movDisc = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}`;
         const mdResp = await axios.get(movDisc);
         tmdbResults = mdResp.data.results || [];
       }
     }
 
-    // 2) Upsert results
+    // 2) If user wants strictly "en" original language => local filter
+    // or if they pick "es-ES", filter by "es", etc.
+    // This is optional, but ensures you don't see non-English items
+    tmdbResults = tmdbResults.filter(r => {
+      // If user picks en-US => originalLang='en'
+      // We'll only keep items whose r.original_language === 'en'
+      return r.original_language === originalLang;
+    });
+
+    // 3) Upsert results
     for (let item of tmdbResults) {
       let found = await Movie.findOne({ tmdbId: item.id.toString() });
       if (!found) {
@@ -106,7 +115,7 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 3) Sorting
+    // 4) Sorting
     if (sort === 'ratingDesc') {
       finalResults.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
     } else if (sort === 'notWokeDesc') {
@@ -126,6 +135,7 @@ router.get('/', async (req, res) => {
     // limit final
     uniqueResults = uniqueResults.slice(0, 100);
 
+    // Render
     res.render('search', { results: uniqueResults });
   } catch (err) {
     console.error(err);
