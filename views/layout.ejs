@@ -37,7 +37,7 @@
 </head>
 <body>
 
-  <!-- Top Nav Bar with a mini "mega menu" style -->
+  <!-- Top Nav Bar (IMDb-like) -->
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg imdb-topbar">
     <div class="container-fluid">
       <!-- Logo on the left -->
@@ -92,7 +92,7 @@
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
         <ul class="navbar-nav">
-          <!-- "Mega menu" style for Movies/TV/Kids -->
+          <!-- Movies Dropdown -->
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle"
@@ -104,15 +104,20 @@
               Movies
             </a>
             <div class="dropdown-menu">
+              <!-- All Movies -->
               <a class="dropdown-item" href="/movies?type=Movie">All Movies</a>
               <div class="dropdown-divider"></div>
-              <!-- Example sub-categories if you want them: -->
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Comedy</a>
-              <a class="dropdown-item" href="#">Drama</a>
+              <!-- Subcategories (TMDb genre IDs for movies) -->
+              <a class="dropdown-item" href="/movies?type=Movie&genre=28">Action</a>
+              <a class="dropdown-item" href="/movies?type=Movie&genre=35">Comedy</a>
+              <a class="dropdown-item" href="/movies?type=Movie&genre=18">Drama</a>
+              <a class="dropdown-item" href="/movies?type=Movie&genre=878">Sci-Fi</a>
+              <a class="dropdown-item" href="/movies?type=Movie&genre=27">Horror</a>
+              <a class="dropdown-item" href="/movies?type=Movie&genre=10749">Romance</a>
             </div>
           </li>
 
+          <!-- TV Dropdown -->
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle"
@@ -126,12 +131,16 @@
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=TV">All TV Shows</a>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Comedy</a>
-              <a class="dropdown-item" href="#">Reality</a>
+              <!-- Common TV genres in TMDb -->
+              <a class="dropdown-item" href="/movies?type=TV&genre=10759">Action & Adventure</a>
+              <a class="dropdown-item" href="/movies?type=TV&genre=35">Comedy</a>
+              <a class="dropdown-item" href="/movies?type=TV&genre=18">Drama</a>
+              <a class="dropdown-item" href="/movies?type=TV&genre=10764">Reality</a>
+              <a class="dropdown-item" href="/movies?type=TV&genre=99">Documentary</a>
             </div>
           </li>
 
+          <!-- Kids Dropdown -->
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle"
@@ -145,8 +154,10 @@
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=Kids">All Kids</a>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="#">Animated</a>
-              <a class="dropdown-item" href="#">Live Action</a>
+              <!-- For kids, we can use 'with_genres=16' for animation, 10751 for family, etc. -->
+              <a class="dropdown-item" href="/movies?type=Kids&genre=16">Animated</a>
+              <a class="dropdown-item" href="/movies?type=Kids&genre=10751">Family</a>
+              <a class="dropdown-item" href="/movies?type=Kids&genre=12">Adventure</a>
             </div>
           </li>
 

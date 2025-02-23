@@ -8,19 +8,21 @@ const { ensureAuthenticated } = require('../utils/auth');
 // GET /profile => the logged-in user's profile
 router.get('/', ensureAuthenticated, async (req, res) => {
   try {
-    // We'll show the current user's reviews, and also a list of who they're following
     const userId = req.user._id;
+
+    // Fetch the user's reviews
     const reviews = await Review.find({ user: userId })
       .populate('movie')
       .sort({ createdAt: -1 })
       .limit(50);
 
-    // Populate who we follow
+    // Populate who the user follows
     await req.user.populate('following');
 
     res.render('profile', {
-      profileUser: req.user,
-      reviews
+      profileUser: req.user, // The logged in user
+      reviews,
+      isOwnProfile: true
     });
   } catch (err) {
     console.error(err);
@@ -49,12 +51,13 @@ router.get('/:userId', ensureAuthenticated, async (req, res) => {
     res.render('profile', {
       profileUser: user,
       reviews,
+      isOwnProfile: false,
       isFollowing
     });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error loading user profile');
-    res.redirect('/');
+    res.redirect('/profile');
   }
 });
 
@@ -80,7 +83,7 @@ router.post('/follow/:userId', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// POST /profile/unfollow/:userId => unfollow
+// POST /profile/unfollow/:userId => unfollow user
 router.post('/unfollow/:userId', ensureAuthenticated, async (req, res) => {
   try {
     const toUnfollow = await User.findById(req.params.userId);
