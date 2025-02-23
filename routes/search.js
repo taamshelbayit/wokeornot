@@ -9,10 +9,9 @@ router.get('/', async (req, res) => {
 
   // Default to en-US
   const language = lang || 'en-US';
-  // Extract the two-letter code from something like "en-US" => "en"
-  const originalLang = language.split('-')[0]; // "en"
+  const originalLang = language.split('-')[0]; // e.g. 'en'
 
-  // 1) local DB filter
+  // local DB filter
   let localQuery = {};
   if (contentType && ['Movie', 'TV', 'Kids'].includes(contentType)) {
     localQuery.contentType = contentType;
@@ -35,69 +34,78 @@ router.get('/', async (req, res) => {
     const apiKey = process.env.TMDB_API_KEY;
     let tmdbResults = [];
 
-    // If user typed q => we do search. If only genre => discover
+    // if user typed a query => search
+    // else if only genre => discover
     if (q && q.trim() !== '') {
-      // user typed a title => search
+      // SEARCH calls
       if (contentType === 'TV') {
-        const tvUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
-        const tvResp = await axios.get(tvUrl);
-        tmdbResults = tvResp.data.results || [];
-        // filter by genre if provided
+        const tvSearch = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
+        let resp = await axios.get(tvSearch);
+        tmdbResults = resp.data.results || [];
         if (genre) {
           tmdbResults = tmdbResults.filter(r => r.genre_ids.includes(parseInt(genre)));
         }
+        // local filter out non-english if user wants strictly en
+        tmdbResults = tmdbResults.filter(r => r.original_language === originalLang);
       } else if (contentType === 'Kids') {
-        const kidsUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
-        const kidsResp = await axios.get(kidsUrl);
-        tmdbResults = kidsResp.data.results || [];
+        const kidsSearch = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
+        let resp = await axios.get(kidsSearch);
+        tmdbResults = resp.data.results || [];
         if (genre) {
           tmdbResults = tmdbResults.filter(r => r.genre_ids.includes(parseInt(genre)));
         }
+        tmdbResults = tmdbResults.filter(r => r.original_language === originalLang);
       } else {
         // default => search/movie
-        const movUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
-        const movResp = await axios.get(movUrl);
-        tmdbResults = movResp.data.results || [];
+        const movSearch = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=${language}&query=${encodeURIComponent(q.trim())}&page=1`;
+        let resp = await axios.get(movSearch);
+        tmdbResults = resp.data.results || [];
         if (genre) {
           tmdbResults = tmdbResults.filter(r => r.genre_ids.includes(parseInt(genre)));
         }
+        tmdbResults = tmdbResults.filter(r => r.original_language === originalLang);
       }
     } else if (genre) {
-      // no q => do discover
+      // no q => discover with genre
       if (contentType === 'TV') {
-        const tvDiscover = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}`;
-        const tvResp = await axios.get(tvDiscover);
-        tmdbResults = tvResp.data.results || [];
+        // discover tv
+        let tvDisc = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}&page=1`;
+        // if user wants strictly en => add &with_original_language=en
+        if (originalLang === 'en') {
+          tvDisc += `&with_original_language=en`;
+        }
+        let resp = await axios.get(tvDisc);
+        tmdbResults = resp.data.results || [];
       } else if (contentType === 'Kids') {
-        const kidsDisc = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}`;
-        const kdResp = await axios.get(kidsDisc);
-        tmdbResults = kdResp.data.results || [];
+        // discover movie with kids logic
+        let kidsDisc = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}&page=1`;
+        if (originalLang === 'en') {
+          kidsDisc += `&with_original_language=en`;
+        }
+        let resp = await axios.get(kidsDisc);
+        tmdbResults = resp.data.results || [];
       } else {
-        // default => discover movie
-        const movDisc = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}`;
-        const mdResp = await axios.get(movDisc);
-        tmdbResults = mdResp.data.results || [];
+        // discover movie
+        let movDisc = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=${language}&sort_by=popularity.desc&with_genres=${genre}&page=1`;
+        if (originalLang === 'en') {
+          movDisc += `&with_original_language=en`;
+        }
+        let resp = await axios.get(movDisc);
+        tmdbResults = resp.data.results || [];
       }
+    } else {
+      // user just visited /search with no q or genre => do nothing
     }
 
-    // 2) If user wants strictly "en" original language => local filter
-    // or if they pick "es-ES", filter by "es", etc.
-    // This is optional, but ensures you don't see non-English items
-    tmdbResults = tmdbResults.filter(r => {
-      // If user picks en-US => originalLang='en'
-      // We'll only keep items whose r.original_language === 'en'
-      return r.original_language === originalLang;
-    });
-
-    // 3) Upsert results
+    // upsert
     for (let item of tmdbResults) {
       let found = await Movie.findOne({ tmdbId: item.id.toString() });
       if (!found) {
-        const title = item.title || item.name || 'Untitled';
-        const releaseDate = item.release_date || item.first_air_date;
-        const posterPath = item.poster_path;
-        const description = item.overview || '';
-        let doc = new Movie({
+        let title = item.title || item.name || 'Untitled';
+        let releaseDate = item.release_date || item.first_air_date;
+        let posterPath = item.poster_path;
+        let description = item.overview || '';
+        let newDoc = new Movie({
           title,
           tmdbId: item.id.toString(),
           description,
@@ -105,17 +113,16 @@ router.get('/', async (req, res) => {
           posterPath,
           contentType: contentType || 'Movie'
         });
-        await doc.save();
-        finalResults.push(doc);
+        await newDoc.save();
+        finalResults.push(newDoc);
       } else {
-        // if not in finalResults yet, push
         if (!finalResults.find(r => r._id.equals(found._id))) {
           finalResults.push(found);
         }
       }
     }
 
-    // 4) Sorting
+    // sorting
     if (sort === 'ratingDesc') {
       finalResults.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
     } else if (sort === 'notWokeDesc') {
@@ -135,7 +142,6 @@ router.get('/', async (req, res) => {
     // limit final
     uniqueResults = uniqueResults.slice(0, 100);
 
-    // Render
     res.render('search', { results: uniqueResults });
   } catch (err) {
     console.error(err);
