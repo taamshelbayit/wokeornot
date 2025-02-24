@@ -1,0 +1,31 @@
+<% layout('layout') %>
+
+<div class="container mt-4 text-light">
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Your Feed
+  </h2>
+  <% if (reviews.length === 0) { %>
+    <p>No recent reviews from people you follow.</p>
+  <% } else { %>
+    <% reviews.forEach(r => { %>
+      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+        <div class="card-body">
+          <p>
+            <strong><a href="/profile/<%= r.user._id %>" class="text-warning"><%= r.user.name %></a></strong>
+            reviewed
+            <strong><a href="/movies/<%= r.movie._id %>" class="text-warning"><%= r.movie.title %></a></strong>
+          </p>
+          <% if (r.rating === 0) { %>
+            <p>Marked as Not Woke</p>
+          <% } else { %>
+            <p>Rating: <%= r.rating %>/10</p>
+          <% } %>
+          <% if (r.content) { %>
+            <p><%= r.content %></p>
+          <% } %>
+          <small class="text-muted">Posted on <%= r.createdAt.toDateString() %></small>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>

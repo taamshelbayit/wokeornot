@@ -1,0 +1,32 @@
+<% layout('layout') %>
+
+<div class="container mt-4 text-light">
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Notifications
+  </h2>
+
+  <% if (notifications.length === 0) { %>
+    <p>No notifications yet.</p>
+  <% } else { %>
+    <form action="/notifications/mark-read" method="POST" class="mb-3">
+      <button class="btn btn-warning">Mark All as Read</button>
+    </form>
+
+    <% notifications.forEach(n => { %>
+      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+        <div class="card-body">
+          <p>
+            <%= n.message %>
+            <% if (n.link) { %>
+              <a href="<%= n.link %>" class="text-warning">View</a>
+            <% } %>
+          </p>
+          <% if (!n.read) { %>
+            <span class="badge badge-danger">Unread</span>
+          <% } %>
+          <small class="text-muted d-block">Created: <%= n.createdAt.toDateString() %></small>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>

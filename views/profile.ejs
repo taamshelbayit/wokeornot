@@ -1,6 +1,7 @@
 <% layout('layout') %>
 
 <div class="container mt-4 text-light">
+  <!-- If isOwnProfile => it's the logged-in user's own profile -->
   <% if (isOwnProfile) { %>
     <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
       Your Profile
@@ -23,15 +24,44 @@
     <% } %>
   <% } %>
 
-  <!-- Display user bio/avatar if you want -->
+  <!-- Optional: show avatar/bio if the user model has them -->
   <% if (profileUser.avatar) { %>
-    <img src="<%= profileUser.avatar %>" alt="Avatar" width="100" height="100" class="mb-3">
+    <img
+      src="<%= profileUser.avatar %>"
+      alt="Avatar"
+      width="100"
+      height="100"
+      class="mb-3"
+      style="object-fit: cover; border-radius: 50%;"
+    >
   <% } %>
   <% if (profileUser.bio) { %>
     <p><%= profileUser.bio %></p>
   <% } %>
 
-  <!-- Display user reviews -->
+  <!-- Display badges if any -->
+  <% if (profileUser.badges && profileUser.badges.length > 0) { %>
+    <h5 class="text-warning mt-3" style="font-family: 'Bebas Neue', sans-serif;">
+      Achievements
+    </h5>
+    <ul>
+      <% profileUser.badges.forEach(b => { %>
+        <li>
+          <% if (b === '10-reviews') { %>
+            <i class="fas fa-star"></i> 10 Reviews
+          <% } else if (b === 'top-woke-rater') { %>
+            <i class="fas fa-trophy"></i> Top Woke Rater
+          <% } else { %>
+            <%= b %>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <hr class="bg-secondary">
+
+  <!-- Recent Reviews -->
   <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Recent Reviews</h4>
   <% if (reviews.length === 0) { %>
     <p>No reviews yet.</p>
@@ -39,7 +69,14 @@
     <% reviews.forEach(r => { %>
       <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
         <div class="card-body">
-          <p><strong>Movie/Show:</strong> <%= r.movie.title %></p>
+          <p>
+            <strong>Movie/Show:</strong>
+            <% if (r.movie) { %>
+              <a href="/movies/<%= r.movie._id %>" class="text-warning"><%= r.movie.title %></a>
+            <% } else { %>
+              (Movie not found)
+            <% } %>
+          </p>
           <!-- If rating=0 => user chose "Not Woke" -->
           <% if (r.rating === 0) { %>
             <p><strong>Marked as Not Woke</strong></p>
@@ -49,8 +86,13 @@
           <% if (r.content) { %>
             <p><strong>Review:</strong> <%= r.content %></p>
           <% } %>
-          <p><strong>Woke Categories:</strong> <%= r.categories.join(', ') %></p>
-          <small class="text-muted">Created: <%= r.createdAt.toDateString() %></small>
+          <p>
+            <strong>Woke Categories:</strong>
+            <%= r.categories.join(', ') %>
+          </p>
+          <small class="text-muted">
+            Created: <%= r.createdAt.toDateString() %>
+          </small>
         </div>
       </div>
     <% }) %>
@@ -65,7 +107,11 @@
     <% } else { %>
       <ul>
         <% profileUser.following.forEach(f => { %>
-          <li><a href="/profile/<%= f._id %>" class="text-warning"><%= f.name %></a></li>
+          <li>
+            <a href="/profile/<%= f._id %>" class="text-warning">
+              <%= f.name %>
+            </a>
+          </li>
         <% }) %>
       </ul>
     <% } %>

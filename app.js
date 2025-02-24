@@ -67,6 +67,8 @@ app.use('/forum', require('./routes/forum'));
 app.use('/admin', require('./routes/admin'));
 app.use('/search', require('./routes/search'));
 app.use('/profile', require('./routes/profile'));
+app.use('/feed', require('./routes/feed'));
+app.use('/notifications', require('./routes/notifications'));
 
 
 
