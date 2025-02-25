@@ -4,22 +4,49 @@ const router = express.Router();
 const Comment = require('../models/Comment');
 const Review = require('../models/Review');
 const User = require('../models/User');
+const Movie = require('../models/Movie');
 const { ensureAuthenticated, ensureAdmin } = require('../utils/auth');
 
-// GET /admin => flagged comments, all reviews, user list
+/**
+ * GET /admin
+ * - flagged comments
+ * - all reviews (limit 50)
+ * - user list (limit 50)
+ * - basic stats (userCount, reviewCount, movieCount)
+ */
 router.get('/', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
+    // 1) flagged comments
     const comments = await Comment.find({ flagged: true })
       .populate('user')
       .populate('movie');
+
+    // 2) reviews
     const reviews = await Review.find({})
       .populate('user')
       .populate('movie')
       .sort({ createdAt: -1 })
       .limit(50);
-    const users = await User.find({}).sort({ createdAt: -1 }).limit(50);
 
-    res.render('admin', { comments, reviews, users });
+    // 3) users
+    const users = await User.find({})
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    // 4) basic stats
+    const userCount = await User.countDocuments({});
+    const reviewCount = await Review.countDocuments({});
+    const movieCount = await Movie.countDocuments({});
+
+    // Render one admin page with all data
+    res.render('admin', {
+      comments,
+      reviews,
+      users,
+      userCount,
+      reviewCount,
+      movieCount
+    });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error loading admin panel');
@@ -27,7 +54,9 @@ router.get('/', ensureAuthenticated, ensureAdmin, async (req, res) => {
   }
 });
 
-// POST /admin/remove/:commentId => Remove flagged comment
+/**
+ * POST /admin/remove/:commentId => remove flagged comment
+ */
 router.post('/remove/:commentId', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     await Comment.findByIdAndDelete(req.params.commentId);
@@ -40,7 +69,9 @@ router.post('/remove/:commentId', ensureAuthenticated, ensureAdmin, async (req, 
   }
 });
 
-// POST /admin/ban/:userId => Ban user
+/**
+ * POST /admin/ban/:userId => ban user (set role to "banned")
+ */
 router.post('/ban/:userId', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -59,7 +90,9 @@ router.post('/ban/:userId', ensureAuthenticated, ensureAdmin, async (req, res) =
   }
 });
 
-// POST /admin/unban/:userId => Unban user
+/**
+ * POST /admin/unban/:userId => unban user (set role back to "user")
+ */
 router.post('/unban/:userId', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);

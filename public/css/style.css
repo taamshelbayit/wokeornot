@@ -174,3 +174,26 @@ footer {
   color: #f5c518;
   transition: transform 0.2s ease;
 }
+
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse; /* Reverse order for better hover effect */
+  justify-content: flex-end;
+}
+
+.star-rating input {
+  display: none;
+}
+
+.star-rating label {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: #f5c518; /* Gold color for selected/hovered stars */
+}

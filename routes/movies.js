@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const Movie = require('../models/Movie');
+const Review = require('../models/Review'); // Added for category aggregation
 const { ensureAuthenticated } = require('../utils/auth');
 
 // 1) GET /movies => handle ?type=Movie|TV|Kids & ?genre=XX & optional q=title
@@ -19,16 +20,13 @@ router.get('/', async (req, res) => {
     if (q && q.trim() !== '') {
       // user typed a title => search
       if (contentType === 'TV') {
-        // search/tv
         const tvSearchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
         const tvResp = await axios.get(tvSearchUrl);
         tmdbResults = tvResp.data.results || [];
-        // if genre also given, filter results by that genre ID
         if (genre) {
           tmdbResults = tmdbResults.filter(r => r.genre_ids.includes(parseInt(genre)));
         }
       } else if (contentType === 'Kids') {
-        // search/movie
         const kidsSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
         const kidsResp = await axios.get(kidsSearchUrl);
         tmdbResults = kidsResp.data.results || [];
@@ -36,7 +34,6 @@ router.get('/', async (req, res) => {
           tmdbResults = tmdbResults.filter(r => r.genre_ids.includes(parseInt(genre)));
         }
       } else {
-        // default => search/movie
         const movSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
         const movResp = await axios.get(movSearchUrl);
         tmdbResults = movResp.data.results || [];
@@ -51,19 +48,16 @@ router.get('/', async (req, res) => {
         const tvResp = await axios.get(tvDiscover);
         tmdbResults = tvResp.data.results || [];
       } else if (contentType === 'Kids') {
-        // discover movie
         let kidsDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
         const kdResp = await axios.get(kidsDiscover);
         tmdbResults = kdResp.data.results || [];
       } else {
-        // default => discover movie
         const movDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
         const mdResp = await axios.get(movDiscover);
         tmdbResults = mdResp.data.results || [];
       }
     } else {
-      // user just visited /movies => maybe show local DB items or do a default discover?
-      // For now, let's do nothing special. We'll show local DB items below.
+      // user just visited /movies => show local DB items
     }
 
     // 2) Upsert each item into local DB
@@ -91,11 +85,8 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 3) Also fetch local DB items for contentType
-    // If user typed q => we can do a local filter
+    // 3) Fetch local DB items for contentType
     let dbQuery = { contentType };
-    // If you want partial local filtering by q => dbQuery.title = ...
-    // but let's keep it simple
     let localDBItems = await Movie.find(dbQuery).sort({ averageRating: -1 }).limit(100);
 
     // Merge localDBItems + finalList
@@ -116,7 +107,7 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // Finally render "list.ejs"
+    // Render "list.ejs"
     res.render('list', { movies: uniqueResults, contentType });
   } catch (err) {
     console.error(err);
@@ -131,7 +122,6 @@ router.get('/trending/:tmdbId', async (req, res) => {
     const tmdbId = req.params.tmdbId;
     let movie = await Movie.findOne({ tmdbId });
     if (!movie) {
-      // fetch from TMDb
       const apiKey = process.env.TMDB_API_KEY;
       const response = await axios.get(
         `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}`
@@ -148,7 +138,6 @@ router.get('/trending/:tmdbId', async (req, res) => {
       });
       await movie.save();
     }
-    // redirect to detail page
     res.redirect(`/movies/${movie._id}`);
   } catch (err) {
     console.error(err);
@@ -168,12 +157,15 @@ router.get('/:id', async (req, res) => {
       return res.redirect('/');
     }
 
-    // If you want to pass wokeCategories or categoryCounts:
-    const categoryCounts = [];
-    for (let [cat, count] of movie.wokeCategoryCounts) {
-      categoryCounts.push({ category: cat, count });
-    }
+    // Calculate categoryCounts from reviews for the woke category trends chart
+    const categoryCounts = await Review.aggregate([
+      { $match: { movie: movie._id } }, // Match reviews for this movie
+      { $unwind: '$categories' },       // Flatten the categories array
+      { $group: { _id: '$categories', count: { $sum: 1 } } }, // Count each category
+      { $project: { category: '$_id', count: 1, _id: 0 } }    // Format output
+    ]);
 
+    // Render the movie.ejs view with movie and categoryCounts data
     res.render('movie', { movie, categoryCounts });
   } catch (err) {
     console.error(err);
