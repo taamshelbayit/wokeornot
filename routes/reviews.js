@@ -10,11 +10,11 @@ const { ensureAuthenticated } = require('../utils/auth');
 /**
  * POST /reviews/add/:movieId
  * Allows a user to rate a movie from 1–10 or mark it as Not Woke.
- * Also handles awarding a "10-reviews" badge if the user hits 10 reviews.
+ * Also handles awarding a "10-reviews" badge if the user hits 10 reviews,
+ * and notifies admins about the new rating.
  */
 router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
   const { rating, content, categories, notWoke } = req.body;
-  // "notWoke" is "on" if user checked "Mark as Not Woke"
 
   // Convert categories to an array if it's a single string
   let categoryArray = [];
@@ -87,15 +87,16 @@ router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
     //   }
     // }
 
-    // 4) (Optional) Create a notification if you want to notify the movie owner or something
-    // If your app has a "movie owner," do something like:
-    // if (movie.owner && !movie.owner.equals(req.user._id)) {
-    //   await Notification.create({
-    //     user: movie.owner,
-    //     message: `${req.user.name} reviewed your movie "${movie.title}"`,
-    //     link: `/movies/${movie._id}`
-    //   });
-    // }
+    // 4) Notify admin(s) about the new rating
+    const admins = await User.find({ role: 'admin' });
+    for (let admin of admins) {
+      await Notification.create({
+        user: admin._id,
+        message: `New rating for "${movie.title}" by ${req.user.name}`,
+        link: `/movies/${movie._id}`,
+        read: false
+      });
+    }
 
     req.flash('success_msg', 'Review added successfully');
     res.redirect(`/movies/${movie._id}`);
