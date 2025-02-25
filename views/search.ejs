@@ -4,14 +4,16 @@
   <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Advanced Search
   </h2>
+
+  <!-- Advanced Search Form -->
   <form action="/search" method="GET" class="form-inline mb-4">
-    <!-- Title -->
+    <!-- Title (q) -->
     <div class="form-group mr-2">
       <label for="q" class="mr-2">Title:</label>
       <input type="text" name="q" id="q" class="form-control">
     </div>
 
-    <!-- contentType -->
+    <!-- contentType (Movie, TV, Kids, or empty => Any) -->
     <div class="form-group mr-2">
       <label for="contentType" class="mr-2">Type:</label>
       <select name="contentType" id="contentType" class="form-control">
@@ -22,7 +24,7 @@
       </select>
     </div>
 
-    <!-- minRating -->
+    <!-- minRating (1–10) -->
     <div class="form-group mr-2">
       <label for="minRating" class="mr-2">Min Woke Rating:</label>
       <input
@@ -35,7 +37,7 @@
       >
     </div>
 
-    <!-- category (for wokeCategoryCounts) -->
+    <!-- category (wokeCategoryCounts) -->
     <div class="form-group mr-2">
       <label for="category" class="mr-2">Category:</label>
       <select name="category" id="category" class="form-control">
@@ -45,7 +47,7 @@
         <option value="Race Swapping">Race Swapping</option>
         <option value="Feminist Agenda">Feminist Agenda</option>
         <option value="Political">Political</option>
-        <!-- ... etc. for all categories ... -->
+        <!-- ... add more categories as needed ... -->
       </select>
     </div>
 
@@ -60,11 +62,11 @@
         <option value="27">Horror</option>
         <option value="878">Sci-Fi</option>
         <option value="10749">Romance</option>
-        <!-- etc... For TV, use 10759, 35, 18, etc. -->
+        <!-- add more if you want for TV (10759, etc.) -->
       </select>
     </div>
 
-    <!-- sort -->
+    <!-- sort (ratingDesc, notWokeDesc) -->
     <div class="form-group mr-2">
       <label for="sort" class="mr-2">Sort:</label>
       <select name="sort" id="sort" class="form-control">
@@ -74,7 +76,7 @@
       </select>
     </div>
 
-    <!-- Language (Default to en-US) -->
+    <!-- lang (e.g., en-US) -->
     <div class="form-group mr-2">
       <label for="lang" class="mr-2">Language:</label>
       <select name="lang" id="lang" class="form-control">
@@ -86,9 +88,21 @@
       </select>
     </div>
 
+    <!-- "Not Woke Only" checkbox -->
+    <div class="form-group mr-2">
+      <input
+        type="checkbox"
+        name="notWokeOnly"
+        id="notWokeOnly"
+        value="on"
+      >
+      <label for="notWokeOnly" class="ml-1">Not Woke Only</label>
+    </div>
+
     <button type="submit" class="btn btn-warning">Search</button>
   </form>
 
+  <!-- Display Results -->
   <% if (results) { %>
     <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Results</h4>
     <div class="row">
@@ -102,7 +116,6 @@
                 alt="<%= movie.title %>"
               >
             <% } %>
-            <!-- Unified badge snippet -->
             <span class="badge rating-badge">
               <% if (movie.ratings && movie.ratings.length > 0 && movie.notWokeCount > 0) { %>
                 <%= movie.averageRating.toFixed(1) %>/10 - <%= movie.notWokeCount %> Not Woke
