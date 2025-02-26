@@ -3,22 +3,26 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const Movie = require('../models/Movie');
-const Review = require('../models/Review'); // Added for category aggregation
+const Review = require('../models/Review'); // For category aggregation
 const { ensureAuthenticated } = require('../utils/auth');
 
-// 1) GET /movies => handle ?type=Movie|TV|Kids & ?genre=XX & optional q=title
+/**
+ * 1) GET /movies
+ *    Handles ?type=Movie|TV|Kids & ?genre=XX & optional q=title
+ *    - fetches from TMDb (search or discover), upserts into local DB
+ *    - merges local DB items
+ */
 router.get('/', async (req, res) => {
   try {
-    const { type, genre, q } = req.query; // e.g. /movies?type=Movie&genre=35
+    const { type, genre, q } = req.query;
     const contentType = type || 'Movie';
 
-    // We'll fetch from TMDb (discover or search) & upsert into local DB
     const apiKey = process.env.TMDB_API_KEY;
     let tmdbResults = [];
 
-    // Decide if user typed a q => search, or if just genre => discover
+    // Decide if user typed a q => search, else if genre => discover, else local only
     if (q && q.trim() !== '') {
-      // user typed a title => search
+      // Searching
       if (contentType === 'TV') {
         const tvSearchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
         const tvResp = await axios.get(tvSearchUrl);
@@ -34,6 +38,7 @@ router.get('/', async (req, res) => {
           tmdbResults = tmdbResults.filter(r => r.genre_ids.includes(parseInt(genre)));
         }
       } else {
+        // default to Movie
         const movSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
         const movResp = await axios.get(movSearchUrl);
         tmdbResults = movResp.data.results || [];
@@ -42,25 +47,26 @@ router.get('/', async (req, res) => {
         }
       }
     } else if (genre) {
-      // user only picked a genre => do discover
+      // user only picked a genre => discover
       if (contentType === 'TV') {
         const tvDiscover = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
         const tvResp = await axios.get(tvDiscover);
         tmdbResults = tvResp.data.results || [];
       } else if (contentType === 'Kids') {
-        let kidsDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
+        const kidsDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
         const kdResp = await axios.get(kidsDiscover);
         tmdbResults = kdResp.data.results || [];
       } else {
+        // default to Movie discover
         const movDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
         const mdResp = await axios.get(movDiscover);
         tmdbResults = mdResp.data.results || [];
       }
     } else {
-      // user just visited /movies => show local DB items
+      // user just visited /movies => local DB only (no external fetch)
     }
 
-    // 2) Upsert each item into local DB
+    // 2) Upsert each item from tmdbResults into local DB
     let finalList = [];
     for (let item of tmdbResults) {
       const tmdbId = item.id.toString();
@@ -70,13 +76,14 @@ router.get('/', async (req, res) => {
         const releaseDate = item.release_date || item.first_air_date;
         const posterPath = item.poster_path;
         const description = item.overview || '';
+
         let newDoc = new Movie({
           title,
           tmdbId,
           description,
           releaseDate,
           posterPath,
-          contentType // "Movie", "TV", or "Kids"
+          contentType
         });
         await newDoc.save();
         finalList.push(newDoc);
@@ -85,7 +92,7 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 3) Fetch local DB items for contentType
+    // 3) Also fetch local DB items for contentType
     let dbQuery = { contentType };
     let localDBItems = await Movie.find(dbQuery).sort({ averageRating: -1 }).limit(100);
 
@@ -116,7 +123,55 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 2) GET /movies/trending/:tmdbId => upsert from trending
+/**
+ * 2) GET /movies/add?tmdbId=... => upsert from TMDb
+ *    This must be defined BEFORE /:id to avoid CastError on "add".
+ */
+router.get('/add', ensureAuthenticated, async (req, res) => {
+  try {
+    const { tmdbId } = req.query;
+    if (!tmdbId) {
+      req.flash('error_msg', 'No TMDb ID provided.');
+      return res.redirect('/');
+    }
+
+    // Check if movie already exists
+    let movie = await Movie.findOne({ tmdbId });
+    if (movie) {
+      // If found, just redirect to it
+      return res.redirect(`/movies/${movie._id}`);
+    }
+
+    // If not found, fetch details from TMDb
+    const apiKey = process.env.TMDB_API_KEY;
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=en-US`
+    );
+    const data = response.data;
+
+    // Create new Movie document
+    movie = new Movie({
+      title: data.title || data.name || 'Untitled',
+      tmdbId,
+      description: data.overview,
+      releaseDate: data.release_date || data.first_air_date,
+      posterPath: data.poster_path,
+      contentType: 'Movie' // or logic to detect "TV" if you want
+    });
+    await movie.save();
+
+    req.flash('success_msg', 'Movie added successfully!');
+    res.redirect(`/movies/${movie._id}`);
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error adding movie');
+    res.redirect('/');
+  }
+});
+
+/**
+ * 3) GET /movies/trending/:tmdbId => upsert from trending
+ */
 router.get('/trending/:tmdbId', async (req, res) => {
   try {
     const tmdbId = req.params.tmdbId;
@@ -146,7 +201,9 @@ router.get('/trending/:tmdbId', async (req, res) => {
   }
 });
 
-// 3) GET /movies/:id => detail page
+/**
+ * 4) GET /movies/:id => detail page
+ */
 router.get('/:id', async (req, res) => {
   try {
     const movie = await Movie.findById(req.params.id)
@@ -165,7 +222,6 @@ router.get('/:id', async (req, res) => {
       { $project: { category: '$_id', count: 1, _id: 0 } }    // Format output
     ]);
 
-    // Render the movie.ejs view with movie and categoryCounts data
     res.render('movie', { movie, categoryCounts });
   } catch (err) {
     console.error(err);
