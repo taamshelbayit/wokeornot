@@ -16,7 +16,6 @@
 
     <% heroItems.forEach((movie, index) => { %>
       <div class="carousel-item hero-slide <%= index === 0 ? 'active' : '' %>">
-        <!-- The background overlay is handled in CSS with .hero-slide::before -->
         <div
           class="hero-slide-content d-flex align-items-center justify-content-center"
           style="
@@ -51,7 +50,7 @@
   </a>
 </div>
 
-<hr class="bg-secondary">
+<!-- <hr class="bg-secondary"> -->
 
 <!-- Horizontal Scroll for each "Top 5" section -->
 
@@ -61,7 +60,6 @@
     Top 5 Most Woke Movies
   </h3>
   <div class="scroll-container position-relative">
-    <!-- Arrow Buttons -->
     <button class="scroll-btn left-btn" data-target="topMoviesScroll">
       <i class="fas fa-chevron-left"></i>
     </button>
@@ -78,7 +76,6 @@
           <div class="card-body">
             <h5 class="card-title"><%= m.title %></h5>
 
-            <!-- Woke Meter or "No Ratings" -->
             <% if (m.ratings && m.ratings.length > 0) { %>
               <div class="woke-meter mb-2">
                 <div
@@ -110,6 +107,8 @@
     </button>
   </div>
 </div>
+
+<!-- <hr class="bg-secondary"> -->
 
 <!-- Top 5 TV -->
 <div class="container mt-4">
@@ -164,6 +163,8 @@
   </div>
 </div>
 
+<!-- <hr class="bg-secondary"> -->
+
 <!-- Top 5 Kids -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
@@ -216,6 +217,8 @@
     </button>
   </div>
 </div>
+
+<!-- <hr class="bg-secondary"> -->
 
 <!-- Top 5 Not Woke -->
 <div class="container mt-4 mb-4">

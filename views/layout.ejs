@@ -105,10 +105,8 @@
               Movies
             </a>
             <div class="dropdown-menu">
-              <!-- All Movies -->
               <a class="dropdown-item" href="/movies?type=Movie">All Movies</a>
               <div class="dropdown-divider"></div>
-              <!-- Subcategories (TMDb genre IDs for movies) -->
               <a class="dropdown-item" href="/movies?type=Movie&genre=28">Action</a>
               <a class="dropdown-item" href="/movies?type=Movie&genre=35">Comedy</a>
               <a class="dropdown-item" href="/movies?type=Movie&genre=18">Drama</a>
@@ -132,7 +130,6 @@
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=TV">All TV Shows</a>
               <div class="dropdown-divider"></div>
-              <!-- Common TV genres in TMDb -->
               <a class="dropdown-item" href="/movies?type=TV&genre=10759">Action & Adventure</a>
               <a class="dropdown-item" href="/movies?type=TV&genre=35">Comedy</a>
               <a class="dropdown-item" href="/movies?type=TV&genre=18">Drama</a>
@@ -155,7 +152,6 @@
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=Kids">All Kids</a>
               <div class="dropdown-divider"></div>
-              <!-- For kids, we can use 'with_genres=16' for animation, 10751 for family, etc. -->
               <a class="dropdown-item" href="/movies?type=Kids&genre=16">Animated</a>
               <a class="dropdown-item" href="/movies?type=Kids&genre=10751">Family</a>
               <a class="dropdown-item" href="/movies?type=Kids&genre=12">Adventure</a>
@@ -173,10 +169,10 @@
               <a class="nav-link" href="/auth/logout">Logout</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/feed">Feed</a>
-             </li>
-             <li class="nav-item">
-                <a class="nav-link" href="/notifications">Notifications</a>
+              <a class="nav-link" href="/feed">Feed</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/notifications">Notifications</a>
             </li>
 
             <% if (user.role === 'admin') { %>
