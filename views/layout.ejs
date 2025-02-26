@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>WokeOrNot</title>
-
-  <!-- Responsive Meta -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google Fonts, Font Awesome, Bootstrap CSS, etc. -->
+  <!-- Google Fonts, Font Awesome, Bootstrap CSS -->
   <link
     rel="stylesheet"
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
@@ -116,7 +114,6 @@
             </div>
           </li>
 
-          <!-- If user is logged in -->
           <% if (user) { %>
             <li class="nav-item">
               <a class="nav-link" href="/profile">Hello, <%= user.name %></a>
@@ -145,7 +142,7 @@
           <% } %>
         </ul>
 
-        <!-- For mobile view, show the big search bar below the nav links -->
+        <!-- Mobile view search -->
         <form
           action="/search"
           method="GET"
@@ -186,7 +183,7 @@
     <% } %>
   </div>
 
-  <!-- Child content injected here -->
+  <!-- Child content -->
   <%- body %>
 
   <!-- Footer -->

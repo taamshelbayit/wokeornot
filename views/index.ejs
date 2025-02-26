@@ -1,6 +1,6 @@
 <% layout('layout') %>
 
-<!-- Bootstrap Carousel with overlay for hero slides -->
+<!-- Hero Carousel using heroItems -->
 <div id="heroCarousel" class="carousel slide carousel-fade" data-ride="carousel">
   <ol class="carousel-indicators">
     <li data-target="#heroCarousel" data-slide-to="0" class="active"></li>
@@ -8,39 +8,29 @@
     <li data-target="#heroCarousel" data-slide-to="2"></li>
   </ol>
   <div class="carousel-inner">
-
-    <%
-      // Show the first 3 from topMovies in the hero
-      let heroItems = topMovies.slice(0, 3);
-    %>
-
-    <% heroItems.forEach((movie, index) => { %>
+    <% heroItems.forEach((item, index) => { %>
       <div class="carousel-item hero-slide <%= index === 0 ? 'active' : '' %>">
         <div
           class="hero-slide-content d-flex align-items-center justify-content-center"
           style="
-            background: url('https://image.tmdb.org/t/p/original<%= movie.posterPath %>')
+            background: url('https://image.tmdb.org/t/p/original<%= item.poster_path %>')
                       center/cover no-repeat;
             min-height: 450px;
           "
         >
           <div class="container text-center text-light">
             <h1 style="font-family: 'Bebas Neue', sans-serif;">
-              <%= movie.title %>
+              <%= item.title || item.name %>
             </h1>
-            <% if (movie.ratings && movie.ratings.length > 0) { %>
-              <p class="mb-3">Average Rating: <%= movie.averageRating.toFixed(1) %>/10</p>
-            <% } else { %>
-              <p class="mb-3">No Ratings</p>
-            <% } %>
-            <a href="/movies/<%= movie._id %>" class="btn btn-warning btn-lg animated-button">
-              Rate Now
+            <p class="mb-3">Trending Now</p>
+            <!-- If you have a route to "Add" or "Rate" this item by tmdbId: -->
+            <a href="/movies/add?tmdbId=<%= item.id %>" class="btn btn-warning btn-lg animated-button">
+              Rate This
             </a>
           </div>
         </div>
       </div>
     <% }) %>
-
   </div>
   <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -49,8 +39,6 @@
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
   </a>
 </div>
-
-<!-- Horizontal Scroll for each "Top 5" section -->
 
 <!-- Top 5 Movies -->
 <div class="container mt-4">
@@ -171,7 +159,7 @@
     <div class="scroll-wrapper" id="topKidsScroll">
       <% topKids.forEach(k => { %>
         <div class="scroll-item card hover-zoom" data-aos="fade-up">
-          <% if(k.posterPath) { %>
+          <% if (k.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= k.posterPath %>"
               class="card-img-top"
@@ -224,7 +212,7 @@
     <div class="scroll-wrapper" id="topNotWokeScroll">
       <% topNotWoke.forEach(n => { %>
         <div class="scroll-item card hover-zoom" data-aos="fade-up">
-          <% if(n.posterPath) { %>
+          <% if (n.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= n.posterPath %>"
               class="card-img-top"
