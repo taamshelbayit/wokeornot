@@ -10,7 +10,7 @@
   <div class="carousel-inner">
 
     <%
-      // For the hero, let's show the first 3 from topMovies (or whichever array you want).
+      // Show the first 3 from topMovies in the hero
       let heroItems = topMovies.slice(0, 3);
     %>
 
@@ -50,8 +50,6 @@
   </a>
 </div>
 
-<!-- <hr class="bg-secondary"> -->
-
 <!-- Horizontal Scroll for each "Top 5" section -->
 
 <!-- Top 5 Movies -->
@@ -66,7 +64,7 @@
     <div class="scroll-wrapper" id="topMoviesScroll">
       <% topMovies.forEach(m => { %>
         <div class="scroll-item card hover-zoom" data-aos="fade-up">
-          <% if(m.posterPath) { %>
+          <% if (m.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= m.posterPath %>"
               class="card-img-top"
@@ -108,8 +106,6 @@
   </div>
 </div>
 
-<!-- <hr class="bg-secondary"> -->
-
 <!-- Top 5 TV -->
 <div class="container mt-4">
   <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
@@ -122,7 +118,7 @@
     <div class="scroll-wrapper" id="topTVScroll">
       <% topTV.forEach(t => { %>
         <div class="scroll-item card hover-zoom" data-aos="fade-up">
-          <% if(t.posterPath) { %>
+          <% if (t.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= t.posterPath %>"
               class="card-img-top"
@@ -162,8 +158,6 @@
     </button>
   </div>
 </div>
-
-<!-- <hr class="bg-secondary"> -->
 
 <!-- Top 5 Kids -->
 <div class="container mt-4">
@@ -217,8 +211,6 @@
     </button>
   </div>
 </div>
-
-<!-- <hr class="bg-secondary"> -->
 
 <!-- Top 5 Not Woke -->
 <div class="container mt-4 mb-4">
