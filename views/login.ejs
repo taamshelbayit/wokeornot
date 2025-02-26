@@ -22,10 +22,15 @@
     <a href="/auth/forgot-password" class="text-muted">Forgot your password?</a>
   </p>
 
-  <!-- Resend Verification (only if email is not verified) -->
+  <!-- Resend Verification -->
+  <!-- We remove the hidden input referencing 'email' -->
   <form action="/auth/resend-verification" method="POST" class="mt-2 text-center">
-    <input type="hidden" name="email" value="<%= email || '' %>">
+    <!--
+      If you want the user to type their email again:
+      <div class="form-group">
+        <input type="email" name="email" placeholder="Enter your email" required>
+      </div>
+    -->
     <button type="submit" class="btn btn-link text-muted">Resend Verification Email</button>
   </form>
-
 </div>
