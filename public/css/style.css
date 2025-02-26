@@ -106,8 +106,8 @@ body {
 
 /* 6) Horizontal Scroll for Top 5 sections */
 .scroll-container {
-  overflow: hidden; /* hide the scrollbar area */
-  padding: 0 40px;  /* space for arrow buttons */
+  /*overflow: hidden; /* hide the scrollbar area */
+  /*padding: 0 40px;  /* space for arrow buttons */
 }
 .scroll-wrapper {
   display: flex;
