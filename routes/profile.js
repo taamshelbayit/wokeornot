@@ -3,26 +3,36 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Review = require('../models/Review');
+const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
-// GET /profile => the logged-in user's profile
+/**
+ * GET /profile => show current user's profile
+ */
 router.get('/', ensureAuthenticated, async (req, res) => {
   try {
-    const userId = req.user._id;
+    const user = await User.findById(req.user._id)
+      .populate('following', 'firstName lastName email') // see who they follow
+      .populate('followers', 'firstName lastName email'); // if you track followers
 
-    // Fetch the user's reviews
-    const reviews = await Review.find({ user: userId })
+    // Fetch user’s reviews
+    const reviews = await Review.find({ user: user._id })
       .populate('movie')
-      .sort({ createdAt: -1 })
-      .limit(50);
+      .sort({ createdAt: -1 });
 
-    // Populate who the user follows
-    await req.user.populate('following');
+    // Possibly fetch watchlist items
+    let watchlistMovies = [];
+    if (user.watchlist && user.watchlist.length > 0) {
+      watchlistMovies = await Movie.find({ _id: { $in: user.watchlist } });
+    }
+
+    // Achievements
+    // e.g. 10-reviews, 50-reviews, first Not Woke mark, etc. stored in user.badges
 
     res.render('profile', {
-      profileUser: req.user, // The logged in user
+      profileUser: user,
       reviews,
-      isOwnProfile: true
+      watchlistMovies
     });
   } catch (err) {
     console.error(err);
@@ -31,51 +41,71 @@ router.get('/', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// GET /profile/:userId => view another user's profile
-router.get('/:userId', ensureAuthenticated, async (req, res) => {
+/**
+ * GET /profile/:id => show another user's profile
+ */
+router.get('/:id', ensureAuthenticated, async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
-    if (!user) {
+    const profileUser = await User.findById(req.params.id)
+      .populate('following', 'firstName lastName email')
+      .populate('followers', 'firstName lastName email');
+    if (!profileUser) {
       req.flash('error_msg', 'User not found');
       return res.redirect('/profile');
     }
 
-    const reviews = await Review.find({ user: user._id })
+    // fetch their reviews
+    const reviews = await Review.find({ user: profileUser._id })
       .populate('movie')
-      .sort({ createdAt: -1 })
-      .limit(50);
+      .sort({ createdAt: -1 });
 
-    // Check if the logged-in user is already following this user
-    const isFollowing = req.user.following.some(f => f.equals(user._id));
+    // watchlist
+    let watchlistMovies = [];
+    if (profileUser.watchlist && profileUser.watchlist.length > 0) {
+      watchlistMovies = await Movie.find({ _id: { $in: profileUser.watchlist } });
+    }
 
     res.render('profile', {
-      profileUser: user,
+      profileUser,
       reviews,
-      isOwnProfile: false,
-      isFollowing
+      watchlistMovies
     });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error loading user profile');
-    res.redirect('/profile');
+    res.redirect('/');
   }
 });
 
-// POST /profile/follow/:userId => follow a user
-router.post('/follow/:userId', ensureAuthenticated, async (req, res) => {
+/**
+ * POST /profile/follow/:id => follow a user
+ */
+router.post('/follow/:id', ensureAuthenticated, async (req, res) => {
   try {
-    const toFollow = await User.findById(req.params.userId);
-    if (!toFollow) {
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
       req.flash('error_msg', 'User not found');
       return res.redirect('/profile');
     }
-    // Add to the current user's "following" array if not already
-    if (!req.user.following.includes(toFollow._id)) {
-      req.user.following.push(toFollow._id);
+
+    // Avoid self-follow
+    if (targetUser._id.equals(req.user._id)) {
+      req.flash('error_msg', 'You cannot follow yourself');
+      return res.redirect(`/profile/${targetUser._id}`);
+    }
+
+    // Add each other
+    if (!req.user.following.includes(targetUser._id)) {
+      req.user.following.push(targetUser._id);
       await req.user.save();
     }
-    req.flash('success_msg', `You are now following ${toFollow.name}`);
-    res.redirect(`/profile/${toFollow._id}`);
+    if (!targetUser.followers.includes(req.user._id)) {
+      targetUser.followers.push(req.user._id);
+      await targetUser.save();
+    }
+
+    req.flash('success_msg', `You are now following ${targetUser.firstName}`);
+    res.redirect(`/profile/${targetUser._id}`);
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error following user');
@@ -83,24 +113,72 @@ router.post('/follow/:userId', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// POST /profile/unfollow/:userId => unfollow user
-router.post('/unfollow/:userId', ensureAuthenticated, async (req, res) => {
+/**
+ * POST /profile/unfollow/:id => unfollow a user
+ */
+router.post('/unfollow/:id', ensureAuthenticated, async (req, res) => {
   try {
-    const toUnfollow = await User.findById(req.params.userId);
-    if (!toUnfollow) {
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
       req.flash('error_msg', 'User not found');
       return res.redirect('/profile');
     }
-    // Remove from "following"
-    req.user.following = req.user.following.filter(f => !f.equals(toUnfollow._id));
+
+    // Remove from arrays
+    req.user.following = req.user.following.filter(
+      uid => !uid.equals(targetUser._id)
+    );
     await req.user.save();
 
-    req.flash('success_msg', `You unfollowed ${toUnfollow.name}`);
-    res.redirect(`/profile/${toUnfollow._id}`);
+    targetUser.followers = targetUser.followers.filter(
+      uid => !uid.equals(req.user._id)
+    );
+    await targetUser.save();
+
+    req.flash('success_msg', `You unfollowed ${targetUser.firstName}`);
+    res.redirect(`/profile/${targetUser._id}`);
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error unfollowing user');
     res.redirect('/profile');
+  }
+});
+
+/**
+ * POST /profile/watchlist/add => add a movie to watchlist
+ */
+router.post('/watchlist/add', ensureAuthenticated, async (req, res) => {
+  try {
+    const { movieId } = req.body;
+    if (!req.user.watchlist.includes(movieId)) {
+      req.user.watchlist.push(movieId);
+      await req.user.save();
+    }
+    req.flash('success_msg', 'Movie added to watchlist');
+    res.redirect(`/movies/${movieId}`);
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error adding to watchlist');
+    res.redirect('/');
+  }
+});
+
+/**
+ * POST /profile/watchlist/remove => remove from watchlist
+ */
+router.post('/watchlist/remove', ensureAuthenticated, async (req, res) => {
+  try {
+    const { movieId } = req.body;
+    req.user.watchlist = req.user.watchlist.filter(
+      m => m.toString() !== movieId
+    );
+    await req.user.save();
+    req.flash('success_msg', 'Movie removed from watchlist');
+    res.redirect(`/movies/${movieId}`);
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error removing from watchlist');
+    res.redirect('/');
   }
 });
 

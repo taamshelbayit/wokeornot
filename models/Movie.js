@@ -20,8 +20,9 @@ const MovieSchema = new mongoose.Schema({
     default: {}
   },
 
-  // NEW: track how many users marked this as "Not Woke"
   notWokeCount: { type: Number, default: 0 }
+}, {
+  timestamps: true // adds createdAt, updatedAt
 });
 
 module.exports = mongoose.model('Movie', MovieSchema);

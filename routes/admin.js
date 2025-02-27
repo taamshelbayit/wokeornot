@@ -6,46 +6,77 @@ const Review = require('../models/Review');
 const User = require('../models/User');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated, ensureAdmin } = require('../utils/auth');
+const mongoose = require('mongoose');
 
-/**
- * GET /admin
- * - flagged comments
- * - all reviews (limit 50)
- * - user list (limit 50)
- * - basic stats (userCount, reviewCount, movieCount)
- */
+// GET /admin => flagged comments, all reviews, user list, daily stats
 router.get('/', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
-    // 1) flagged comments
     const comments = await Comment.find({ flagged: true })
       .populate('user')
       .populate('movie');
-
-    // 2) reviews
     const reviews = await Review.find({})
       .populate('user')
       .populate('movie')
       .sort({ createdAt: -1 })
       .limit(50);
-
-    // 3) users
     const users = await User.find({})
       .sort({ createdAt: -1 })
       .limit(50);
 
-    // 4) basic stats
     const userCount = await User.countDocuments({});
     const reviewCount = await Review.countDocuments({});
     const movieCount = await Movie.countDocuments({});
 
-    // Render one admin page with all data
+    // Example of daily new users (last 7 days)
+    // Aggregation approach
+    const dailyUsers = await User.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Example of daily new reviews
+    const dailyReviews = await Review.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
     res.render('admin', {
       comments,
       reviews,
       users,
       userCount,
       reviewCount,
-      movieCount
+      movieCount,
+      dailyUsers,
+      dailyReviews
     });
   } catch (err) {
     console.error(err);
@@ -54,9 +85,7 @@ router.get('/', ensureAuthenticated, ensureAdmin, async (req, res) => {
   }
 });
 
-/**
- * POST /admin/remove/:commentId => remove flagged comment
- */
+// Remove flagged comment
 router.post('/remove/:commentId', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     await Comment.findByIdAndDelete(req.params.commentId);
@@ -69,9 +98,7 @@ router.post('/remove/:commentId', ensureAuthenticated, ensureAdmin, async (req, 
   }
 });
 
-/**
- * POST /admin/ban/:userId => ban user (set role to "banned")
- */
+// Ban user
 router.post('/ban/:userId', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -81,7 +108,7 @@ router.post('/ban/:userId', ensureAuthenticated, ensureAdmin, async (req, res) =
     }
     user.role = 'banned';
     await user.save();
-    req.flash('success_msg', `User ${user.name} banned`);
+    req.flash('success_msg', `User ${user.firstName} banned`);
     res.redirect('/admin');
   } catch (err) {
     console.error(err);
@@ -90,9 +117,7 @@ router.post('/ban/:userId', ensureAuthenticated, ensureAdmin, async (req, res) =
   }
 });
 
-/**
- * POST /admin/unban/:userId => unban user (set role back to "user")
- */
+// Unban user
 router.post('/unban/:userId', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
@@ -102,7 +127,7 @@ router.post('/unban/:userId', ensureAuthenticated, ensureAdmin, async (req, res)
     }
     user.role = 'user';
     await user.save();
-    req.flash('success_msg', `User ${user.name} unbanned`);
+    req.flash('success_msg', `User ${user.firstName} unbanned`);
     res.redirect('/admin');
   } catch (err) {
     console.error(err);

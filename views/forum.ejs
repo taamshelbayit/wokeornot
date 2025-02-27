@@ -1,0 +1,68 @@
+<% layout('layout') %>
+
+<div class="container mt-4">
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Discussion for <%= movie.title %>
+  </h2>
+
+  <!-- Sorting links -->
+  <p>
+    Sort by:
+    <a href="?sort=newest">Newest</a> |
+    <a href="?sort=oldest">Oldest</a>
+  </p>
+
+  <form action="/forum/add/<%= movie._id %>" method="POST" class="bg-dark p-3 mb-3">
+    <div class="form-group">
+      <textarea name="content" class="form-control" rows="3" placeholder="Join the discussion..." required></textarea>
+    </div>
+    <!-- For threaded reply, user can pick a parentId if replying to a specific comment.
+         For simplicity, we do a hidden input if replying. Or you can do a separate route. -->
+    <button type="submit" class="btn btn-warning">Post Comment</button>
+  </form>
+
+  <% comments.forEach(c => { %>
+    <div class="card mb-2" style="background-color:#1e1e1e;">
+      <div class="card-body">
+        <p>
+          <strong><%= c.user.firstName %> <%= c.user.lastName %></strong>
+          <small class="text-muted">(<%= c.createdAt.toDateString() %>)</small>
+        </p>
+        <p><%= c.content %></p>
+        <!-- Flag button -->
+        <form action="/forum/flag/<%= c._id %>" method="POST" style="display:inline;">
+          <button class="btn btn-sm btn-outline-danger">Flag</button>
+        </form>
+
+        <!-- Reply form -->
+        <form action="/forum/add/<%= movie._id %>" method="POST" class="mt-2">
+          <input type="hidden" name="parentId" value="<%= c._id %>">
+          <div class="form-group">
+            <textarea name="content" class="form-control" rows="2" placeholder="Reply to this comment..."></textarea>
+          </div>
+          <button class="btn btn-sm btn-secondary">Reply</button>
+        </form>
+
+        <!-- Show children (threaded replies) -->
+        <% if (c.children && c.children.length > 0) { %>
+          <div class="ml-4 mt-2">
+            <% c.children.forEach(child => { %>
+              <div class="card mb-1" style="background-color:#2e2e2e;">
+                <div class="card-body">
+                  <p>
+                    <strong><%= child.user.firstName %> <%= child.user.lastName %></strong>
+                    <small class="text-muted">(<%= child.createdAt.toDateString() %>)</small>
+                  </p>
+                  <p><%= child.content %></p>
+                  <form action="/forum/flag/<%= child._id %>" method="POST" style="display:inline;">
+                    <button class="btn btn-sm btn-outline-danger">Flag</button>
+                  </form>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  <% }) %>
+</div>

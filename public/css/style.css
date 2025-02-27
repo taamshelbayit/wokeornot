@@ -197,3 +197,9 @@ footer {
 .star-rating label:hover ~ label {
   color: #f5c518; /* Gold color for selected/hovered stars */
 }
+
+[data-aos="fade-up"] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s, transform .6s;
+}

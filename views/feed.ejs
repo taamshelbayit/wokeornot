@@ -1,29 +1,30 @@
 <% layout('layout') %>
 
-<div class="container mt-4 text-light">
+<div class="container mt-4">
   <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
     Your Feed
   </h2>
+  <p>Recent reviews from users you follow.</p>
+
   <% if (reviews.length === 0) { %>
-    <p>No recent reviews from people you follow.</p>
+    <p>No updates from people you follow yet.</p>
   <% } else { %>
     <% reviews.forEach(r => { %>
-      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+      <div class="card mb-2">
         <div class="card-body">
           <p>
-            <strong><a href="/profile/<%= r.user._id %>" class="text-warning"><%= r.user.name %></a></strong>
-            reviewed
-            <strong><a href="/movies/<%= r.movie._id %>" class="text-warning"><%= r.movie.title %></a></strong>
+            <strong><%= r.user.firstName %> <%= r.user.lastName %></strong> reviewed
+            <a href="/movies/<%= r.movie._id %>"><%= r.movie.title %></a>
+            <% if (r.rating === 0) { %>
+              (Not Woke)
+            <% } else { %>
+              (<%= r.rating %>/10)
+            <% } %>
           </p>
-          <% if (r.rating === 0) { %>
-            <p>Marked as Not Woke</p>
-          <% } else { %>
-            <p>Rating: <%= r.rating %>/10</p>
-          <% } %>
           <% if (r.content) { %>
             <p><%= r.content %></p>
           <% } %>
-          <small class="text-muted">Posted on <%= r.createdAt.toDateString() %></small>
+          <p>Categories: <%= r.categories.join(', ') %></p>
         </div>
       </div>
     <% }) %>

@@ -10,7 +10,7 @@ module.exports = function(passport) {
       try {
         const user = await User.findOne({ email });
         if (!user) {
-          return done(null, false, { message: 'No user found' });
+          return done(null, false, { message: 'That email is not registered' });
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch) {

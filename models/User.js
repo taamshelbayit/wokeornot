@@ -5,28 +5,35 @@ const bcrypt = require('bcryptjs');
 const UserSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 
-  // Email verification
   verified: { type: Boolean, default: false },
-  verifyToken: { type: String },
-  verifyExpires: { type: Date },
+  verifyToken: String,
+  verifyExpires: Date,
 
-  // For roles (e.g., admin, user)
-  role: { type: String, default: 'user' },
+  role: { type: String, default: 'user' }, // 'user', 'admin', 'banned'
 
-  // For badges, if you have them
-  badges: [{ type: String }],
+  badges: [{ type: String }], // e.g. '10-reviews', '50-reviews', etc.
+
+  // For social/follow system
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+  // For watchlists
+  watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
+
+  // For advanced search saved queries
+  savedSearches: [{
+    name: String,
+    query: String,
+    createdAt: { type: Date, default: Date.now }
+  }],
 
   createdAt: { type: Date, default: Date.now }
 });
 
-// Pre-save hook to hash password if changed
+// Hash password if changed
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   const salt = await bcrypt.genSalt(10);

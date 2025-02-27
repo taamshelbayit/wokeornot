@@ -9,13 +9,7 @@ const bodyParser = require('body-parser');
 const ejsMate = require('ejs-mate');
 require('dotenv').config();
 
-// Initialize Express
-const app = express();
-
-// Passport config
-require('./config/passport')(passport);
-
-const i18n = require('i18n');
+const i18n = require('i18n'); // You said you have i18n
 i18n.configure({
   locales: ['en'],
   directory: path.join(__dirname, 'locales'),
@@ -23,7 +17,11 @@ i18n.configure({
   objectNotation: true
 });
 
-app.use(i18n.init);
+// Initialize Express
+const app = express();
+
+// Passport config
+require('./config/passport')(passport);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -40,6 +38,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+
+// i18n init
+app.use(i18n.init);
 
 // Body parser
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -79,8 +80,17 @@ app.use('/search', require('./routes/search'));
 app.use('/profile', require('./routes/profile'));
 app.use('/feed', require('./routes/feed'));
 app.use('/notifications', require('./routes/notifications'));
+app.use('/blog', require('./routes/blog')); // new blog route (for SEO content)
 
+// Example: /sitemap.xml route for SEO
+app.use('/sitemap.xml', require('./routes/sitemap'));
 
+// Example: Sentry integration placeholder
+// const Sentry = require('@sentry/node');
+// Sentry.init({ dsn: process.env.SENTRY_DSN });
+// app.use(Sentry.Handlers.requestHandler());
+
+// If you have analytics, you might insert a script or do server logs
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

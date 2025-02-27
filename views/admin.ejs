@@ -1,11 +1,8 @@
 <% layout('layout') %>
 
 <div class="container mt-4 text-light">
-  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    Admin Panel
-  </h2>
+  <h2 class="text-warning">Admin Panel</h2>
 
-  <!-- Basic Stats -->
   <div class="mb-3">
     <p>Total Users: <%= userCount %></p>
     <p>Total Reviews: <%= reviewCount %></p>
@@ -14,27 +11,47 @@
 
   <hr class="bg-secondary">
 
-  <!-- Flagged Comments Section -->
+  <h4 class="text-warning">Daily New Users (last 7 days)</h4>
+  <% if (dailyUsers.length === 0) { %>
+    <p>No new users in last 7 days</p>
+  <% } else { %>
+    <ul>
+      <% dailyUsers.forEach(d => { %>
+        <li><%= d._id %>: <%= d.count %> new users</li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <h4 class="text-warning">Daily New Reviews (last 7 days)</h4>
+  <% if (dailyReviews.length === 0) { %>
+    <p>No new reviews in last 7 days</p>
+  <% } else { %>
+    <ul>
+      <% dailyReviews.forEach(d => { %>
+        <li><%= d._id %>: <%= d.count %> new reviews</li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <hr class="bg-secondary">
+
   <h4 class="text-warning">Flagged Comments</h4>
   <% if (comments.length === 0) { %>
     <p>No flagged comments.</p>
   <% } else { %>
     <% comments.forEach(c => { %>
-      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+      <div class="card mb-3" style="background-color: #1e1e1e;">
         <div class="card-body">
-          <p>
-            <strong>User:</strong>
+          <p><strong>User:</strong>
             <% if (c.user) { %>
               <a href="/profile/<%= c.user._id %>" class="text-warning">
-                <%= c.user.name %>
+                <%= c.user.firstName %> <%= c.user.lastName %>
               </a>
             <% } else { %>
               (Unknown user)
             <% } %>
           </p>
-          <p>
-            <strong>Comment:</strong> <%= c.content %>
-          </p>
+          <p><strong>Comment:</strong> <%= c.content %></p>
           <% if (c.movie) { %>
             <p>
               <strong>Movie:</strong>
@@ -43,9 +60,6 @@
               </a>
             </p>
           <% } %>
-          <small class="text-muted">
-            Created: <%= c.createdAt.toDateString() %>
-          </small>
           <form
             action="/admin/remove/<%= c._id %>"
             method="POST"
@@ -61,7 +75,6 @@
 
   <hr class="bg-secondary">
 
-  <!-- User List Section -->
   <h4 class="text-warning">Recent Users (50)</h4>
   <% if (users.length === 0) { %>
     <p>No users found.</p>
@@ -81,7 +94,7 @@
           <tr>
             <td>
               <a href="/profile/<%= u._id %>" class="text-warning">
-                <%= u.name %>
+                <%= u.firstName %> <%= u.lastName %>
               </a>
             </td>
             <td><%= u.email %></td>
@@ -106,19 +119,18 @@
 
   <hr class="bg-secondary">
 
-  <!-- Reviews Section -->
   <h4 class="text-warning">Recent Reviews (50)</h4>
   <% if (reviews.length === 0) { %>
     <p>No reviews found.</p>
   <% } else { %>
     <% reviews.forEach(r => { %>
-      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+      <div class="card mb-3" style="background-color: #1e1e1e;">
         <div class="card-body">
           <p>
             <strong>User:</strong>
             <% if (r.user) { %>
               <a href="/profile/<%= r.user._id %>" class="text-warning">
-                <%= r.user.name %>
+                <%= r.user.firstName %> <%= r.user.lastName %>
               </a>
             <% } else { %>
               (Unknown user)
@@ -143,9 +155,7 @@
             <p><%= r.content %></p>
           <% } %>
           <p><strong>Categories:</strong> <%= r.categories.join(', ') %></p>
-          <small class="text-muted">
-            Created: <%= r.createdAt.toDateString() %>
-          </small>
+          <small class="text-muted">Created: <%= r.createdAt.toDateString() %></small>
         </div>
       </div>
     <% }) %>
