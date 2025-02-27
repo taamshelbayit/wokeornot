@@ -81,6 +81,8 @@ app.use('/profile', require('./routes/profile'));
 app.use('/feed', require('./routes/feed'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/blog', require('./routes/blog')); // new blog route (for SEO content)
+app.use('/users', require('./routes/users'));
+
 
 // Example: /sitemap.xml route for SEO
 app.use('/sitemap.xml', require('./routes/sitemap'));

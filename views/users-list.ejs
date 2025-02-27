@@ -1,0 +1,42 @@
+<% layout('layout') %>
+
+<div class="container mt-4">
+  <h2 class="text-warning">User Directory</h2>
+
+  <!-- Search form -->
+  <form action="/users" method="GET" class="mb-3">
+    <input
+      type="text"
+      name="q"
+      placeholder="Search users..."
+      value="<%= searchQuery %>"
+      class="form-control"
+      style="max-width: 300px; display:inline-block;"
+    >
+    <button class="btn btn-primary">Search</button>
+  </form>
+
+  <% if (users.length === 0) { %>
+    <p>No users found.</p>
+  <% } else { %>
+    <ul class="list-group">
+      <% users.forEach(u => { %>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>
+            <%= u.firstName %> <%= u.lastName %> (<%= u.email %>)
+          </span>
+          <!-- Follow button if we’re not already following them -->
+          <% if (!user.following.includes(u._id)) { %>
+            <form action="/profile/follow/<%= u._id %>" method="POST">
+              <button class="btn btn-sm btn-success">Follow</button>
+            </form>
+          <% } else { %>
+            <form action="/profile/unfollow/<%= u._id %>" method="POST">
+              <button class="btn btn-sm btn-danger">Unfollow</button>
+            </form>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</div>
