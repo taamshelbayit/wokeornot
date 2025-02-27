@@ -19,10 +19,12 @@ const MovieSchema = new mongoose.Schema({
     of: Number,
     default: {}
   },
+  notWokeCount: { type: Number, default: 0 },
 
-  notWokeCount: { type: Number, default: 0 }
+  // New field for TMDb popularity
+  popularity: { type: Number, default: 0 }
 }, {
-  timestamps: true // adds createdAt, updatedAt
+  timestamps: true
 });
 
 module.exports = mongoose.model('Movie', MovieSchema);

@@ -7,27 +7,57 @@
   <form action="/search" method="POST" class="bg-dark p-4">
     <div class="form-group">
       <label for="title">Title (partial):</label>
-      <input type="text" name="title" id="title" class="form-control">
+      <input
+        type="text"
+        name="title"
+        id="title"
+        class="form-control"
+      >
     </div>
 
     <div class="form-group">
       <label for="minRating">Min Rating:</label>
-      <input type="number" name="minRating" id="minRating" class="form-control" min="0" max="10">
+      <input
+        type="number"
+        name="minRating"
+        id="minRating"
+        class="form-control"
+        min="0"
+        max="10"
+      >
     </div>
 
     <div class="form-group">
       <label for="maxRating">Max Rating:</label>
-      <input type="number" name="maxRating" id="maxRating" class="form-control" min="0" max="10">
+      <input
+        type="number"
+        name="maxRating"
+        id="maxRating"
+        class="form-control"
+        min="0"
+        max="10"
+      >
     </div>
 
     <div class="form-check mb-3">
-      <input type="checkbox" name="notWoke" id="notWoke" class="form-check-input">
-      <label for="notWoke" class="form-check-label">Only titles marked as Not Woke</label>
+      <input
+        type="checkbox"
+        name="notWoke"
+        id="notWoke"
+        class="form-check-input"
+      >
+      <label for="notWoke" class="form-check-label">
+        Only titles marked as Not Woke
+      </label>
     </div>
 
     <div class="form-group">
       <label for="contentType">Type:</label>
-      <select name="contentType" id="contentType" class="form-control">
+      <select
+        name="contentType"
+        id="contentType"
+        class="form-control"
+      >
         <option value="">Any</option>
         <option value="Movie">Movies</option>
         <option value="TV">TV Shows</option>
@@ -35,6 +65,23 @@
       </select>
     </div>
 
-    <button type="submit" class="btn btn-warning mt-2">Search</button>
+    <!-- New Sort Param -->
+    <div class="form-group">
+      <label for="sortParam">Sort By:</label>
+      <select
+        name="sortParam"
+        id="sortParam"
+        class="form-control"
+      >
+        <option value="rating">Rating</option>
+        <option value="popularity">Popularity</option>
+        <option value="releaseDate">Release Date</option>
+        <option value="title">Title (A-Z)</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-warning mt-2">
+      Search
+    </button>
   </form>
 </div>

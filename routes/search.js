@@ -7,12 +7,15 @@ const { ensureAuthenticated } = require('../utils/auth');
 
 /**
  * GET /search
- * - If there's a "q" param => do both local DB search & TMDb search
- * - If no "q" => show advanced search form
+ * 1) If "q" is provided => merges local DB + TMDb
+ * 2) If no "q" => show advanced search form
+ * 3) Sort param => ?sort=rating|popularity|releaseDate|title
  */
 router.get('/', async (req, res) => {
   try {
-    const q = req.query.q;
+    const q = req.query.q;              // e.g. /search?q=Batman
+    const sortParam = req.query.sort || 'rating';
+
     if (!q || q.trim() === '') {
       // No query => show advanced search form
       return res.render('advanced-search');
@@ -23,10 +26,9 @@ router.get('/', async (req, res) => {
       title: { $regex: q.trim(), $options: 'i' }
     }).limit(100);
 
-    // We'll store them in an array
     let finalResults = [...localResults];
 
-    // 2) Also fetch from TMDb (both movies & TV) so we don’t miss anything
+    // 2) TMDb calls for both movies & TV
     const apiKey = process.env.TMDB_API_KEY;
     const [movResp, tvResp] = await Promise.all([
       axios.get(
@@ -41,24 +43,24 @@ router.get('/', async (req, res) => {
     let tmdbTV = tvResp.data.results || [];
     let tmdbCombined = [...tmdbMovies, ...tmdbTV];
 
-    // 3) Upsert TMDb items into our local DB
+    // 3) Upsert TMDb items into local DB
     for (let item of tmdbCombined) {
       const tmdbId = item.id.toString();
       let found = await Movie.findOne({ tmdbId });
       if (!found) {
-        // Create new doc
         let newDoc = new Movie({
           title: item.title || item.name || 'Untitled',
           tmdbId,
           description: item.overview || '',
           releaseDate: item.release_date || item.first_air_date,
           posterPath: item.poster_path || '',
-          contentType: item.media_type === 'tv' ? 'TV' : 'Movie'
+          contentType: item.media_type === 'tv' ? 'TV' : 'Movie',
+          popularity: item.popularity || 0
         });
         await newDoc.save();
         finalResults.push(newDoc);
       } else {
-        // Already in DB => just push it if not already in finalResults
+        // If not in finalResults, push it
         if (!finalResults.find(r => r._id.equals(found._id))) {
           finalResults.push(found);
         }
@@ -75,13 +77,13 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 5) Sort by averageRating desc, or however you prefer
-    uniqueResults.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+    // 5) Sort by user’s chosen param
+    sortResults(uniqueResults, sortParam);
 
-    // Limit to 100 to avoid huge results
+    // 6) Limit to 100
     uniqueResults = uniqueResults.slice(0, 100);
 
-    // 6) Render results using your advanced-search-results.ejs
+    // 7) Render advanced-search-results.ejs
     return res.render('advanced-search-results', { results: uniqueResults });
   } catch (err) {
     console.error(err);
@@ -91,14 +93,15 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * POST /search => advanced search (local DB only) with fields:
- *   title, minRating, maxRating, notWoke, contentType
+ * POST /search => advanced local-only search
+ * Body fields: { title, minRating, maxRating, notWoke, contentType, sortParam }
  */
 router.post('/', async (req, res) => {
   try {
-    const { title, minRating, maxRating, notWoke, contentType } = req.body;
+    const { title, minRating, maxRating, notWoke, contentType, sortParam } = req.body;
     let query = {};
 
+    // Build the local DB query
     if (contentType) {
       query.contentType = contentType;
     }
@@ -116,7 +119,16 @@ router.post('/', async (req, res) => {
       query.notWokeCount = { $gt: 0 };
     }
 
-    const results = await Movie.find(query).sort({ averageRating: -1 }).limit(100);
+    // Local results only
+    let results = await Movie.find(query).limit(200);
+
+    // Sort them
+    sortResults(results, sortParam || 'rating');
+
+    // Limit final
+    results = results.slice(0, 100);
+
+    // Render advanced-search-results.ejs
     return res.render('advanced-search-results', { results });
   } catch (err) {
     console.error(err);
@@ -147,5 +159,32 @@ router.post('/save', ensureAuthenticated, async (req, res) => {
     res.redirect('/search');
   }
 });
+
+/**
+ * Helper function to sort results in place
+ * sortParam => "rating" (default) | "popularity" | "releaseDate" | "title"
+ */
+function sortResults(arr, sortParam) {
+  if (sortParam === 'popularity') {
+    arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+  } else if (sortParam === 'releaseDate') {
+    // newest first
+    arr.sort((a, b) => {
+      let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+      let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+      return bd - ad;
+    });
+  } else if (sortParam === 'title') {
+    // alphabetical A-Z
+    arr.sort((a, b) => {
+      let at = a.title.toLowerCase();
+      let bt = b.title.toLowerCase();
+      return at.localeCompare(bt);
+    });
+  } else {
+    // "rating" => averageRating desc
+    arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+  }
+}
 
 module.exports = router;
