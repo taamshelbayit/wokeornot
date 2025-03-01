@@ -38,9 +38,11 @@ app.set('views', path.join(__dirname, 'views'));
 // 4) Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
-  // Provide fallbacks for BOTH pageTitle and pageDescription
+  // Provide defaults for all dynamic references in the layout
   res.locals.pageTitle = 'WokeOrNot';
   res.locals.pageDescription = 'Rate the Wokeness of your favorite shows & movies.';
+  res.locals.ogImage = 'https://www.wokeornot.net/images/logo.webp';
+  res.locals.ogUrl = 'https://www.wokeornot.net';
   next();
 });
 // 5) i18n init
