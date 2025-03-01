@@ -1,9 +1,11 @@
-<% layout('layout') %>
+<% layout('layout', {
+  pageTitle: 'User Directory',
+  pageDescription: 'Browse or search for users to follow.'
+}) %>
 
 <div class="container mt-4">
   <h2 class="text-warning">User Directory</h2>
 
-  <!-- Search form -->
   <form action="/users" method="GET" class="mb-3">
     <input
       type="text"
@@ -16,7 +18,7 @@
     <button class="btn btn-primary">Search</button>
   </form>
 
-  <% if (users.length === 0) { %>
+  <% if (!users || users.length === 0) { %>
     <p>No users found.</p>
   <% } else { %>
     <ul class="list-group">
@@ -25,13 +27,12 @@
           <span>
             <%= u.firstName %> <%= u.lastName %> (<%= u.email %>)
           </span>
-          <!-- Follow button if we’re not already following them -->
           <% if (!user.following.includes(u._id)) { %>
-            <form action="/profile/follow/<%= u._id %>" method="POST">
+            <form action="/users/follow/<%= u._id %>" method="POST" style="display:inline;">
               <button class="btn btn-sm btn-success">Follow</button>
             </form>
           <% } else { %>
-            <form action="/profile/unfollow/<%= u._id %>" method="POST">
+            <form action="/users/unfollow/<%= u._id %>" method="POST" style="display:inline;">
               <button class="btn btn-sm btn-danger">Unfollow</button>
             </form>
           <% } %>

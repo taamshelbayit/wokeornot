@@ -2,19 +2,22 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const apicache = require('apicache');
+const cache = apicache.middleware;
+
 const Movie = require('../models/Movie');
 
-router.get('/', async (req, res) => {
+// GET / => homepage with trending
+// We'll cache it for 15 minutes
+router.get('/', cache('15 minutes'), async (req, res) => {
   try {
     const apiKey = process.env.TMDB_API_KEY;
-
-    // 1) Fetch trending from TMDb
     const trendingRes = await axios.get(
       `https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}&language=en-US`
     );
     let heroItems = trendingRes.data.results.slice(0, 3);
 
-    // 2) Local DB queries for top sections
+    // local DB queries for top sections
     const topMovies = await Movie.find({
       contentType: 'Movie',
       ratings: { $exists: true, $ne: [] }
@@ -34,7 +37,6 @@ router.get('/', async (req, res) => {
       notWokeCount: { $gt: 0 }
     }).sort({ notWokeCount: -1 }).limit(5);
 
-    // 3) Render index.ejs
     res.render('index', {
       heroItems,
       topMovies,

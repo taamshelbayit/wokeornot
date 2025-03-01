@@ -2,20 +2,13 @@
 const express = require('express');
 const router = express.Router();
 const Review = require('../models/Review');
-const User = require('../models/User');
 const { ensureAuthenticated } = require('../utils/auth');
 
-/**
- * GET /feed => shows recent reviews from users you follow
- */
+// GET /feed => show reviews from followed users
 router.get('/', ensureAuthenticated, async (req, res) => {
   try {
-    // get the IDs of people we follow
-    await req.user.populate('following');
-    const followingIds = req.user.following.map(u => u._id);
-
-    // find reviews by those users
-    const reviews = await Review.find({ user: { $in: followingIds } })
+    const followedIds = req.user.following;
+    const reviews = await Review.find({ user: { $in: followedIds } })
       .populate('user')
       .populate('movie')
       .sort({ createdAt: -1 })

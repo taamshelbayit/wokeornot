@@ -5,10 +5,10 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const User = require('../models/User');
-const transporter = require('../config/nodemailer'); // or your mailer functions
+const transporter = require('../config/nodemailer'); // nodemailer config
 const { ensureAuthenticated } = require('../utils/auth');
 
-// ============== REGISTER & VERIFY ============= //
+// ============== REGISTER & VERIFY (LOCAL) ============= //
 
 // GET /auth/register => show registration form
 router.get('/register', (req, res) => {
@@ -65,7 +65,6 @@ router.post('/register', async (req, res) => {
     await newUser.save();
 
     // 5) Send verification email
-    // Option A: direct nodemailer
     const verifyURL = `http://${req.headers.host}/auth/verify/${newUser.verifyToken}`;
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -114,8 +113,6 @@ router.get('/verify/:token', async (req, res) => {
   }
 });
 
-// ============== RESEND VERIFICATION ============= //
-
 // POST /auth/resend-verification => resend the verify email
 router.post('/resend-verification', async (req, res) => {
   try {
@@ -130,7 +127,6 @@ router.post('/resend-verification', async (req, res) => {
       return res.redirect('/auth/login');
     }
 
-    // re-generate a verifyToken if needed
     user.verifyToken = crypto.randomBytes(20).toString('hex');
     user.verifyExpires = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
@@ -153,7 +149,22 @@ router.post('/resend-verification', async (req, res) => {
   }
 });
 
-// ============== LOGIN/LOGOUT ============= //
+// ============== GOOGLE OAUTH ============= //
+
+// GET /auth/google => start google auth
+router.get('/google', passport.authenticate('google', { scope: ['profile','email'] }));
+
+// GET /auth/google/callback => handle google callback
+router.get('/google/callback',
+  passport.authenticate('google', { failureRedirect: '/auth/login' }),
+  (req, res) => {
+    // success
+    req.flash('success_msg', 'Logged in with Google');
+    res.redirect('/');
+  }
+);
+
+// ============== LOGIN/LOGOUT (LOCAL) ============= //
 
 // GET /auth/login => show login form
 router.get('/login', (req, res) => {
@@ -161,7 +172,7 @@ router.get('/login', (req, res) => {
 });
 
 // POST /auth/login => authenticate user, block if not verified
-router.post('/login', async (req, res, next) => {
+router.post('/login', (req, res, next) => {
   passport.authenticate('local', async (err, user, info) => {
     if (err) return next(err);
     if (!user) {

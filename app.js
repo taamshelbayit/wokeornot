@@ -1,4 +1,6 @@
 // app.js
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -7,23 +9,20 @@ const flash = require('connect-flash');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 const ejsMate = require('ejs-mate');
-require('dotenv').config();
+const i18n = require('i18n');        // from your code
+const Sentry = require('@sentry/node');  // from our example (optional)
+const apicache = require('apicache');    // for caching (optional)
+const cache = apicache.middleware;
 
-const i18n = require('i18n'); // You said you have i18n
-i18n.configure({
-  locales: ['en'],
-  directory: path.join(__dirname, 'locales'),
-  defaultLocale: 'en',
-  objectNotation: true
-});
-
-// Initialize Express
 const app = express();
 
-// Passport config
-require('./config/passport')(passport);
+// 1) (Optional) Sentry init
+if (process.env.SENTRY_DSN) {
+  Sentry.init({ dsn: process.env.SENTRY_DSN });
+  app.use(Sentry.Handlers.requestHandler());
+}
 
-// Connect to MongoDB
+// 2) Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -31,37 +30,48 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
-// EJS setup with ejs-mate
+// 3) EJS setup with ejs-mate
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Serve static files
+// 4) Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// i18n init
+// 5) i18n init
+i18n.configure({
+  locales: ['en'],
+  directory: path.join(__dirname, 'locales'),
+  defaultLocale: 'en',
+  objectNotation: true
+});
 app.use(i18n.init);
 
-// Body parser
+// 6) Body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Express session
+// 7) Express session
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secret',
   resave: true,
   saveUninitialized: true
 }));
 
-// Passport
+// 8) Passport config
+require('./config/passport')(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Connect flash
+// 9) Connect flash
 app.use(flash());
 
-// Global vars
+// 10) Global vars
 app.use((req, res, next) => {
+  // if you want arrays:
+  // res.locals.success_msg = req.flash('success_msg') || [];
+  // ...
+  // or your existing single-value approach:
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg   = req.flash('error_msg');
   res.locals.error       = req.flash('error');
@@ -69,8 +79,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/', require('./routes/index'));
+// 11) Routes
+// If you want to use apicache on certain routes, you can do:
+//   app.use('/someRoute', cache('15 minutes'), someRouteHandler);
+
+app.use('/', require('./routes/index'));         // homepage
 app.use('/auth', require('./routes/auth'));
 app.use('/movies', require('./routes/movies'));
 app.use('/reviews', require('./routes/reviews'));
@@ -80,19 +93,17 @@ app.use('/search', require('./routes/search'));
 app.use('/profile', require('./routes/profile'));
 app.use('/feed', require('./routes/feed'));
 app.use('/notifications', require('./routes/notifications'));
-app.use('/blog', require('./routes/blog')); // new blog route (for SEO content)
+app.use('/blog', require('./routes/blog'));      // new blog route
 app.use('/users', require('./routes/users'));
 
-
-// Example: /sitemap.xml route for SEO
+// Example for sitemap (we use /sitemap.xml)
 app.use('/sitemap.xml', require('./routes/sitemap'));
 
-// Example: Sentry integration placeholder
-// const Sentry = require('@sentry/node');
-// Sentry.init({ dsn: process.env.SENTRY_DSN });
-// app.use(Sentry.Handlers.requestHandler());
+// 12) Sentry error handler if DSN is set
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
-// If you have analytics, you might insert a script or do server logs
-
+// 13) Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server started on port ${PORT}`));

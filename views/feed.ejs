@@ -1,20 +1,21 @@
-<% layout('layout') %>
+<% layout('layout', {
+  pageTitle: 'Your Feed',
+  pageDescription: 'Latest reviews from people you follow.'
+}) %>
 
-<div class="container mt-4">
-  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    Your Feed
-  </h2>
-  <p>Recent reviews from users you follow.</p>
+<div class="container mt-4 text-light">
+  <h2 class="text-warning">Your Feed</h2>
 
-  <% if (reviews.length === 0) { %>
-    <p>No updates from people you follow yet.</p>
+  <% if (!reviews || reviews.length === 0) { %>
+    <p>No recent reviews from people you follow.</p>
   <% } else { %>
     <% reviews.forEach(r => { %>
-      <div class="card mb-2">
+      <div class="card mb-3" style="background-color:#1e1e1e;">
         <div class="card-body">
           <p>
-            <strong><%= r.user.firstName %> <%= r.user.lastName %></strong> reviewed
-            <a href="/movies/<%= r.movie._id %>"><%= r.movie.title %></a>
+            <strong><%= r.user.firstName %> <%= r.user.lastName %></strong>
+            rated
+            <strong><%= r.movie.title %></strong>
             <% if (r.rating === 0) { %>
               (Not Woke)
             <% } else { %>
@@ -24,7 +25,7 @@
           <% if (r.content) { %>
             <p><%= r.content %></p>
           <% } %>
-          <p>Categories: <%= r.categories.join(', ') %></p>
+          <small class="text-muted"><%= r.createdAt.toDateString() %></small>
         </div>
       </div>
     <% }) %>
