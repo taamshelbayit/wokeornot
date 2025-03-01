@@ -1,6 +1,6 @@
 <% layout('layout') %>
 
-<!-- Include Chart.js for the category trends chart -->
+<!-- Include Chart.js if you're still using the category chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container mt-4 movie-details text-light">
@@ -23,20 +23,20 @@
       <!-- Show average rating or "No Ratings" -->
       <% if (movie.ratings && movie.ratings.length > 0) { %>
         <p>
-          <strong><%= __("movie.averageWokeRating") %>:</strong>
+          <strong>Average Woke Rating:</strong>
           <%= movie.averageRating.toFixed(1) %>/10
         </p>
       <% } else { %>
         <p>
-          <strong><%= __("movie.averageWokeRating") %>:</strong>
-          <%= __("movie.noRatings") %>
+          <strong>Average Woke Rating:</strong>
+          No Ratings
         </p>
       <% } %>
 
       <!-- Category Gradience -->
       <% if (categoryCounts && categoryCounts.length > 0) { %>
         <h5 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-          <%= __("movie.wokeCategoriesChosen") %>:
+          Woke Categories Chosen:
         </h5>
         <ul>
           <% categoryCounts.forEach(cc => { %>
@@ -53,27 +53,39 @@
 <!-- Add Your Rating Form -->
 <div class="container mt-5 text-light">
   <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    <%= __("movie.addYourRating") %>
+    Add Your Rating
   </h3>
   <form
     action="/reviews/add/<%= movie._id %>"
     method="POST"
     class="p-4 border bg-dark"
-    data-aos="fade-up"
   >
-    <!-- Star Rating (1-10) with Font Awesome icons -->
+    <!-- Label clarifying the star meaning -->
+    <p class="mb-2">
+      <em>
+        1 star = Not Woke &nbsp; ... &nbsp; 10 stars = Completely Woke
+      </em>
+    </p>
+
+    <!-- Star Rating (1-10) -->
     <div class="form-group">
-      <label class="font-weight-bold"><%= __("movie.wokeRating") %> (1-10)</label>
+      <label class="font-weight-bold d-block">Woke Rating (1-10)</label>
       <div class="star-rating mb-3">
+        <!-- We'll go 10 down to 1, so the highest star is leftmost if reversed -->
         <% for (let i = 10; i >= 1; i--) { %>
           <input
             type="radio"
             name="rating"
             id="rating-<%= i %>"
             value="<%= i %>"
-            aria-label="<%= __(`movie.rate${i}`) %>"
+            aria-label="<%= i %> stars"
           >
-          <label for="rating-<%= i %>" title="<%= i %> stars">
+          <!-- data-value used for the color gradient script -->
+          <label
+            for="rating-<%= i %>"
+            title="<%= i %> stars"
+            data-value="<%= i %>"
+          >
             <i class="fas fa-star"></i>
           </label>
         <% } %>
@@ -88,13 +100,13 @@
         id="notWoke"
       >
       <label for="notWoke" class="ml-2">
-        <%= __("movie.markAsNotWoke") %>
+        Mark as Not Woke (Equivalent to 1 star)
       </label>
     </div>
 
     <!-- Optional Text Review -->
     <div class="form-group">
-      <label class="font-weight-bold"><%= __("movie.optionalReview") %></label>
+      <label class="font-weight-bold">Optional Review</label>
       <textarea
         name="content"
         class="form-control"
@@ -104,7 +116,7 @@
 
     <!-- Woke Categories -->
     <div class="form-group">
-      <label class="font-weight-bold"><%= __("movie.selectWokeCategories") %>:</label>
+      <label class="font-weight-bold">Select Woke Categories:</label>
       <div class="checkbox-list">
         <% let allCats = [
           "Transgender Themes","Gay Marriage","Race Swapping","Feminist Agenda",
@@ -130,7 +142,7 @@
     </div>
 
     <button type="submit" class="btn btn-warning btn-lg mt-2 animated-button">
-      <%= __("movie.submit") %>
+      Submit
     </button>
   </form>
 </div>
@@ -140,26 +152,25 @@
 <!-- Display Existing Reviews -->
 <div class="container mt-4 text-light">
   <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    <%= __("movie.userReviews") %>
+    User Reviews
   </h3>
   <% if (movie.reviews.length === 0) { %>
-    <p><%= __("movie.noReviews") %></p>
+    <p>No reviews yet. Be the first to rate!</p>
   <% } else { %>
     <% movie.reviews.forEach(review => { %>
       <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
         <div class="card-body">
-          <!-- If rating=0 => user chose "Not Woke" -->
           <% if (review.rating === 0) { %>
-            <p><strong><%= __("movie.markedAsNotWoke") %></strong></p>
+            <p><strong>Marked as Not Woke</strong></p>
           <% } else { %>
-            <p><strong><%= __("movie.rating") %>:</strong> <%= review.rating %>/10</p>
+            <p><strong>Rating:</strong> <%= review.rating %>/10</p>
           <% } %>
 
           <% if (review.content) { %>
-            <p><strong><%= __("movie.review") %>:</strong> <%= review.content %></p>
+            <p><strong>Review:</strong> <%= review.content %></p>
           <% } %>
           <p>
-            <strong><%= __("movie.wokeCategories") %>:</strong>
+            <strong>Woke Categories:</strong>
             <%= review.categories.join(', ') %>
           </p>
         </div>
@@ -173,39 +184,38 @@
 <!-- Discussion Forum -->
 <div class="container forum mt-4 text-light">
   <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    <%= __("movie.discussionForum") %>
+    Discussion Forum
   </h3>
   <form
     action="/forum/add/<%= movie._id %>"
     method="POST"
     class="p-4 border bg-dark"
-    data-aos="fade-up"
   >
     <div class="form-group">
       <textarea
         name="content"
         class="form-control"
-        placeholder="<%= __("movie.joinDiscussion") %>"
+        placeholder="Join the discussion..."
         rows="3"
         required
       ></textarea>
     </div>
     <button type="submit" class="btn btn-warning">
-      <%= __("movie.postComment") %>
+      Post Comment
     </button>
   </form>
 
   <% if (movie.forum.length === 0) { %>
-    <p class="mt-3"><%= __("movie.noComments") %></p>
+    <p class="mt-3">No comments yet. Start the discussion!</p>
   <% } else { %>
     <% movie.forum.forEach(comment => { %>
       <div class="card mt-2" style="background-color: #1e1e1e; color: #fff;">
         <div class="card-body">
           <p><%= comment.content %></p>
           <small class="text-muted">
-            <%= __("movie.postedBy") %>
-            <%= comment.user && comment.user.name ? comment.user.name : __("movie.unknown") %>
-            <%= __("movie.on") %> <%= comment.createdAt.toDateString() %>
+            Posted by
+            <%= comment.user && comment.user.name ? comment.user.name : "Unknown" %>
+            on <%= comment.createdAt.toDateString() %>
           </small>
         </div>
       </div>
@@ -217,7 +227,7 @@
 <% if (categoryCounts && categoryCounts.length > 0) { %>
   <div class="container mt-5 text-light">
     <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-      <%= __("movie.wokeTrends") %>
+      Woke Category Trends
     </h3>
     <canvas id="categoryChart" width="400" height="200"></canvas>
     <script>
@@ -230,7 +240,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: '<%= __("movie.categoryCounts") %>',
+            label: 'Category Counts',
             data: data,
             backgroundColor: 'rgba(245, 197, 24, 0.7)',
             borderColor: '#f5c518',
@@ -246,3 +256,60 @@
     </script>
   </div>
 <% } %>
+
+<!-- JavaScript for:
+  1) Color gradient on stars
+  2) Disabling star rating if "Not Woke" is checked, and vice versa
+-->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 1) Color gradient for stars (1=green to 10=red)
+  const starLabels = document.querySelectorAll('.star-rating label');
+  starLabels.forEach((label) => {
+    const val = label.getAttribute('data-value');
+    // val from "1" to "10"
+    const i = parseInt(val, 10);
+    // We'll do a simple hue interpolation from 120 (green) to 0 (red)
+    // i=1 => hue=120, i=10 => hue=0
+    const hue = 120 - ((i - 1) * (120 / 9));
+    label.style.color = `hsl(${hue}, 100%, 50%)`;
+  });
+
+  // 2) Disable star rating if "Not Woke" is checked; disable "Not Woke" if any star is selected
+  const notWokeCheckbox = document.getElementById('notWoke');
+  const starInputs = document.querySelectorAll('.star-rating input[type="radio"]');
+
+  function updateState() {
+    if (notWokeCheckbox.checked) {
+      // disable all star inputs
+      starInputs.forEach(input => {
+        input.disabled = true;
+        // also uncheck them if needed
+        input.checked = false;
+      });
+    } else {
+      // enable star inputs
+      starInputs.forEach(input => {
+        input.disabled = false;
+      });
+    }
+
+    // If any star is checked => disable "Not Woke"
+    let anyStarChecked = false;
+    starInputs.forEach(input => {
+      if (input.checked) {
+        anyStarChecked = true;
+      }
+    });
+    notWokeCheckbox.disabled = anyStarChecked;
+  }
+
+  notWokeCheckbox.addEventListener('change', updateState);
+  starInputs.forEach(input => {
+    input.addEventListener('change', updateState);
+  });
+
+  // Run once on page load
+  updateState();
+});
+</script>
