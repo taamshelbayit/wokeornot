@@ -95,7 +95,11 @@ app.use('/feed', require('./routes/feed'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/blog', require('./routes/blog'));      // new blog route
 app.use('/users', require('./routes/users'));
-
+app.use((req, res, next) => {
+  // Provide a fallback for pageTitle so the layout never breaks
+  res.locals.pageTitle = 'WokeOrNot';
+  next();
+});
 // Example for sitemap (we use /sitemap.xml)
 app.use('/sitemap.xml', require('./routes/sitemap'));
 
