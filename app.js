@@ -38,11 +38,11 @@ app.set('views', path.join(__dirname, 'views'));
 // 4) Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
-  // Provide a fallback for pageTitle so the layout never breaks
+  // Provide fallbacks for BOTH pageTitle and pageDescription
   res.locals.pageTitle = 'WokeOrNot';
+  res.locals.pageDescription = 'Rate the Wokeness of your favorite shows & movies.';
   next();
 });
-
 // 5) i18n init
 i18n.configure({
   locales: ['en'],
