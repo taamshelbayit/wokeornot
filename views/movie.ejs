@@ -60,18 +60,17 @@
     method="POST"
     class="p-4 border bg-dark"
   >
-    <!-- Label clarifying the star meaning -->
+    <!-- Clarify star meaning -->
     <p class="mb-2">
       <em>
-        1 star = Not Woke &nbsp; ... &nbsp; 10 stars = Completely Woke
+        1 star = Not Woke ... 10 stars = Completely Woke
       </em>
     </p>
 
-    <!-- Star Rating (1-10) -->
+    <!-- Star Rating (1-10) with neutral color by default -->
     <div class="form-group">
       <label class="font-weight-bold d-block">Woke Rating (1-10)</label>
       <div class="star-rating mb-3">
-        <!-- We'll go 10 down to 1, so the highest star is leftmost if reversed -->
         <% for (let i = 10; i >= 1; i--) { %>
           <input
             type="radio"
@@ -80,7 +79,6 @@
             value="<%= i %>"
             aria-label="<%= i %> stars"
           >
-          <!-- data-value used for the color gradient script -->
           <label
             for="rating-<%= i %>"
             title="<%= i %> stars"
@@ -100,7 +98,7 @@
         id="notWoke"
       >
       <label for="notWoke" class="ml-2">
-        Mark as Not Woke (Equivalent to 1 star)
+        Not Woke!
       </label>
     </div>
 
@@ -258,58 +256,119 @@
 <% } %>
 
 <!-- JavaScript for:
-  1) Color gradient on stars
-  2) Disabling star rating if "Not Woke" is checked, and vice versa
+  1) Neutral star color by default (#ccc)
+  2) Color gradient on hover or selection
+  3) Disabling star rating if "Not Woke" is checked, and vice versa
 -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // 1) Color gradient for stars (1=green to 10=red)
-  const starLabels = document.querySelectorAll('.star-rating label');
-  starLabels.forEach((label) => {
-    const val = label.getAttribute('data-value');
-    // val from "1" to "10"
-    const i = parseInt(val, 10);
-    // We'll do a simple hue interpolation from 120 (green) to 0 (red)
-    // i=1 => hue=120, i=10 => hue=0
-    const hue = 120 - ((i - 1) * (120 / 9));
-    label.style.color = `hsl(${hue}, 100%, 50%)`;
+  // 1) Neutral color by default => in CSS, we ensure label is #ccc
+  // We'll do gradient only on hover or selection.
+
+  const notWokeCheckbox = document.getElementById('notWoke');
+  const starInputs = Array.from(document.querySelectorAll('.star-rating input[type="radio"]'));
+  const starLabels = Array.from(document.querySelectorAll('.star-rating label'));
+
+  // Sort starLabels ascending by data-value (so index 0 => 1 star, index 9 => 10 stars)
+  // We'll store them in starLabelsAsc so starLabelsAsc[0] => data-value=1
+  const starLabelsAsc = starLabels.slice().sort((a, b) => {
+    let av = parseInt(a.getAttribute('data-value'), 10);
+    let bv = parseInt(b.getAttribute('data-value'), 10);
+    return av - bv;
   });
 
-  // 2) Disable star rating if "Not Woke" is checked; disable "Not Woke" if any star is selected
-  const notWokeCheckbox = document.getElementById('notWoke');
-  const starInputs = document.querySelectorAll('.star-rating input[type="radio"]');
+  // Function to compute hue (1=green=120, 10=red=0)
+  function getHue(starValue) {
+    // starValue 1..10 => hue 120..0
+    return 120 - ((starValue - 1) * (120 / 9));
+  }
 
+  // Color a star label by its data-value
+  function colorStar(label, starValue) {
+    const hue = getHue(starValue);
+    label.style.color = `hsl(${hue}, 100%, 50%)`;
+  }
+
+  // Reset a star label to neutral
+  function resetStar(label) {
+    label.style.color = '#ccc';
+  }
+
+  // Highlight from 1..value
+  function highlightStarsUpTo(value) {
+    // For each star 1..10
+    for (let i = 1; i <= 10; i++) {
+      let label = starLabelsAsc[i-1]; // i-1 => index
+      if (i <= value) {
+        colorStar(label, i);
+      } else {
+        resetStar(label);
+      }
+    }
+  }
+
+  // Returns the currently selected star rating (1..10 or null if none)
+  function getSelectedStar() {
+    let checkedRadio = starInputs.find(r => r.checked);
+    if (!checkedRadio) return null;
+    return parseInt(checkedRadio.value, 10);
+  }
+
+  // Update the visual state based on notWoke and star selection
   function updateState() {
     if (notWokeCheckbox.checked) {
-      // disable all star inputs
+      // If "Not Woke" => disable all star inputs, uncheck them, reset color
       starInputs.forEach(input => {
         input.disabled = true;
-        // also uncheck them if needed
         input.checked = false;
       });
+      highlightStarsUpTo(0); // none
     } else {
       // enable star inputs
       starInputs.forEach(input => {
         input.disabled = false;
       });
+      // highlight the selected star if any
+      let sel = getSelectedStar();
+      highlightStarsUpTo(sel || 0);
     }
 
-    // If any star is checked => disable "Not Woke"
-    let anyStarChecked = false;
-    starInputs.forEach(input => {
-      if (input.checked) {
-        anyStarChecked = true;
-      }
-    });
-    notWokeCheckbox.disabled = anyStarChecked;
+    // If any star is selected => disable "Not Woke"
+    notWokeCheckbox.disabled = !!getSelectedStar();
   }
 
-  notWokeCheckbox.addEventListener('change', updateState);
-  starInputs.forEach(input => {
-    input.addEventListener('change', updateState);
+  // 2) Add event listeners for star hover
+  starLabels.forEach(label => {
+    const starValue = parseInt(label.getAttribute('data-value'), 10);
+
+    // Mouse over => highlight up to that star
+    label.addEventListener('mouseover', () => {
+      // only if notWoke is not checked
+      if (!notWokeCheckbox.checked) {
+        highlightStarsUpTo(starValue);
+      }
+    });
+
+    // Mouse out => revert to selected star
+    label.addEventListener('mouseout', () => {
+      if (!notWokeCheckbox.checked) {
+        let sel = getSelectedStar();
+        highlightStarsUpTo(sel || 0);
+      }
+    });
   });
 
-  // Run once on page load
+  // 3) starInputs => on change => updateState
+  starInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      updateState();
+    });
+  });
+
+  // 4) notWoke => on change => updateState
+  notWokeCheckbox.addEventListener('change', updateState);
+
+  // Initialize
   updateState();
 });
 </script>
