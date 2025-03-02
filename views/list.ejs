@@ -1,52 +1,134 @@
-<!-- views/list.ejs -->
 <% layout('layout') %>
 
-<div class="container mt-4">
-  <% if (contentType === 'TV') { %>
-    <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
-      Popular TV
-    </h2>
-  <% } else if (contentType === 'Kids') { %>
-    <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
-      Popular Kids Titles
-    </h2>
-  <% } else { %>
-    <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
-      Popular Movies
-    </h2>
-  <% } %>
+<div class="container mt-4 text-light">
+  <!-- Dynamic heading -->
+  <%
+    let heading = 'Popular Movies';
+    if (contentType === 'TV') heading = 'Popular TV Shows';
+    if (contentType === 'Kids') heading = 'Popular Kids Titles';
+    if (genre) {
+      // e.g. 27 => "Horror Movies", but you might do a map of genre ID => name
+      // or just say "Filtered Results"
+      heading = 'Filtered Results';
+    }
+  %>
 
-  <div class="row">
-    <% movies.forEach(item => { %>
-      <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
-        <div class="card h-100 hover-zoom">
-          <% if (item.posterPath) { %>
-            <img
-              src="https://image.tmdb.org/t/p/w500<%= item.posterPath %>"
-              class="card-img-top"
-              alt="<%= item.title %>"
-            >
-          <% } %>
-          <!-- Unified badge snippet -->
-          <span class="badge rating-badge">
-            <% if (item.ratings && item.ratings.length > 0 && item.notWokeCount > 0) { %>
-              <%= item.averageRating.toFixed(1) %>/10 - <%= item.notWokeCount %> Not Woke
-            <% } else if (item.ratings && item.ratings.length > 0) { %>
-              <%= item.averageRating.toFixed(1) %>/10
-            <% } else if (item.notWokeCount > 0) { %>
-              <%= item.notWokeCount %> Not Woke
-            <% } else { %>
-              No Ratings
+  <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    <%= heading %>
+  </h2>
+
+  <% if (movies.length === 0) { %>
+    <p>No results found.</p>
+  <% } else { %>
+    <div id="moviesList" class="row">
+      <% movies.forEach(m => { %>
+        <div class="col-md-3 col-sm-6 mb-4">
+          <div class="card h-100">
+            <% if (m.posterPath) { %>
+              <img
+                src="https://image.tmdb.org/t/p/w500<%= m.posterPath %>"
+                class="card-img-top"
+                alt="<%= m.title %>"
+              >
             <% } %>
-          </span>
-          <div class="card-body">
-            <h5 class="card-title"><%= item.title %></h5>
-            <a href="/movies/<%= item._id %>" class="btn btn-sm btn-outline-warning">
-              View
-            </a>
+            <div class="card-body">
+              <h5 class="card-title"><%= m.title %></h5>
+              <% if (m.ratings && m.ratings.length > 0) { %>
+                <p><%= m.averageRating.toFixed(1) %>/10</p>
+              <% } else if (m.notWokeCount > 0) { %>
+                <p><%= m.notWokeCount %> Not Woke</p>
+              <% } else { %>
+                <p>No Ratings</p>
+              <% } %>
+              <a href="/movies/<%= m._id %>" class="btn btn-sm btn-outline-warning">
+                View
+              </a>
+            </div>
           </div>
         </div>
+      <% }) %>
+    </div>
+
+    <!-- If there's more pages, show "Load More" -->
+    <% if (currentPage < totalPages) { %>
+      <div class="text-center mt-3">
+        <button
+          id="loadMoreBtn"
+          class="btn btn-warning"
+          data-nextpage="<%= currentPage + 1 %>"
+          data-contenttype="<%= contentType %>"
+          data-genre="<%= genre %>"
+        >
+          Load More
+        </button>
       </div>
-    <% }) %>
-  </div>
+    <% } %>
+  <% } %>
 </div>
+
+<script>
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', async function() {
+      const nextPage = this.dataset.nextpage;
+      const ctype = this.dataset.contenttype || '';
+      const genre = this.dataset.genre || '';
+      try {
+        // We'll call /movies?type=ctype&genre=genre&page=nextPage
+        // with an AJAX request
+        let url = '/movies?';
+        if (ctype) url += 'type=' + encodeURIComponent(ctype) + '&';
+        if (genre) url += 'genre=' + encodeURIComponent(genre) + '&';
+        url += 'page=' + nextPage;
+
+        const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
+        if (!res.ok) throw new Error('Failed to load more');
+        const data = await res.json();
+
+        const container = document.getElementById('moviesList');
+        data.items.forEach(m => {
+          const col = document.createElement('div');
+          col.className = 'col-md-3 col-sm-6 mb-4';
+          col.innerHTML = `
+            <div class="card h-100">
+              ${m.posterPath ? `
+                <img
+                  src="https://image.tmdb.org/t/p/w500${m.posterPath}"
+                  class="card-img-top"
+                  alt="${m.title}"
+                >
+              ` : ''}
+              <div class="card-body">
+                <h5 class="card-title">${m.title}</h5>
+                ${renderRatingOrNotWoke(m)}
+                <a href="/movies/${m._id}" class="btn btn-sm btn-outline-warning">
+                  View
+                </a>
+              </div>
+            </div>
+          `;
+          container.appendChild(col);
+        });
+
+        if (data.currentPage < data.totalPages) {
+          loadMoreBtn.dataset.nextpage = data.currentPage + 1;
+        } else {
+          loadMoreBtn.remove();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Error loading more results.');
+      }
+    });
+
+    function renderRatingOrNotWoke(m) {
+      if (m.ratings && m.ratings.length > 0) {
+        return `<p>${(m.averageRating || 0).toFixed(1)}/10</p>`;
+      } else if (m.notWokeCount && m.notWokeCount > 0) {
+        return `<p>${m.notWokeCount} Not Woke</p>`;
+      } else {
+        return '<p>No Ratings</p>';
+      }
+    }
+  }
+</script>
