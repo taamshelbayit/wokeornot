@@ -7,36 +7,37 @@ const { ensureAuthenticated } = require('../utils/auth');
 
 /**
  * GET /search
- * 1) If "q" is provided => merges local DB + TMDb
- * 2) If no "q" => show advanced search form
- * 3) Sort param => ?sort=rating|popularity|releaseDate|title
+ * - If no `q`, show advanced-search form
+ * - If `q` present => merges local DB + TMDb with pagination
+ * - Supports ?page=1..N, ?sort=rating|popularity|releaseDate|title
+ * - If AJAX => return JSON for “Load More”
  */
 router.get('/', async (req, res) => {
   try {
-    const q = req.query.q;              // e.g. /search?q=Batman
+    const q = (req.query.q || '').trim();
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
     const sortParam = req.query.sort || 'rating';
 
-    // If user didn't type anything, show advanced form
-    if (!q || q.trim() === '') {
+    // If no search query => show advanced search form
+    if (!q) {
       return res.render('advanced-search');
     }
 
-    // 1) Local DB search
+    // 1) Local DB search (unpaginated for now)
     const localResults = await Movie.find({
-      title: { $regex: q.trim(), $options: 'i' }
-    }).limit(100);
+      title: { $regex: q, $options: 'i' }
+    });
 
-    // We'll keep them in finalResults
-    let finalResults = [...localResults];
-
-    // 2) TMDb calls for both movies & TV
+    // 2) TMDb calls
     const apiKey = process.env.TMDB_API_KEY;
     const [movResp, tvResp] = await Promise.all([
       axios.get(
-        `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`
+        `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q)}&page=1`
       ),
       axios.get(
-        `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`
+        `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q)}&page=1`
       )
     ]);
 
@@ -44,7 +45,8 @@ router.get('/', async (req, res) => {
     let tmdbTV = tvResp.data.results || [];
     let tmdbCombined = [...tmdbMovies, ...tmdbTV];
 
-    // 3) Upsert TMDb items into local DB
+    // 3) Upsert
+    let finalResults = [...localResults];
     for (let item of tmdbCombined) {
       const tmdbId = item.id.toString();
       let found = await Movie.findOne({ tmdbId });
@@ -61,7 +63,7 @@ router.get('/', async (req, res) => {
         await newDoc.save();
         finalResults.push(newDoc);
       } else {
-        // If not already in finalResults, add it
+        // If not in finalResults, push it
         if (!finalResults.find(r => r._id.equals(found._id))) {
           finalResults.push(found);
         }
@@ -78,31 +80,51 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 5) Sort by user’s chosen param
-    sortResults(uniqueResults, sortParam);
+    // 5) Sort
+    uniqueResults = sortResults(uniqueResults, sortParam);
 
-    // 6) Limit to 100
-    uniqueResults = uniqueResults.slice(0, 100);
+    // 6) Pagination
+    const total = uniqueResults.length;
+    const pageResults = uniqueResults.slice(skip, skip + limit);
+    const totalPages = Math.ceil(total / limit);
 
-    // 7) Render advanced-search-results.ejs (always HTML)
-    return res.render('advanced-search-results', { results: uniqueResults });
+    // If AJAX => return JSON
+    if (req.xhr) {
+      return res.json({
+        items: pageResults,
+        currentPage: page,
+        totalPages,
+        totalCount: total
+      });
+    }
+
+    // Else => normal HTML
+    res.render('search-results', {
+      q,
+      results: pageResults,
+      currentPage: page,
+      totalPages,
+      totalCount: total,
+      limit,
+      sortParam
+    });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error performing search');
-    return res.redirect('/');
+    res.redirect('/');
   }
 });
 
 /**
  * POST /search => advanced local-only search
- * Body fields: { title, minRating, maxRating, notWoke, contentType, sortParam }
+ * Body: { title, minRating, maxRating, notWoke, contentType, sortParam }
+ * Renders advanced-search-results.ejs
  */
 router.post('/', async (req, res) => {
   try {
     const { title, minRating, maxRating, notWoke, contentType, sortParam } = req.body;
     let query = {};
 
-    // Build the local DB query
     if (contentType) {
       query.contentType = contentType;
     }
@@ -120,17 +142,11 @@ router.post('/', async (req, res) => {
       query.notWokeCount = { $gt: 0 };
     }
 
-    // Local results only
-    let results = await Movie.find(query).limit(200);
-
-    // Sort them
-    sortResults(results, sortParam || 'rating');
-
-    // Limit final
+    let results = await Movie.find(query).limit(500); // bigger limit for local
+    results = sortResults(results, sortParam || 'rating');
     results = results.slice(0, 100);
 
-    // Render advanced-search-results.ejs
-    return res.render('advanced-search-results', { results });
+    res.render('advanced-search-results', { results });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error performing advanced search');
@@ -161,30 +177,25 @@ router.post('/save', ensureAuthenticated, async (req, res) => {
   }
 });
 
-/**
- * Helper function to sort results in place
- * sortParam => "rating" (default) | "popularity" | "releaseDate" | "title"
- */
+// Helper for sorting
 function sortResults(arr, sortParam) {
   if (sortParam === 'popularity') {
-    arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    return arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
   } else if (sortParam === 'releaseDate') {
-    // newest first
-    arr.sort((a, b) => {
+    return arr.sort((a, b) => {
       let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
       let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
       return bd - ad;
     });
   } else if (sortParam === 'title') {
-    // alphabetical A-Z
-    arr.sort((a, b) => {
+    return arr.sort((a, b) => {
       let at = a.title.toLowerCase();
       let bt = b.title.toLowerCase();
       return at.localeCompare(bt);
     });
   } else {
-    // "rating" => averageRating desc
-    arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+    // rating
+    return arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
   }
 }
 

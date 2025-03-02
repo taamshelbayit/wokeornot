@@ -9,9 +9,9 @@ const flash = require('connect-flash');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 const ejsMate = require('ejs-mate');
-const i18n = require('i18n');        // from your code
-const Sentry = require('@sentry/node');  // from our example (optional)
-const apicache = require('apicache');    // for caching (optional)
+const i18n = require('i18n');
+const Sentry = require('@sentry/node');  // optional
+const apicache = require('apicache');    // optional
 const cache = apicache.middleware;
 
 const app = express();
@@ -37,14 +37,16 @@ app.set('views', path.join(__dirname, 'views'));
 
 // 4) Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Provide defaults for dynamic references in layout
 app.use((req, res, next) => {
-  // Provide defaults for all dynamic references in the layout
   res.locals.pageTitle = 'WokeOrNot';
   res.locals.pageDescription = 'Rate the Wokeness of your favorite shows & movies.';
   res.locals.ogImage = 'https://www.wokeornot.net/images/logo.webp';
   res.locals.ogUrl = 'https://www.wokeornot.net';
   next();
 });
+
 // 5) i18n init
 i18n.configure({
   locales: ['en'],
@@ -75,10 +77,6 @@ app.use(flash());
 
 // 10) Global vars
 app.use((req, res, next) => {
-  // if you want arrays:
-  // res.locals.success_msg = req.flash('success_msg') || [];
-  // ...
-  // or your existing single-value approach:
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg   = req.flash('error_msg');
   res.locals.error       = req.flash('error');
@@ -87,10 +85,7 @@ app.use((req, res, next) => {
 });
 
 // 11) Routes
-// If you want to use apicache on certain routes, you can do:
-//   app.use('/someRoute', cache('15 minutes'), someRouteHandler);
-
-app.use('/', require('./routes/index'));         // homepage
+app.use('/', require('./routes/index'));
 app.use('/auth', require('./routes/auth'));
 app.use('/movies', require('./routes/movies'));
 app.use('/reviews', require('./routes/reviews'));
@@ -100,10 +95,9 @@ app.use('/search', require('./routes/search'));
 app.use('/profile', require('./routes/profile'));
 app.use('/feed', require('./routes/feed'));
 app.use('/notifications', require('./routes/notifications'));
-app.use('/blog', require('./routes/blog'));      // new blog route
+app.use('/blog', require('./routes/blog'));
 app.use('/users', require('./routes/users'));
 
-// Example for sitemap (we use /sitemap.xml)
 app.use('/sitemap.xml', require('./routes/sitemap'));
 
 // 12) Sentry error handler if DSN is set

@@ -1,190 +1,123 @@
-// routes/search.js
-const express = require('express');
-const router = express.Router();
-const axios = require('axios');
-const Movie = require('../models/Movie');
-const { ensureAuthenticated } = require('../utils/auth');
+<!-- views/search-results.ejs -->
+<% layout('layout') %>
 
-/**
- * GET /search
- * 1) If "q" is provided => merges local DB + TMDb
- * 2) If no "q" => show advanced search form
- * 3) Sort param => ?sort=rating|popularity|releaseDate|title
- */
-router.get('/', async (req, res) => {
-  try {
-    const q = req.query.q;              // e.g. /search?q=Batman
-    const sortParam = req.query.sort || 'rating';
+<div class="container mt-4 text-light">
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+    Search Results for "<%= q %>"
+  </h2>
 
-    if (!q || q.trim() === '') {
-      // No query => show advanced search form
-      return res.render('advanced-search');
-    }
+  <!-- Sort param or any other info you want to show -->
+  <p class="text-muted">
+    Showing page <%= currentPage %> of <%= totalPages %> (Total: <%= totalCount %>)
+  </p>
 
-    // 1) Local DB search
-    const localResults = await Movie.find({
-      title: { $regex: q.trim(), $options: 'i' }
-    }).limit(100);
+  <% if (results.length === 0) { %>
+    <p>No results found.</p>
+  <% } else { %>
+    <div id="searchResults" class="row">
+      <% results.forEach(item => { %>
+        <div class="col-md-3 col-sm-6 mb-4">
+          <div class="card h-100">
+            <% if (item.posterPath) { %>
+              <img
+                src="https://image.tmdb.org/t/p/w500<%= item.posterPath %>"
+                class="card-img-top"
+                alt="<%= item.title %>"
+              >
+            <% } %>
+            <div class="card-body">
+              <h5 class="card-title"><%= item.title %></h5>
+              <% if (item.ratings && item.ratings.length > 0) { %>
+                <p><%= item.averageRating.toFixed(1) %>/10</p>
+              <% } else if (item.notWokeCount > 0) { %>
+                <p><%= item.notWokeCount %> Not Woke</p>
+              <% } else { %>
+                <p>No Ratings</p>
+              <% } %>
+              <a href="/movies/<%= item._id %>" class="btn btn-sm btn-outline-warning">View</a>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
 
-    let finalResults = [...localResults];
+    <!-- Load More button if more pages remain -->
+    <% if (currentPage < totalPages) { %>
+      <div class="text-center mt-3">
+        <button
+          id="loadMoreBtn"
+          class="btn btn-warning"
+          data-nextpage="<%= currentPage + 1 %>"
+          data-sortparam="<%= sortParam %>"
+        >
+          Load More
+        </button>
+      </div>
+    <% } %>
+  <% } %>
+</div>
 
-    // 2) TMDb calls for both movies & TV
-    const apiKey = process.env.TMDB_API_KEY;
-    const [movResp, tvResp] = await Promise.all([
-      axios.get(
-        `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`
-      ),
-      axios.get(
-        `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`
-      )
-    ]);
-
-    let tmdbMovies = movResp.data.results || [];
-    let tmdbTV = tvResp.data.results || [];
-    let tmdbCombined = [...tmdbMovies, ...tmdbTV];
-
-    // 3) Upsert TMDb items into local DB
-    for (let item of tmdbCombined) {
-      const tmdbId = item.id.toString();
-      let found = await Movie.findOne({ tmdbId });
-      if (!found) {
-        let newDoc = new Movie({
-          title: item.title || item.name || 'Untitled',
-          tmdbId,
-          description: item.overview || '',
-          releaseDate: item.release_date || item.first_air_date,
-          posterPath: item.poster_path || '',
-          contentType: item.media_type === 'tv' ? 'TV' : 'Movie',
-          popularity: item.popularity || 0
+<script>
+  // If there's a loadMoreBtn, we attach an event listener for AJAX "Load More"
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', async function() {
+      const nextPage = this.dataset.nextpage;
+      const sortParam = this.dataset.sortparam;
+      // We'll request /search?q=...&page=...&sort=... via fetch with 'X-Requested-With': 'XMLHttpRequest'
+      const urlParams = new URLSearchParams(window.location.search);
+      const q = urlParams.get('q') || '';
+      try {
+        const res = await fetch(`/search?q=${encodeURIComponent(q)}&page=${nextPage}&sort=${sortParam}`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-        await newDoc.save();
-        finalResults.push(newDoc);
-      } else {
-        // If not in finalResults, push it
-        if (!finalResults.find(r => r._id.equals(found._id))) {
-          finalResults.push(found);
+        if (!res.ok) throw new Error('Failed to load more');
+        const data = await res.json();
+
+        // data.items => array of movies
+        const container = document.getElementById('searchResults');
+        data.items.forEach(item => {
+          const col = document.createElement('div');
+          col.className = 'col-md-3 col-sm-6 mb-4';
+          col.innerHTML = `
+            <div class="card h-100">
+              ${item.posterPath ? `
+                <img
+                  src="https://image.tmdb.org/t/p/w500${item.posterPath}"
+                  class="card-img-top"
+                  alt="${item.title}"
+                >
+              ` : ''}
+              <div class="card-body">
+                <h5 class="card-title">${item.title}</h5>
+                ${renderRatingOrNotWoke(item)}
+                <a href="/movies/${item._id}" class="btn btn-sm btn-outline-warning">View</a>
+              </div>
+            </div>
+          `;
+          container.appendChild(col);
+        });
+
+        // if we have more pages, update nextpage data. else remove button
+        if (data.currentPage < data.totalPages) {
+          loadMoreBtn.dataset.nextpage = data.currentPage + 1;
+        } else {
+          loadMoreBtn.remove();
         }
+      } catch (err) {
+        console.error(err);
+        alert('Error loading more results.');
+      }
+    });
+
+    function renderRatingOrNotWoke(item) {
+      if (item.ratings && item.ratings.length > 0) {
+        return `<p>${(item.averageRating || 0).toFixed(1)}/10</p>`;
+      } else if (item.notWokeCount && item.notWokeCount > 0) {
+        return `<p>${item.notWokeCount} Not Woke</p>`;
+      } else {
+        return '<p>No Ratings</p>';
       }
     }
-
-    // 4) Remove duplicates
-    let uniqueMap = new Map();
-    let uniqueResults = [];
-    for (let r of finalResults) {
-      if (!uniqueMap.has(r._id.toString())) {
-        uniqueMap.set(r._id.toString(), true);
-        uniqueResults.push(r);
-      }
-    }
-
-    // 5) Sort by user’s chosen param
-    sortResults(uniqueResults, sortParam);
-
-    // 6) Limit to 100
-    uniqueResults = uniqueResults.slice(0, 100);
-
-    // 7) Render advanced-search-results.ejs
-    return res.render('advanced-search-results', { results: uniqueResults });
-  } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error performing search');
-    return res.redirect('/');
   }
-});
-
-/**
- * POST /search => advanced local-only search
- * Body fields: { title, minRating, maxRating, notWoke, contentType, sortParam }
- */
-router.post('/', async (req, res) => {
-  try {
-    const { title, minRating, maxRating, notWoke, contentType, sortParam } = req.body;
-    let query = {};
-
-    // Build the local DB query
-    if (contentType) {
-      query.contentType = contentType;
-    }
-    if (title && title.trim() !== '') {
-      query.title = { $regex: title.trim(), $options: 'i' };
-    }
-    if (minRating) {
-      query.averageRating = { $gte: parseFloat(minRating) };
-    }
-    if (maxRating) {
-      query.averageRating = query.averageRating || {};
-      query.averageRating.$lte = parseFloat(maxRating);
-    }
-    if (notWoke === 'on') {
-      query.notWokeCount = { $gt: 0 };
-    }
-
-    // Local results only
-    let results = await Movie.find(query).limit(200);
-
-    // Sort them
-    sortResults(results, sortParam || 'rating');
-
-    // Limit final
-    results = results.slice(0, 100);
-
-    // Render advanced-search-results.ejs
-    return res.render('advanced-search-results', { results });
-  } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error performing advanced search');
-    res.redirect('/');
-  }
-});
-
-/**
- * POST /search/save => user saves a search query
- */
-router.post('/save', ensureAuthenticated, async (req, res) => {
-  try {
-    const { searchName, queryString } = req.body;
-    req.user.savedSearches = req.user.savedSearches || [];
-    req.user.savedSearches.push({
-      name: searchName,
-      query: queryString,
-      createdAt: new Date()
-    });
-    await req.user.save();
-
-    req.flash('success_msg', 'Search saved successfully');
-    res.redirect('/search');
-  } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error saving search');
-    res.redirect('/search');
-  }
-});
-
-/**
- * Helper function to sort results in place
- * sortParam => "rating" (default) | "popularity" | "releaseDate" | "title"
- */
-function sortResults(arr, sortParam) {
-  if (sortParam === 'popularity') {
-    arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-  } else if (sortParam === 'releaseDate') {
-    // newest first
-    arr.sort((a, b) => {
-      let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-      let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-      return bd - ad;
-    });
-  } else if (sortParam === 'title') {
-    // alphabetical A-Z
-    arr.sort((a, b) => {
-      let at = a.title.toLowerCase();
-      let bt = b.title.toLowerCase();
-      return at.localeCompare(bt);
-    });
-  } else {
-    // "rating" => averageRating desc
-    arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
-  }
-}
-
-module.exports = router;
+</script>

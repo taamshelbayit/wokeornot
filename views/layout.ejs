@@ -3,22 +3,18 @@
 <head>
   <meta charset="UTF-8">
 
-  <!-- Use dynamic or fallback title -->
   <title><%= pageTitle || 'WokeOrNot' %></title>
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Use dynamic or fallback description for SEO -->
   <meta name="description" content="<%= pageDescription || 'Rate the Wokeness of your favorite shows & movies.' %>">
 
-  <!-- Optional Open Graph / Twitter Cards for social sharing -->
+  <!-- Open Graph / Twitter Cards -->
   <meta property="og:title" content="<%= pageTitle || 'WokeOrNot' %>">
   <meta property="og:description" content="<%= pageDescription || 'Rate the Wokeness of your favorite shows & movies.' %>">
   <meta property="og:image" content="<%= ogImage || 'https://www.wokeornot.net/images/logo.webp' %>">
   <meta property="og:url" content="<%= ogUrl || 'https://www.wokeornot.net' %>">
   <meta name="twitter:card" content="summary_large_image">
 
-  <!-- Google Fonts (Bebas Neue + Poppins), Font Awesome, Bootstrap CSS -->
+  <!-- Google Fonts, Font Awesome, Bootstrap CSS -->
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap"
     rel="stylesheet"
@@ -37,7 +33,7 @@
   >
   <link rel="stylesheet" href="/css/style.css">
 
-  <!-- Optional Google Analytics snippet (replace GA_MEASUREMENT_ID with your actual ID) -->
+  <!-- Google Analytics snippet: replace GA_MEASUREMENT_ID with your ID -->
   <!--
   <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
   <script>
@@ -50,10 +46,8 @@
 </head>
 <body>
 
-  <!-- Nav Bar -->
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg imdb-topbar">
     <div class="container-fluid">
-      <!-- Logo -->
       <a class="navbar-brand funky-logo d-flex align-items-center" href="/">
         <img
           src="/images/logo.webp"
@@ -84,7 +78,6 @@
         <a href="/search" class="btn btn-outline-secondary ml-2">Advanced</a>
       </form>
 
-      <!-- Mobile toggler -->
       <button
         class="navbar-toggler"
         type="button"
@@ -96,8 +89,7 @@
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
         <ul class="navbar-nav">
-
-          <!-- Movies Dropdown -->
+          <!-- Movies -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="moviesDropdown" data-toggle="dropdown">
               Movies
@@ -114,7 +106,7 @@
             </div>
           </li>
 
-          <!-- TV Dropdown -->
+          <!-- TV -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="tvDropdown" data-toggle="dropdown">
               TV
@@ -130,7 +122,7 @@
             </div>
           </li>
 
-          <!-- Kids Dropdown -->
+          <!-- Kids -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="kidsDropdown" data-toggle="dropdown">
               Kids
@@ -146,9 +138,7 @@
 
           <% if (user) { %>
             <li class="nav-item">
-              <a class="nav-link" href="/profile">
-                Hello, <%= user.firstName || user.name %>
-              </a>
+              <a class="nav-link" href="/profile">Hello, <%= user.firstName || user.name %></a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/auth/logout">Logout</a>
@@ -234,7 +224,7 @@
     src="https://unpkg.com/aos@next/dist/aos.js">
   </script>
   <script>
-    AOS.init(); // Animate on scroll
+    AOS.init();
   </script>
   <script src="/js/main.js"></script>
 </body>
