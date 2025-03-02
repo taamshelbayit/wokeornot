@@ -5,26 +5,31 @@ const axios = require('axios');
 const Movie = require('../models/Movie');
 const { ensureAuthenticated } = require('../utils/auth');
 
-// GET /search => merges local DB + TMDb, supports pagination & "Load More"
+/**
+ * GET /search
+ * 1) If "q" is provided => merges local DB + TMDb
+ * 2) If no "q" => show advanced search form
+ * 3) Sort param => ?sort=rating|popularity|releaseDate|title
+ */
 router.get('/', async (req, res) => {
   try {
-    const q = req.query.q;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = 20;
-    const skip = (page - 1) * limit;
-    const sortParam = req.query.sort || 'rating'; // rating|popularity|releaseDate|title
+    const q = req.query.q;              // e.g. /search?q=Batman
+    const sortParam = req.query.sort || 'rating';
 
+    // If user didn't type anything, show advanced form
     if (!q || q.trim() === '') {
-      // no query => show advanced search
       return res.render('advanced-search');
     }
 
-    // 1) local DB search (unpaginated for now)
-    let localResults = await Movie.find({
+    // 1) Local DB search
+    const localResults = await Movie.find({
       title: { $regex: q.trim(), $options: 'i' }
-    });
+    }).limit(100);
 
-    // 2) fetch from TMDb
+    // We'll keep them in finalResults
+    let finalResults = [...localResults];
+
+    // 2) TMDb calls for both movies & TV
     const apiKey = process.env.TMDB_API_KEY;
     const [movResp, tvResp] = await Promise.all([
       axios.get(
@@ -39,8 +44,7 @@ router.get('/', async (req, res) => {
     let tmdbTV = tvResp.data.results || [];
     let tmdbCombined = [...tmdbMovies, ...tmdbTV];
 
-    // 3) upsert
-    let finalResults = [...localResults];
+    // 3) Upsert TMDb items into local DB
     for (let item of tmdbCombined) {
       const tmdbId = item.id.toString();
       let found = await Movie.findOne({ tmdbId });
@@ -57,13 +61,14 @@ router.get('/', async (req, res) => {
         await newDoc.save();
         finalResults.push(newDoc);
       } else {
+        // If not already in finalResults, add it
         if (!finalResults.find(r => r._id.equals(found._id))) {
           finalResults.push(found);
         }
       }
     }
 
-    // 4) remove duplicates
+    // 4) Remove duplicates
     let uniqueMap = new Map();
     let uniqueResults = [];
     for (let r of finalResults) {
@@ -73,47 +78,31 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 5) sort by sortParam
-    uniqueResults = sortResults(uniqueResults, sortParam);
+    // 5) Sort by user’s chosen param
+    sortResults(uniqueResults, sortParam);
 
-    // 6) pagination
-    const total = uniqueResults.length;
-    const pageResults = uniqueResults.slice(skip, skip + limit);
-    const totalPages = Math.ceil(total / limit);
+    // 6) Limit to 100
+    uniqueResults = uniqueResults.slice(0, 100);
 
-    // if AJAX => return JSON for "Load More"
-    if (req.xhr) {
-      return res.json({
-        items: pageResults,
-        currentPage: page,
-        totalPages,
-        totalCount: total
-      });
-    }
-
-    // else => normal HTML
-    res.render('search-results', {
-      results: pageResults,
-      q,
-      currentPage: page,
-      totalPages,
-      totalCount: total,
-      limit,
-      sortParam
-    });
+    // 7) Render advanced-search-results.ejs (always HTML)
+    return res.render('advanced-search-results', { results: uniqueResults });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error performing search');
-    res.redirect('/');
+    return res.redirect('/');
   }
 });
 
-// POST /search => advanced local-only
+/**
+ * POST /search => advanced local-only search
+ * Body fields: { title, minRating, maxRating, notWoke, contentType, sortParam }
+ */
 router.post('/', async (req, res) => {
   try {
     const { title, minRating, maxRating, notWoke, contentType, sortParam } = req.body;
     let query = {};
 
+    // Build the local DB query
     if (contentType) {
       query.contentType = contentType;
     }
@@ -131,11 +120,17 @@ router.post('/', async (req, res) => {
       query.notWokeCount = { $gt: 0 };
     }
 
-    let results = await Movie.find(query);
-    results = sortResults(results, sortParam || 'rating');
+    // Local results only
+    let results = await Movie.find(query).limit(200);
+
+    // Sort them
+    sortResults(results, sortParam || 'rating');
+
+    // Limit final
     results = results.slice(0, 100);
 
-    res.render('advanced-search-results', { results });
+    // Render advanced-search-results.ejs
+    return res.render('advanced-search-results', { results });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error performing advanced search');
@@ -143,21 +138,53 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Helper for sorting
+/**
+ * POST /search/save => user saves a search query
+ */
+router.post('/save', ensureAuthenticated, async (req, res) => {
+  try {
+    const { searchName, queryString } = req.body;
+    req.user.savedSearches = req.user.savedSearches || [];
+    req.user.savedSearches.push({
+      name: searchName,
+      query: queryString,
+      createdAt: new Date()
+    });
+    await req.user.save();
+
+    req.flash('success_msg', 'Search saved successfully');
+    res.redirect('/search');
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error saving search');
+    res.redirect('/search');
+  }
+});
+
+/**
+ * Helper function to sort results in place
+ * sortParam => "rating" (default) | "popularity" | "releaseDate" | "title"
+ */
 function sortResults(arr, sortParam) {
   if (sortParam === 'popularity') {
-    return arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
   } else if (sortParam === 'releaseDate') {
-    return arr.sort((a, b) => {
+    // newest first
+    arr.sort((a, b) => {
       let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
       let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
       return bd - ad;
     });
   } else if (sortParam === 'title') {
-    return arr.sort((a, b) => (a.title.toLowerCase()).localeCompare(b.title.toLowerCase()));
+    // alphabetical A-Z
+    arr.sort((a, b) => {
+      let at = a.title.toLowerCase();
+      let bt = b.title.toLowerCase();
+      return at.localeCompare(bt);
+    });
   } else {
-    // rating
-    return arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+    // "rating" => averageRating desc
+    arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
   }
 }
 
