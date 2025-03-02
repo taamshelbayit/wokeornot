@@ -9,24 +9,24 @@ const { ensureAuthenticated } = require('../utils/auth');
 /**
  * GET /movies
  *   Supports ?type=Movie|TV|Kids & ?genre=XX & optional q=title
- *   Also supports ?page=N for “Load More” pagination.
+ *   Also supports ?page=N for “Load More” pagination (AJAX).
  */
 router.get('/', async (req, res) => {
   try {
     const { type, genre, q, page } = req.query;
     const contentType = type || 'Movie';
 
-    // For simple “Load More”
-    const limit = 12; // # items per page
+    // For “Load More” style pagination
+    const limit = 12;
     const currentPage = parseInt(page, 10) || 1;
     const skip = (currentPage - 1) * limit;
 
     const apiKey = process.env.TMDB_API_KEY;
     let tmdbResults = [];
 
-    // Decide if user typed a q => search, else if genre => discover, else local only
+    // 1) Decide if we do an external TMDb fetch
     if (q && q.trim() !== '') {
-      // Searching on TMDb
+      // The user typed a search query => search on TMDb
       if (contentType === 'TV') {
         const tvSearchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
         const tvResp = await axios.get(tvSearchUrl);
@@ -49,7 +49,7 @@ router.get('/', async (req, res) => {
           );
         }
       } else {
-        // default to Movie
+        // default to searching Movies
         const movSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
         const movResp = await axios.get(movSearchUrl);
         tmdbResults = movResp.data.results || [];
@@ -60,6 +60,7 @@ router.get('/', async (req, res) => {
           );
         }
       }
+
     } else if (genre) {
       // user only picked a genre => discover
       if (contentType === 'TV') {
@@ -76,9 +77,8 @@ router.get('/', async (req, res) => {
         const mdResp = await axios.get(movDiscover);
         tmdbResults = mdResp.data.results || [];
       }
-    } else {
-      // user just visited /movies => local DB only (no external fetch)
     }
+    // else => user just visited /movies => local DB only (no external fetch)
 
     // 2) Upsert each item from tmdbResults into local DB
     let finalList = [];
@@ -109,16 +109,17 @@ router.get('/', async (req, res) => {
     }
 
     // 3) Also fetch local DB items for contentType
+    // NOTE: We do NOT store numeric genre IDs in the local DB, so we cannot
+    // filter local DB items by “genre=27” etc. They will appear anyway.
     let dbQuery = { contentType };
-    // If you also want to filter local DB by a q or genre, you need logic here
-    // but since local DB items don’t store “genre_ids”, we can’t do local filtering by genre
-    // or do partial text search for q. (You could add fields if you want.)
+    // If you want local DB filtering by q or genre, you'd need to store those fields
+    // in your Movie model and do dbQuery.title = /.../ etc.
 
     let localDBItems = await Movie.find(dbQuery)
-      .sort({ averageRating: -1 }) // or popularity desc, up to you
-      .limit(200); // some upper limit
+      .sort({ averageRating: -1 })
+      .limit(200);
 
-    // Merge localDBItems + finalList
+    // 4) Merge localDBItems + finalList
     let allItems = [...localDBItems];
     for (let doc of finalList) {
       if (!allItems.find(d => d._id.equals(doc._id))) {
@@ -136,23 +137,25 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 4) Sort them. You could choose to sort by averageRating desc, or popularity, or both.
-    // For simplicity, let's do averageRating desc, fallback popularity
+    // 5) Sort them. For example, sort by averageRating desc, fallback popularity
     uniqueResults.sort((a, b) => {
-      // if both have rating
-      if (b.ratings && b.ratings.length > 0 && a.ratings && a.ratings.length > 0) {
+      // if both have ratings
+      const aHasRatings = (a.ratings && a.ratings.length > 0);
+      const bHasRatings = (b.ratings && b.ratings.length > 0);
+
+      if (aHasRatings && bHasRatings) {
         return (b.averageRating || 0) - (a.averageRating || 0);
       }
-      // else fallback popularity
+      // fallback to popularity
       return (b.popularity || 0) - (a.popularity || 0);
     });
 
-    // 5) Pagination (Load More style)
+    // 6) Pagination
     const total = uniqueResults.length;
     const results = uniqueResults.slice(skip, skip + limit);
     const totalPages = Math.ceil(total / limit);
 
-    // If the request is AJAX, return JSON
+    // If request is AJAX => return JSON for “Load More”
     if (req.xhr) {
       return res.json({
         items: results,
