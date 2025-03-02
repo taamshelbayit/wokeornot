@@ -3,131 +3,153 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const Movie = require('../models/Movie');
-const Review = require('../models/Review'); // For category aggregation
+const Review = require('../models/Review'); // if you do category stats
 const { ensureAuthenticated } = require('../utils/auth');
 
 /**
  * GET /movies
- *   Supports ?type=Movie|TV|Kids & ?genre=XX & optional q=title
- *   Also supports ?page=N for “Load More” pagination (AJAX).
+ *   ?type=Movie|TV|Kids
+ *   ?genre=XX
+ *   ?q=title
+ *   ?page=N  (for pagination)
  */
 router.get('/', async (req, res) => {
   try {
     const { type, genre, q, page } = req.query;
     const contentType = type || 'Movie';
 
-    // For “Load More” style pagination
-    const limit = 12;
+    // "Load More" or basic pagination
+    const limit = 12; // how many items per page
     const currentPage = parseInt(page, 10) || 1;
     const skip = (currentPage - 1) * limit;
 
     const apiKey = process.env.TMDB_API_KEY;
     let tmdbResults = [];
 
-    // 1) Decide if we do an external TMDb fetch
-    if (q && q.trim() !== '') {
-      // The user typed a search query => search on TMDb
-      if (contentType === 'TV') {
-        const tvSearchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
-        const tvResp = await axios.get(tvSearchUrl);
-        tmdbResults = tvResp.data.results || [];
+    /********************************************************************
+     * 1) Decide if we fetch from TMDb or not:
+     *    - If user has q or genre => fetch from TMDb
+     *    - else => local DB only
+     ********************************************************************/
+    if ((q && q.trim() !== '') || genre) {
+      // User provided either a search q or a genre => do TMDb fetch
 
-        // If genre is given, filter out items that do not have that genre
-        if (genre) {
-          tmdbResults = tmdbResults.filter(r =>
-            Array.isArray(r.genre_ids) && r.genre_ids.includes(parseInt(genre))
-          );
+      // We'll handle "contentType === 'TV'" vs "Kids" vs default "Movie"
+      if (q && q.trim() !== '') {
+        // user typed a search query
+        if (contentType === 'TV') {
+          const tvSearchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
+          const tvResp = await axios.get(tvSearchUrl);
+          tmdbResults = tvResp.data.results || [];
+
+          if (genre) {
+            // numeric genre => filter
+            tmdbResults = tmdbResults.filter(r =>
+              Array.isArray(r.genre_ids) &&
+              r.genre_ids.includes(parseInt(genre))
+            );
+          }
+        } else if (contentType === 'Kids') {
+          // searching in "movies" but we label them "Kids"
+          const kidsSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
+          const kidsResp = await axios.get(kidsSearchUrl);
+          tmdbResults = kidsResp.data.results || [];
+
+          if (genre) {
+            tmdbResults = tmdbResults.filter(r =>
+              Array.isArray(r.genre_ids) &&
+              r.genre_ids.includes(parseInt(genre))
+            );
+          }
+        } else {
+          // default to searching movies
+          const movSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
+          const movResp = await axios.get(movSearchUrl);
+          tmdbResults = movResp.data.results || [];
+
+          if (genre) {
+            tmdbResults = tmdbResults.filter(r =>
+              Array.isArray(r.genre_ids) &&
+              r.genre_ids.includes(parseInt(genre))
+            );
+          }
         }
-      } else if (contentType === 'Kids') {
-        const kidsSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
-        const kidsResp = await axios.get(kidsSearchUrl);
-        tmdbResults = kidsResp.data.results || [];
-
-        if (genre) {
-          tmdbResults = tmdbResults.filter(r =>
-            Array.isArray(r.genre_ids) && r.genre_ids.includes(parseInt(genre))
-          );
-        }
-      } else {
-        // default to searching Movies
-        const movSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
-        const movResp = await axios.get(movSearchUrl);
-        tmdbResults = movResp.data.results || [];
-
-        if (genre) {
-          tmdbResults = tmdbResults.filter(r =>
-            Array.isArray(r.genre_ids) && r.genre_ids.includes(parseInt(genre))
-          );
+      }
+      else if (genre) {
+        // user only picked a genre => discover
+        if (contentType === 'TV') {
+          const tvDiscover = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
+          const tvResp = await axios.get(tvDiscover);
+          tmdbResults = tvResp.data.results || [];
+        } else if (contentType === 'Kids') {
+          const kidsDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
+          const kdResp = await axios.get(kidsDiscover);
+          tmdbResults = kdResp.data.results || [];
+        } else {
+          // default to Movie discover
+          const movDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
+          const mdResp = await axios.get(movDiscover);
+          tmdbResults = mdResp.data.results || [];
         }
       }
 
-    } else if (genre) {
-      // user only picked a genre => discover
-      if (contentType === 'TV') {
-        const tvDiscover = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
-        const tvResp = await axios.get(tvDiscover);
-        tmdbResults = tvResp.data.results || [];
-      } else if (contentType === 'Kids') {
-        const kidsDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
-        const kdResp = await axios.get(kidsDiscover);
-        tmdbResults = kdResp.data.results || [];
-      } else {
-        // default to Movie discover
-        const movDiscover = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
-        const mdResp = await axios.get(movDiscover);
-        tmdbResults = mdResp.data.results || [];
-      }
+    } else {
+      // no q, no genre => local DB only => skip TMDb fetch
     }
-    // else => user just visited /movies => local DB only (no external fetch)
 
-    // 2) Upsert each item from tmdbResults into local DB
+    /********************************************************************
+     * 2) Upsert TMDb items (if we have any in tmdbResults)
+     ********************************************************************/
     let finalList = [];
-    for (let item of tmdbResults) {
-      const tmdbId = item.id.toString();
-      let found = await Movie.findOne({ tmdbId });
-      if (!found) {
-        const title = item.title || item.name || 'Untitled';
-        const releaseDate = item.release_date || item.first_air_date;
-        const posterPath = item.poster_path;
-        const description = item.overview || '';
-        const popularity = item.popularity || 0;
+    if (tmdbResults.length > 0) {
+      for (let item of tmdbResults) {
+        const tmdbId = item.id.toString();
+        let found = await Movie.findOne({ tmdbId });
+        if (!found) {
+          // create new doc
+          const title = item.title || item.name || 'Untitled';
+          const releaseDate = item.release_date || item.first_air_date;
+          const posterPath = item.poster_path;
+          const description = item.overview || '';
+          const popularity = item.popularity || 0;
 
-        let newDoc = new Movie({
-          title,
-          tmdbId,
-          description,
-          releaseDate,
-          posterPath,
-          contentType,
-          popularity
-        });
-        await newDoc.save();
-        finalList.push(newDoc);
-      } else {
-        finalList.push(found);
+          let newDoc = new Movie({
+            title,
+            tmdbId,
+            description,
+            releaseDate,
+            posterPath,
+            contentType,
+            popularity
+          });
+          await newDoc.save();
+          finalList.push(newDoc);
+        } else {
+          finalList.push(found);
+        }
       }
     }
 
-    // 3) Also fetch local DB items for contentType
-    // NOTE: We do NOT store numeric genre IDs in the local DB, so we cannot
-    // filter local DB items by “genre=27” etc. They will appear anyway.
-    let dbQuery = { contentType };
-    // If you want local DB filtering by q or genre, you'd need to store those fields
-    // in your Movie model and do dbQuery.title = /.../ etc.
+    /********************************************************************
+     * 3) Decide which items to show:
+     *    - If tmdbResults > 0 => show ONLY those items
+     *    - else => local DB items
+     ********************************************************************/
+    let allItems = [];
+    if (tmdbResults.length > 0) {
+      // user is searching or picking a genre => show only these new items
+      allItems = finalList;
+    } else {
+      // no q, no genre => local DB only
+      let dbQuery = { contentType };
+      let localDBItems = await Movie.find(dbQuery)
+        .sort({ averageRating: -1 })
+        .limit(200);
 
-    let localDBItems = await Movie.find(dbQuery)
-      .sort({ averageRating: -1 })
-      .limit(200);
-
-    // 4) Merge localDBItems + finalList
-    let allItems = [...localDBItems];
-    for (let doc of finalList) {
-      if (!allItems.find(d => d._id.equals(doc._id))) {
-        allItems.push(doc);
-      }
+      allItems = localDBItems;
     }
 
-    // Remove duplicates
+    // remove duplicates
     let uniqueMap = new Map();
     let uniqueResults = [];
     for (let r of allItems) {
@@ -137,25 +159,33 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 5) Sort them. For example, sort by averageRating desc, fallback popularity
+    /********************************************************************
+     * 4) Sort them => rating desc, fallback popularity
+     ********************************************************************/
     uniqueResults.sort((a, b) => {
-      // if both have ratings
-      const aHasRatings = (a.ratings && a.ratings.length > 0);
-      const bHasRatings = (b.ratings && b.ratings.length > 0);
+      const aHasRating = (a.ratings && a.ratings.length > 0);
+      const bHasRating = (b.ratings && b.ratings.length > 0);
 
-      if (aHasRatings && bHasRatings) {
+      if (aHasRating && bHasRating) {
         return (b.averageRating || 0) - (a.averageRating || 0);
+      } else if (aHasRating && !bHasRating) {
+        return -1;
+      } else if (!aHasRating && bHasRating) {
+        return 1;
+      } else {
+        // fallback popularity desc
+        return (b.popularity || 0) - (a.popularity || 0);
       }
-      // fallback to popularity
-      return (b.popularity || 0) - (a.popularity || 0);
     });
 
-    // 6) Pagination
+    /********************************************************************
+     * 5) Pagination
+     ********************************************************************/
     const total = uniqueResults.length;
     const results = uniqueResults.slice(skip, skip + limit);
     const totalPages = Math.ceil(total / limit);
 
-    // If request is AJAX => return JSON for “Load More”
+    // If AJAX => return JSON for “Load More”
     if (req.xhr) {
       return res.json({
         items: results,
@@ -165,7 +195,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // else normal HTML
+    // else => normal HTML
     res.render('list', {
       movies: results,
       contentType,
@@ -173,6 +203,7 @@ router.get('/', async (req, res) => {
       totalPages,
       totalCount: total
     });
+
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error fetching items');
@@ -182,7 +213,7 @@ router.get('/', async (req, res) => {
 
 /**
  * GET /movies/add?tmdbId=...
- * Upsert from TMDb. Must be defined BEFORE /:id
+ * Upsert from TMDb
  */
 router.get('/add', ensureAuthenticated, async (req, res) => {
   try {
@@ -269,7 +300,7 @@ router.get('/:id', async (req, res) => {
       return res.redirect('/');
     }
 
-    // Calculate categoryCounts from reviews for the woke category trends chart
+    // e.g. categoryCounts for woke categories
     const categoryCounts = await Review.aggregate([
       { $match: { movie: movie._id } },
       { $unwind: '$categories' },
