@@ -2,15 +2,19 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const apicache = require('apicache');
-const cache = apicache.middleware;
+// Removed apicache usage for the homepage
+// const apicache = require('apicache');
+// const cache = apicache.middleware;
 
 const Movie = require('../models/Movie');
 
 // GET / => homepage with trending
-// We'll cache it for 15 minutes
-router.get('/', cache('15 minutes'), async (req, res) => {
+// Removed caching to avoid stale navbars for logged-in users
+router.get('/', async (req, res) => {
   try {
+    // Debug: Check if we have a user
+    console.log("Homepage user:", req.user);
+
     const apiKey = process.env.TMDB_API_KEY;
     const trendingRes = await axios.get(
       `https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}&language=en-US`

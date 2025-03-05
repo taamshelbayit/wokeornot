@@ -10,8 +10,9 @@ const bodyParser = require('body-parser');
 const ejsMate = require('ejs-mate');
 const i18n = require('i18n');
 const Sentry = require('@sentry/node');  // optional
-const apicache = require('apicache');    // optional
-const cache = apicache.middleware;
+// Removed explicit references to apicache for the homepage
+// const apicache = require('apicache');
+// const cache = apicache.middleware;
 const http = require('http');
 const socketIo = require('socket.io');
 

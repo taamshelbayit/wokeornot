@@ -121,6 +121,9 @@
             <li class="nav-item">
               <a class="nav-link" href="/auth/logout">Logout</a>
             </li>
+            <script>
+              console.log("layout sees user role:", "<%= user.role %>");
+            </script>
           <% } else { %>
             <li class="nav-item">
               <a class="nav-link" href="/auth/login">Login</a>
@@ -133,6 +136,13 @@
       </div>
     </div>
   </nav>
+
+  <!-- Debug snippet to see user in the console -->
+  <% if (user) { %>
+    <script>
+      console.log("layout.ejs sees user:", <%= JSON.stringify(user) %>);
+    </script>
+  <% } %>
 
   <!-- Flash Messages -->
   <div class="container mt-2">
