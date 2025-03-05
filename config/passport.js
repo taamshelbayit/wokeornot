@@ -20,6 +20,12 @@ module.exports = function(passport) {
           return done(null, false, { message: 'No user found' });
         }
 
+        // If user is not verified
+        if (!user.verified) {
+          console.log('User not verified:', user.email);
+          return done(null, false, { message: 'Please verify your email before logging in.' });
+        }
+
         // If user is banned
         if (user.role === 'banned') {
           console.log('User is banned:', user.email);
@@ -94,8 +100,8 @@ module.exports = function(passport) {
               lastName: profile.name?.familyName || 'NoLast',
               email: googleEmail,
               password: '', // not used for Google
-              verified: true,
-              role: 'user' // default role for new Google signups
+              verified: true, // Google users are automatically "verified"?
+              role: 'user'
             });
             const savedUser = await newUser.save();
             console.log('New user saved:', savedUser.email, 'role:', savedUser.role);

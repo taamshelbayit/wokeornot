@@ -122,10 +122,9 @@ router.get('/', async (req, res) => {
     }
 
     // 3) Also fetch local DB items for the given contentType
-    // (We do not store numeric genre IDs, so we can't filter local items by "genre=27")
-    const dbQuery = { contentType };
+    let dbQuery = { contentType };
     const localDBItems = await Movie.find(dbQuery)
-      .sort({ averageRating: -1 }) // or popularity, up to you
+      .sort({ averageRating: -1 })
       .limit(200);
 
     // 4) Merge local items + newly upserted
@@ -211,42 +210,9 @@ router.get('/add', ensureAuthenticated, async (req, res) => {
     }
 
     const apiKey = process.env.TMDB_API_KEY;
-    const response = await axios.get(
-      `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=en-US`
-    );
-    const data = response.data;
-
-    movie = new Movie({
-      title: data.title || data.name || 'Untitled',
-      tmdbId,
-      description: data.overview,
-      releaseDate: data.release_date || data.first_air_date,
-      posterPath: data.poster_path,
-      contentType: 'Movie',
-      popularity: data.popularity || 0
-    });
-    await movie.save();
-
-    req.flash('success_msg', 'Movie added successfully!');
-    res.redirect(`/movies/${movie._id}`);
-  } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error adding movie');
-    res.redirect('/');
-  }
-});
-
-/**
- * GET /movies/trending/:tmdbId => upsert from trending
- */
-router.get('/trending/:tmdbId', async (req, res) => {
-  try {
-    const tmdbId = req.params.tmdbId;
-    let movie = await Movie.findOne({ tmdbId });
-    if (!movie) {
-      const apiKey = process.env.TMDB_API_KEY;
+    try {
       const response = await axios.get(
-        `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}`
+        `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=en-US`
       );
       const data = response.data;
 
@@ -260,11 +226,23 @@ router.get('/trending/:tmdbId', async (req, res) => {
         popularity: data.popularity || 0
       });
       await movie.save();
+
+      req.flash('success_msg', 'Movie added successfully!');
+      return res.redirect(`/movies/${movie._id}`);
+    } catch (tmdbErr) {
+      // Handle TMDB 404 or other errors gracefully
+      if (tmdbErr.response && tmdbErr.response.status === 404) {
+        console.log('TMDB 404: invalid ID', tmdbId);
+        req.flash('error_msg', 'TMDB could not find this movie');
+      } else {
+        console.error('TMDB fetch error:', tmdbErr);
+        req.flash('error_msg', 'Error fetching from TMDB');
+      }
+      return res.redirect('/');
     }
-    res.redirect(`/movies/${movie._id}`);
   } catch (err) {
     console.error(err);
-    req.flash('error_msg', 'Error loading trending item');
+    req.flash('error_msg', 'Error adding movie');
     res.redirect('/');
   }
 });
@@ -283,7 +261,7 @@ router.get('/:id', async (req, res) => {
       return res.redirect('/');
     }
 
-    // If you want woke category stats
+    // If you want woke category stats or other data from reviews
     const categoryCounts = await Review.aggregate([
       { $match: { movie: movie._id } },
       { $unwind: '$categories' },
@@ -296,6 +274,36 @@ router.get('/:id', async (req, res) => {
     console.error(err);
     req.flash('error_msg', 'An error occurred');
     res.redirect('/');
+  }
+});
+
+/**
+ * POST /movies/rate/:id => add a rating
+ */
+router.post('/rate/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    const movieId = req.params.id;
+    const { rating } = req.body; // user-submitted rating
+
+    const localMovie = await Movie.findById(movieId);
+    if (!localMovie) {
+      req.flash('error_msg', 'Movie not found.');
+      return res.redirect('/movies');
+    }
+
+    // Update local rating data
+    localMovie.ratings.push(rating);
+    const sum = localMovie.ratings.reduce((acc, val) => acc + Number(val), 0);
+    localMovie.averageRating = sum / localMovie.ratings.length;
+
+    await localMovie.save();
+
+    req.flash('success_msg', 'Rating added!');
+    res.redirect(`/movies/${movieId}`);
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error rating movie.');
+    res.redirect('/movies');
   }
 });
 

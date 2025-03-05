@@ -9,22 +9,12 @@ const passport = require('passport');
 const bodyParser = require('body-parser');
 const ejsMate = require('ejs-mate');
 const i18n = require('i18n');
-const Sentry = require('@sentry/node');  // optional
-// Removed explicit references to apicache for the homepage
-// const apicache = require('apicache');
-// const cache = apicache.middleware;
 const http = require('http');
 const socketIo = require('socket.io');
 
 const app = express();
 
-// 1) (Optional) Sentry init
-if (process.env.SENTRY_DSN) {
-  Sentry.init({ dsn: process.env.SENTRY_DSN });
-  app.use(Sentry.Handlers.requestHandler());
-}
-
-// 2) Connect to MongoDB
+// 1) Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -32,12 +22,12 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
-// 3) EJS setup with ejs-mate
+// 2) EJS setup with ejs-mate
 app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// 4) Serve static files
+// 3) Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Provide defaults for dynamic references in layout (meta tags, etc.)
@@ -49,7 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// 5) i18n init (internationalization)
+// 4) i18n init (internationalization)
 i18n.configure({
   locales: ['en'],
   directory: path.join(__dirname, 'locales'),
@@ -58,26 +48,26 @@ i18n.configure({
 });
 app.use(i18n.init);
 
-// 6) Body parser
+// 5) Body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// 7) Express session
+// 6) Express session
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secret',
   resave: true,
   saveUninitialized: true
 }));
 
-// 8) Passport config
+// 7) Passport config
 require('./config/passport')(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 9) Connect flash
+// 8) Connect flash
 app.use(flash());
 
-// 10) Global flash vars and user
+// 9) Global flash vars and user
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg   = req.flash('error_msg');
@@ -86,7 +76,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Socket.io setup for real-time notifications
+// 10) Socket.io setup for real-time notifications
 const server = http.createServer(app);
 const io = socketIo(server);
 app.use((req, res, next) => {
@@ -103,9 +93,9 @@ io.on('connection', socket => {
 });
 
 // 11) Routes
-app.use('/', require('./routes/index'));
-app.use('/auth', require('./routes/auth'));
-app.use('/movies', require('./routes/movies'));
+app.use('/', require('./routes/index')); // homepage & main
+app.use('/auth', require('./routes/auth')); // login, register, verify
+app.use('/movies', require('./routes/movies')); // rating, listing
 app.use('/reviews', require('./routes/reviews'));
 app.use('/forum', require('./routes/forum'));
 app.use('/admin', require('./routes/admin'));
@@ -118,9 +108,9 @@ app.use('/users', require('./routes/users'));
 app.use('/sitemap.xml', require('./routes/sitemap'));
 
 // 12) Sentry error handler (if using Sentry)
-if (process.env.SENTRY_DSN) {
-  app.use(Sentry.Handlers.errorHandler());
-}
+// if (process.env.SENTRY_DSN) {
+//   app.use(Sentry.Handlers.errorHandler());
+// }
 
 // 13) Start server
 const PORT = process.env.PORT || 5000;
