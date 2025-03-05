@@ -23,7 +23,6 @@ body {
   height: 500px; /* or auto if you prefer */
   position: relative;
 }
-
 /* The overlay to ensure text is visible on bright images */
 .hero-slide::before {
   content: "";
@@ -106,8 +105,8 @@ body {
 
 /* 6) Horizontal Scroll for Top 5 sections */
 .scroll-container {
-  /*overflow: hidden; /* hide the scrollbar area */
-  /*padding: 0 40px;  /* space for arrow buttons */
+  overflow: hidden; /* hide the scrollbar area */
+  padding: 0 40px;  /* space for arrow buttons */
 }
 .scroll-wrapper {
   display: flex;
@@ -167,6 +166,20 @@ footer {
 }
 
 /* 8) Example star rating (if needed in detail pages) */
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse; /* Reverse order for better hover effect */
+  justify-content: flex-end;
+}
+.star-rating input {
+  display: none;
+}
+.star-rating label {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
 .star-rating label:hover,
 .star-rating label:hover ~ label,
 .star-rating input[type="radio"]:checked ~ label {
@@ -174,32 +187,35 @@ footer {
   color: #f5c518;
   transition: transform 0.2s ease;
 }
-
-.star-rating {
-  display: flex;
-  flex-direction: row-reverse; /* Reverse order for better hover effect */
-  justify-content: flex-end;
-}
-
-.star-rating input {
-  display: none;
-}
-
-.star-rating label {
-  font-size: 2rem;
-  color: #ccc;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
 .star-rating input:checked ~ label,
 .star-rating label:hover,
 .star-rating label:hover ~ label {
   color: #f5c518; /* Gold color for selected/hovered stars */
 }
 
+/* Fade-up animation tweak for AOS */
 [data-aos="fade-up"] {
   opacity: 0;
   transform: translateY(20px);
   transition: opacity .6s, transform .6s;
+}
+
+/* 9) Notifications & Badges */
+.navbar .notif-count {
+  background-color: #dc3545;  /* red badge for unread count */
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 0.8em;
+  margin-left: 5px;
+}
+.navbar .notif-count:empty {
+  display: none;
+}
+.notification-card.unread {
+  border-left: 4px solid #f5c518;  /* gold bar for unread notifications */
+}
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  text-decoration: underline;
 }

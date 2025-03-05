@@ -2,101 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-
-  <title><%= pageTitle || 'WokeOrNot' %></title>
+  <!-- Ensures proper scaling on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="<%= pageDescription || 'Rate the Wokeness of your favorite shows & movies.' %>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <title><%= pageTitle || 'WokeOrNot' %></title>
 
-  <!-- Open Graph / Twitter Cards -->
-  <meta property="og:title" content="<%= pageTitle || 'WokeOrNot' %>">
-  <meta property="og:description" content="<%= pageDescription || 'Rate the Wokeness of your favorite shows & movies.' %>">
-  <meta property="og:image" content="<%= ogImage || 'https://www.wokeornot.net/images/logo.webp' %>">
-  <meta property="og:url" content="<%= ogUrl || 'https://www.wokeornot.net' %>">
-  <meta name="twitter:card" content="summary_large_image">
-
-  <!-- Google Fonts, Font Awesome, Bootstrap CSS -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap"
-    rel="stylesheet"
-  >
-  <link
-    rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-  >
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-  >
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/aos@next/dist/aos.css"
-  >
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome (for icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- AOS (Animate On Scroll) CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css">
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="/css/style.css">
-
-  <!-- Google Analytics snippet: replace GA_MEASUREMENT_ID with your ID -->
-  <!--
-  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){ dataLayer.push(arguments); }
-    gtag('js', new Date());
-    gtag('config', 'GA_MEASUREMENT_ID');
-  </script>
-  -->
 </head>
 <body>
-
+  <!-- Top Nav Bar -->
   <nav class="navbar navbar-dark bg-dark navbar-expand-lg imdb-topbar">
     <div class="container-fluid">
+      <!-- Logo -->
       <a class="navbar-brand funky-logo d-flex align-items-center" href="/">
-        <img
-          src="/images/logo.webp"
-          alt="WokeOrNot Logo"
-          width="50"
-          height="50"
-          class="mr-2"
-        >
+        <img src="/images/logo.webp" alt="WokeOrNot Logo" width="50" height="50" class="mr-2">
         <span>WokeOrNot</span>
       </a>
 
-      <!-- Desktop Search in center -->
-      <form
-        action="/search"
-        method="GET"
-        class="d-none d-lg-flex mx-auto w-50 align-items-center"
-        style="max-width: 600px;"
-      >
-        <input
-          type="text"
-          name="q"
-          class="form-control"
-          placeholder="Search for movies, TV shows, or kids titles..."
-        >
+      <!-- Search bar -->
+      <form action="/search" method="GET" class="d-none d-lg-flex mx-auto w-50 align-items-center" style="max-width: 600px;">
+        <input type="text" name="q" class="form-control" placeholder="Search for movies, TV shows, or kids titles..." aria-label="Search">
         <button class="btn btn-warning" type="submit">
           <i class="fas fa-search"></i>
         </button>
-        <a href="/search" class="btn btn-outline-secondary ml-2">Advanced</a>
+        <!-- Advanced Search link -->
+        <a href="/search" class="btn btn-outline-secondary ml-2" style="white-space: nowrap;">Advanced</a>
       </form>
 
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarContent"
-      >
+      <!-- Mobile menu toggler -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
         <ul class="navbar-nav">
-          <!-- Movies -->
+          <!-- Movies Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="moviesDropdown" data-toggle="dropdown">
-              Movies
-            </a>
+            <a class="nav-link dropdown-toggle" href="#" id="moviesDropdown" role="button" data-toggle="dropdown">Movies</a>
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=Movie">All Movies</a>
               <div class="dropdown-divider"></div>
+              <!-- Common Movie genres -->
               <a class="dropdown-item" href="/movies?type=Movie&genre=28">Action</a>
               <a class="dropdown-item" href="/movies?type=Movie&genre=35">Comedy</a>
               <a class="dropdown-item" href="/movies?type=Movie&genre=18">Drama</a>
@@ -106,14 +63,13 @@
             </div>
           </li>
 
-          <!-- TV -->
+          <!-- TV Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="tvDropdown" data-toggle="dropdown">
-              TV
-            </a>
+            <a class="nav-link dropdown-toggle" href="#" id="tvDropdown" role="button" data-toggle="dropdown">TV</a>
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=TV">All TV Shows</a>
               <div class="dropdown-divider"></div>
+              <!-- Common TV genres -->
               <a class="dropdown-item" href="/movies?type=TV&genre=10759">Action & Adventure</a>
               <a class="dropdown-item" href="/movies?type=TV&genre=35">Comedy</a>
               <a class="dropdown-item" href="/movies?type=TV&genre=18">Drama</a>
@@ -122,38 +78,40 @@
             </div>
           </li>
 
-          <!-- Kids -->
+          <!-- Kids Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="kidsDropdown" data-toggle="dropdown">
-              Kids
-            </a>
+            <a class="nav-link dropdown-toggle" href="#" id="kidsDropdown" role="button" data-toggle="dropdown">Kids</a>
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=Kids">All Kids</a>
               <div class="dropdown-divider"></div>
+              <!-- Kids genres -->
               <a class="dropdown-item" href="/movies?type=Kids&genre=16">Animated</a>
               <a class="dropdown-item" href="/movies?type=Kids&genre=10751">Family</a>
               <a class="dropdown-item" href="/movies?type=Kids&genre=12">Adventure</a>
             </div>
           </li>
 
+          <!-- User Links -->
           <% if (user) { %>
             <li class="nav-item">
-              <a class="nav-link" href="/profile">Hello, <%= user.firstName || user.name %></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/auth/logout">Logout</a>
+              <a class="nav-link" href="/profile">Hello, <%= user.name %></a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/feed">Feed</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/notifications">Notifications</a>
+              <a class="nav-link" href="/notifications">
+                <i class="fas fa-bell"></i> Notifications <span class="notif-count"></span>
+              </a>
             </li>
             <% if (user.role === 'admin') { %>
               <li class="nav-item">
                 <a class="nav-link text-warning font-weight-bold" href="/admin">Admin Panel</a>
               </li>
             <% } %>
+            <li class="nav-item">
+              <a class="nav-link" href="/auth/logout">Logout</a>
+            </li>
           <% } else { %>
             <li class="nav-item">
               <a class="nav-link" href="/auth/login">Login</a>
@@ -163,25 +121,6 @@
             </li>
           <% } %>
         </ul>
-
-        <!-- Mobile view search -->
-        <form
-          action="/search"
-          method="GET"
-          class="form-inline d-lg-none mt-2"
-          style="width: 100%;"
-        >
-          <input
-            type="text"
-            name="q"
-            class="form-control mr-2"
-            placeholder="Search..."
-          >
-          <button class="btn btn-warning" type="submit">
-            <i class="fas fa-search"></i>
-          </button>
-          <a href="/search" class="btn btn-outline-secondary ml-2 mt-2 mt-sm-0">Advanced</a>
-        </form>
       </div>
     </div>
   </nav>
@@ -217,14 +156,12 @@
 
   <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script
-    src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js">
-  </script>
-  <script
-    src="https://unpkg.com/aos@next/dist/aos.js">
-  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script>AOS.init();</script>
+  <script src="/socket.io/socket.io.js"></script>
   <script>
-    AOS.init();
+    window.USER_ID = "<%= user ? user._id : '' %>";
   </script>
   <script src="/js/main.js"></script>
 </body>

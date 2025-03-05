@@ -1,8 +1,10 @@
 <% layout('layout') %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container mt-4 text-light">
   <h2 class="text-warning">Admin Panel</h2>
 
+  <!-- Basic Stats -->
   <div class="mb-3">
     <p>Total Users: <%= userCount %></p>
     <p>Total Reviews: <%= reviewCount %></p>
@@ -11,36 +13,70 @@
 
   <hr class="bg-secondary">
 
+  <!-- Daily New Users Chart -->
   <h4 class="text-warning">Daily New Users (last 7 days)</h4>
-  <% if (dailyUsers.length === 0) { %>
-    <p>No new users in last 7 days</p>
+  <% if (dailyUsers.length > 0) { %>
+    <canvas id="usersChart" width="400" height="200"></canvas>
+    <script>
+      const userLabels = [<% dailyUsers.forEach(d => { %>'<%= d._id %>',<% }) %>];
+      const userData = [<% dailyUsers.forEach(d => { %><%= d.count %>,<% }) %>];
+      new Chart(document.getElementById('usersChart').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: userLabels,
+          datasets: [{
+            label: 'New Users',
+            data: userData,
+            fill: false,
+            borderColor: '#f5c518',
+            tension: 0.1
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    </script>
   <% } else { %>
-    <ul>
-      <% dailyUsers.forEach(d => { %>
-        <li><%= d._id %>: <%= d.count %> new users</li>
-      <% }) %>
-    </ul>
+    <p>No new users in last 7 days.</p>
   <% } %>
 
   <h4 class="text-warning">Daily New Reviews (last 7 days)</h4>
-  <% if (dailyReviews.length === 0) { %>
-    <p>No new reviews in last 7 days</p>
+  <% if (dailyReviews.length > 0) { %>
+    <canvas id="reviewsChart" width="400" height="200"></canvas>
+    <script>
+      const reviewLabels = [<% dailyReviews.forEach(d => { %>'<%= d._id %>',<% }) %>];
+      const reviewData = [<% dailyReviews.forEach(d => { %><%= d.count %>,<% }) %>];
+      new Chart(document.getElementById('reviewsChart').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: reviewLabels,
+          datasets: [{
+            label: 'New Reviews',
+            data: reviewData,
+            fill: false,
+            borderColor: '#17a2b8',
+            tension: 0.1
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    </script>
   <% } else { %>
-    <ul>
-      <% dailyReviews.forEach(d => { %>
-        <li><%= d._id %>: <%= d.count %> new reviews</li>
-      <% }) %>
-    </ul>
+    <p>No new reviews in last 7 days.</p>
   <% } %>
 
   <hr class="bg-secondary">
 
+  <!-- Flagged Comments Section -->
   <h4 class="text-warning">Flagged Comments</h4>
   <% if (comments.length === 0) { %>
     <p>No flagged comments.</p>
   <% } else { %>
     <% comments.forEach(c => { %>
-      <div class="card mb-3" style="background-color: #1e1e1e;">
+      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
         <div class="card-body">
           <p><strong>User:</strong>
             <% if (c.user) { %>
@@ -53,19 +89,14 @@
           </p>
           <p><strong>Comment:</strong> <%= c.content %></p>
           <% if (c.movie) { %>
-            <p>
-              <strong>Movie:</strong>
+            <p><strong>Movie:</strong>
               <a href="/movies/<%= c.movie._id %>" class="text-warning">
                 <%= c.movie.title %>
               </a>
             </p>
           <% } %>
-          <form
-            action="/admin/remove/<%= c._id %>"
-            method="POST"
-            class="mt-2"
-            style="display:inline;"
-          >
+          <small class="text-muted">Created: <%= c.createdAt.toDateString() %></small>
+          <form action="/admin/remove/<%= c._id %>" method="POST" class="mt-2" style="display:inline;">
             <button class="btn btn-danger btn-sm">Remove</button>
           </form>
         </div>
@@ -75,6 +106,7 @@
 
   <hr class="bg-secondary">
 
+  <!-- User List Section -->
   <h4 class="text-warning">Recent Users (50)</h4>
   <% if (users.length === 0) { %>
     <p>No users found.</p>
@@ -82,11 +114,7 @@
     <table class="table table-dark table-striped">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Created</th>
-          <th>Actions</th>
+          <th>Name</th><th>Email</th><th>Role</th><th>Created</th><th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -119,6 +147,7 @@
 
   <hr class="bg-secondary">
 
+  <!-- Recent Reviews Section -->
   <h4 class="text-warning">Recent Reviews (50)</h4>
   <% if (reviews.length === 0) { %>
     <p>No reviews found.</p>
@@ -126,8 +155,7 @@
     <% reviews.forEach(r => { %>
       <div class="card mb-3" style="background-color: #1e1e1e;">
         <div class="card-body">
-          <p>
-            <strong>User:</strong>
+          <p><strong>User:</strong>
             <% if (r.user) { %>
               <a href="/profile/<%= r.user._id %>" class="text-warning">
                 <%= r.user.firstName %> <%= r.user.lastName %>
@@ -136,8 +164,7 @@
               (Unknown user)
             <% } %>
           </p>
-          <p>
-            <strong>Movie:</strong>
+          <p><strong>Movie:</strong>
             <% if (r.movie) { %>
               <a href="/movies/<%= r.movie._id %>" class="text-warning">
                 <%= r.movie.title %>

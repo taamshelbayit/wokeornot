@@ -1,114 +1,117 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    <%= profileUser.firstName %> <%= profileUser.lastName %>'s Profile
-  </h2>
+  <div class="row">
+    <!-- Profile Sidebar -->
+    <div class="col-md-4">
+      <!-- Profile Image (or default placeholder) -->
+      <img src="<%= profileUser.profileImage ? profileUser.profileImage : '/images/default-profile.png' %>" alt="Profile Image" class="img-fluid rounded-circle mb-3">
+    </div>
+    <!-- Profile Details -->
+    <div class="col-md-8">
+      <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+        <%= profileUser.firstName %> <%= profileUser.lastName %>'s Profile
+      </h2>
+      <p><strong>Email:</strong> <%= profileUser.email %></p>
+      <p><strong>Role:</strong> <%= profileUser.role %></p>
+      <% if (profileUser.badges && profileUser.badges.length > 0) { %>
+        <p><strong>Badges:</strong> <%= profileUser.badges.join(', ') %></p>
+      <% } %>
 
-  <p>Email: <%= profileUser.email %></p>
-  <p>Role: <%= profileUser.role %></p>
-  <p>Badges: <%= profileUser.badges.join(', ') %></p>
+      <!-- Social Sharing Links for Profile -->
+      <p><strong>Share Profile:</strong>
+        <a href="#" id="share-twitter-profile">Twitter</a> |
+        <a href="#" id="share-facebook-profile">Facebook</a>
+      </p>
+      <script>
+        document.getElementById("share-twitter-profile").href =
+          "https://twitter.com/intent/tweet?text=" +
+          encodeURIComponent("Check out the profile of <%= profileUser.firstName %> <%= profileUser.lastName %> on WokeOrNot!") +
+          "&url=" + encodeURIComponent(window.location.href);
+        document.getElementById("share-facebook-profile").href =
+          "https://www.facebook.com/sharer.php?u=" + encodeURIComponent(window.location.href);
+      </script>
 
-  <!-- Follow/Unfollow logic if not the same user -->
-  <% if (user && !user._id.equals(profileUser._id)) { %>
-    <!-- Check if we are following them -->
-    <% if (user.following.includes(profileUser._id)) { %>
-      <form action="/profile/unfollow/<%= profileUser._id %>" method="POST">
-        <button class="btn btn-danger">Unfollow</button>
-      </form>
-    <% } else { %>
-      <form action="/profile/follow/<%= profileUser._id %>" method="POST">
-        <button class="btn btn-success">Follow</button>
-      </form>
-    <% } %>
-  <% } %>
-
-  <hr class="bg-secondary">
-
-  <h3>Followers:</h3>
-  <ul>
-    <% profileUser.followers.forEach(f => { %>
-      <li>
-        <a href="/profile/<%= f._id %>">
-          <%= f.firstName %> <%= f.lastName %>
-        </a>
-      </li>
-    <% }) %>
-  </ul>
-
-  <h3>Following:</h3>
-  <ul>
-    <% profileUser.following.forEach(f => { %>
-      <li>
-        <a href="/profile/<%= f._id %>">
-          <%= f.firstName %> <%= f.lastName %>
-        </a>
-      </li>
-    <% }) %>
-  </ul>
-
-  <hr class="bg-secondary">
-
-  <h3>User Reviews</h3>
-  <% if (reviews.length === 0) { %>
-    <p>No reviews yet.</p>
-  <% } else { %>
-    <% reviews.forEach(r => { %>
-      <div class="card mb-2">
-        <div class="card-body">
-          <p>
-            <strong><%= r.movie.title %></strong>
-            <% if (r.rating === 0) { %>
-              (Not Woke)
-            <% } else { %>
-              (<%= r.rating %>/10)
-            <% } %>
-          </p>
-          <% if (r.content) { %>
-            <p><%= r.content %></p>
-          <% } %>
-          <p>Categories: <%= r.categories.join(', ') %></p>
-        </div>
-      </div>
-    <% }) %>
-  <% } %>
+      <!-- Follow/Unfollow Button (only if viewing another user's profile) -->
+      <% if (user && (user._id.toString() !== profileUser._id.toString())) { %>
+        <% if (user.following && user.following.includes(profileUser._id.toString())) { %>
+          <form action="/profile/unfollow/<%= profileUser._id %>" method="POST">
+            <button type="submit" class="btn btn-danger">Unfollow</button>
+          </form>
+        <% } else { %>
+          <form action="/profile/follow/<%= profileUser._id %>" method="POST">
+            <button type="submit" class="btn btn-warning">Follow</button>
+          </form>
+        <% } %>
+      <% } %>
+    </div>
+  </div>
 
   <hr class="bg-secondary">
 
-  <h3>Watchlist</h3>
-  <% if (watchlistMovies.length === 0) { %>
-    <p>No movies in watchlist.</p>
-  <% } else { %>
-    <div class="row">
-      <% watchlistMovies.forEach(m => { %>
-        <div class="col-md-3 col-sm-6 mb-4">
-          <div class="card h-100">
-            <% if (m.posterPath) { %>
-              <img
-                src="https://image.tmdb.org/t/p/w500<%= m.posterPath %>"
-                class="card-img-top"
-                alt="<%= m.title %>"
-              >
-            <% } %>
+  <!-- User's Reviews Section -->
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="text-warning">My Reviews</h3>
+      <% if (reviews && reviews.length > 0) { %>
+        <% reviews.forEach(function(review) { %>
+          <div class="card mb-3" style="background-color: #1e1e1e;">
             <div class="card-body">
-              <h5 class="card-title"><%= m.title %></h5>
-              <p>
-                <% if (m.ratings && m.ratings.length > 0) { %>
-                  <%= m.averageRating.toFixed(1) %>/10
-                <% } else if (m.notWokeCount > 0) { %>
-                  <%= m.notWokeCount %> Not Woke
+              <p><strong>
+                <% if (review.movie) { %>
+                  <a href="/movies/<%= review.movie._id %>" class="text-warning"><%= review.movie.title %></a>
                 <% } else { %>
-                  No Ratings
+                  Unknown Movie
                 <% } %>
-              </p>
-              <form action="/profile/watchlist/remove" method="POST">
-                <input type="hidden" name="movieId" value="<%= m._id %>">
-                <button class="btn btn-sm btn-outline-danger">Remove</button>
-              </form>
+              </strong></p>
+              <% if (review.rating === 0) { %>
+                <p><strong>Marked as Not Woke</strong></p>
+              <% } else { %>
+                <p><strong>Rating:</strong> <%= review.rating %>/10</p>
+              <% } %>
+              <% if (review.content) { %>
+                <p><%= review.content %></p>
+              <% } %>
+              <% if (review.categories && review.categories.length > 0) { %>
+                <p><strong>Categories:</strong> <%= review.categories.join(', ') %></p>
+              <% } %>
+              <small class="text-muted">Reviewed on: <%= new Date(review.createdAt).toDateString() %></small>
             </div>
           </div>
-        </div>
-      <% }) %>
+        <% }); %>
+      <% } else { %>
+        <p>You haven't written any reviews yet.</p>
+      <% } %>
     </div>
-  <% } %>
+  </div>
+
+  <hr class="bg-secondary">
+
+  <!-- User's Watchlist Section -->
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="text-warning">My Watchlist</h3>
+      <% if (watchlistMovies && watchlistMovies.length > 0) { %>
+        <div class="row">
+          <% watchlistMovies.forEach(function(movie) { %>
+            <div class="col-md-3 mb-3">
+              <div class="card hover-zoom">
+                <img src="<%= movie.posterPath ? ('https://image.tmdb.org/t/p/w300' + movie.posterPath) : '/images/placeholder.png' %>" class="card-img-top" alt="<%= movie.title %> Poster">
+                <div class="card-body">
+                  <h5 class="card-title text-warning" style="font-family: 'Bebas Neue', sans-serif;"><%= movie.title %></h5>
+                  <a href="/movies/<%= movie._id %>" class="btn btn-warning btn-sm">View</a>
+                  <form action="/profile/watchlist/remove" method="POST" style="display:inline;">
+                    <input type="hidden" name="movieId" value="<%= movie._id %>">
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p>Your watchlist is empty. Browse movies and add your favorites!</p>
+      <% } %>
+    </div>
+  </div>
 </div>

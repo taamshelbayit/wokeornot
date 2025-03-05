@@ -1,6 +1,5 @@
 // app.js
 require('dotenv').config();
-
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -13,6 +12,8 @@ const i18n = require('i18n');
 const Sentry = require('@sentry/node');  // optional
 const apicache = require('apicache');    // optional
 const cache = apicache.middleware;
+const http = require('http');
+const socketIo = require('socket.io');
 
 const app = express();
 
@@ -38,7 +39,7 @@ app.set('views', path.join(__dirname, 'views'));
 // 4) Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Provide defaults for dynamic references in layout
+// Provide defaults for dynamic references in layout (meta tags, etc.)
 app.use((req, res, next) => {
   res.locals.pageTitle = 'WokeOrNot';
   res.locals.pageDescription = 'Rate the Wokeness of your favorite shows & movies.';
@@ -47,7 +48,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// 5) i18n init
+// 5) i18n init (internationalization)
 i18n.configure({
   locales: ['en'],
   directory: path.join(__dirname, 'locales'),
@@ -75,13 +76,29 @@ app.use(passport.session());
 // 9) Connect flash
 app.use(flash());
 
-// 10) Global vars
+// 10) Global flash vars and user
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg   = req.flash('error_msg');
   res.locals.error       = req.flash('error');
   res.locals.user        = req.user || null;
   next();
+});
+
+// Socket.io setup for real-time notifications
+const server = http.createServer(app);
+const io = socketIo(server);
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+io.on('connection', socket => {
+  console.log('Socket connected');
+  socket.on('join', userId => {
+    if (userId) {
+      socket.join(userId);
+    }
+  });
 });
 
 // 11) Routes
@@ -97,14 +114,13 @@ app.use('/feed', require('./routes/feed'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/blog', require('./routes/blog'));
 app.use('/users', require('./routes/users'));
-
 app.use('/sitemap.xml', require('./routes/sitemap'));
 
-// 12) Sentry error handler if DSN is set
+// 12) Sentry error handler (if using Sentry)
 if (process.env.SENTRY_DSN) {
   app.use(Sentry.Handlers.errorHandler());
 }
 
 // 13) Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server started on port ${PORT}`));

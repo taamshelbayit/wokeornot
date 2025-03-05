@@ -1,25 +1,30 @@
 <% layout('layout') %>
 
-<!-- Include Chart.js if you're still using the category chart -->
+<!-- Include Chart.js for the category trends chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="container mt-4 movie-details text-light">
   <div class="row">
+    <!-- Movie Poster -->
     <div class="col-md-4">
       <% if (movie.posterPath) { %>
         <img
           src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>"
           class="img-fluid mb-3"
-          alt="<%= movie.title %>"
+          alt="<%= movie.title %> Poster"
         >
+      <% } else { %>
+        <img src="/images/placeholder.png" class="img-fluid mb-3" alt="Placeholder">
       <% } %>
     </div>
+    <!-- Movie Details -->
     <div class="col-md-8">
-      <h2 style="font-family: 'Bebas Neue', sans-serif;">
-        <%= movie.title %>
-      </h2>
+      <h2 style="font-family: 'Bebas Neue', sans-serif;"><%= movie.title %></h2>
       <p><%= movie.description %></p>
-
+      <p>
+        <strong>Release Date:</strong>
+        <%= movie.releaseDate ? new Date(movie.releaseDate).toDateString() : 'Unknown' %>
+      </p>
       <!-- Show average rating or "No Ratings" -->
       <% if (movie.ratings && movie.ratings.length > 0) { %>
         <p>
@@ -33,7 +38,7 @@
         </p>
       <% } %>
 
-      <!-- Category Gradience -->
+      <!-- Display Woke Categories if available -->
       <% if (categoryCounts && categoryCounts.length > 0) { %>
         <h5 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
           Woke Categories Chosen:
@@ -44,6 +49,21 @@
           <% }) %>
         </ul>
       <% } %>
+
+      <!-- Social Sharing Links for Movie -->
+      <p>
+        <strong>Share this movie:</strong>
+        <a href="#" id="share-twitter-movie">Twitter</a> |
+        <a href="#" id="share-facebook-movie">Facebook</a>
+      </p>
+      <script>
+        document.getElementById("share-twitter-movie").href =
+          "https://twitter.com/intent/tweet?text=" +
+          encodeURIComponent("Check out the movie <%= movie.title %> on WokeOrNot!") +
+          "&url=" + encodeURIComponent(window.location.href);
+        document.getElementById("share-facebook-movie").href =
+          "https://www.facebook.com/sharer.php?u=" + encodeURIComponent(window.location.href);
+      </script>
     </div>
   </div>
 </div>
@@ -67,7 +87,7 @@
       </em>
     </p>
 
-    <!-- Star Rating (1-10) with neutral color by default -->
+    <!-- Star Rating (1-10) -->
     <div class="form-group">
       <label class="font-weight-bold d-block">Woke Rating (1-10)</label>
       <div class="star-rating mb-3">
@@ -78,6 +98,7 @@
             id="rating-<%= i %>"
             value="<%= i %>"
             aria-label="<%= i %> stars"
+            data-value="<%= i %>"
           >
           <label
             for="rating-<%= i %>"
@@ -109,6 +130,7 @@
         name="content"
         class="form-control"
         rows="3"
+        placeholder="Share your thoughts..."
       ></textarea>
     </div>
 
@@ -153,7 +175,7 @@
     User Reviews
   </h3>
   <% if (movie.reviews.length === 0) { %>
-    <p>No reviews yet. Be the first to rate!</p>
+    <p>No reviews yet. Be the first to review this movie!</p>
   <% } else { %>
     <% movie.reviews.forEach(review => { %>
       <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
@@ -167,13 +189,18 @@
           <% if (review.content) { %>
             <p><strong>Review:</strong> <%= review.content %></p>
           <% } %>
-          <p>
-            <strong>Woke Categories:</strong>
-            <%= review.categories.join(', ') %>
-          </p>
+          <% if (review.categories && review.categories.length > 0) { %>
+            <p>
+              <strong>Woke Categories:</strong>
+              <%= review.categories.join(', ') %>
+            </p>
+          <% } %>
+          <small class="text-muted">
+            Reviewed on: <%= new Date(review.createdAt).toDateString() %>
+          </small>
         </div>
       </div>
-    <% }) %>
+    <% }); %>
   <% } %>
 </div>
 
@@ -211,9 +238,8 @@
         <div class="card-body">
           <p><%= comment.content %></p>
           <small class="text-muted">
-            Posted by
-            <%= comment.user && comment.user.name ? comment.user.name : "Unknown" %>
-            on <%= comment.createdAt.toDateString() %>
+            Posted by <%= comment.user && comment.user.name ? comment.user.name : "Unknown" %>
+            on <%= new Date(comment.createdAt).toDateString() %>
           </small>
         </div>
       </div>
@@ -232,7 +258,6 @@
       const ctx = document.getElementById('categoryChart').getContext('2d');
       const labels = [<% categoryCounts.forEach(cc => { %>'<%= cc.category %>',<% }) %>];
       const data = [<% categoryCounts.forEach(cc => { %><%= cc.count %>,<% }) %>];
-
       new Chart(ctx, {
         type: 'bar',
         data: {
@@ -255,50 +280,30 @@
   </div>
 <% } %>
 
-<!-- JavaScript for:
-  1) Neutral star color by default (#ccc)
-  2) Color gradient on hover or selection
-  3) Disabling star rating if "Not Woke" is checked, and vice versa
--->
+<!-- JavaScript for Star Rating Interactions -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // 1) Neutral color by default => in CSS, we ensure label is #ccc
-  // We'll do gradient only on hover or selection.
-
   const notWokeCheckbox = document.getElementById('notWoke');
   const starInputs = Array.from(document.querySelectorAll('.star-rating input[type="radio"]'));
   const starLabels = Array.from(document.querySelectorAll('.star-rating label'));
-
-  // Sort starLabels ascending by data-value (so index 0 => 1 star, index 9 => 10 stars)
-  // We'll store them in starLabelsAsc so starLabelsAsc[0] => data-value=1
   const starLabelsAsc = starLabels.slice().sort((a, b) => {
     let av = parseInt(a.getAttribute('data-value'), 10);
     let bv = parseInt(b.getAttribute('data-value'), 10);
     return av - bv;
   });
-
-  // Function to compute hue (1=green=120, 10=red=0)
   function getHue(starValue) {
-    // starValue 1..10 => hue 120..0
     return 120 - ((starValue - 1) * (120 / 9));
   }
-
-  // Color a star label by its data-value
   function colorStar(label, starValue) {
     const hue = getHue(starValue);
     label.style.color = `hsl(${hue}, 100%, 50%)`;
   }
-
-  // Reset a star label to neutral
   function resetStar(label) {
     label.style.color = '#ccc';
   }
-
-  // Highlight from 1..value
   function highlightStarsUpTo(value) {
-    // For each star 1..10
     for (let i = 1; i <= 10; i++) {
-      let label = starLabelsAsc[i-1]; // i-1 => index
+      let label = starLabelsAsc[i-1];
       if (i <= value) {
         colorStar(label, i);
       } else {
@@ -306,50 +311,34 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
-
-  // Returns the currently selected star rating (1..10 or null if none)
   function getSelectedStar() {
     let checkedRadio = starInputs.find(r => r.checked);
     if (!checkedRadio) return null;
     return parseInt(checkedRadio.value, 10);
   }
-
-  // Update the visual state based on notWoke and star selection
   function updateState() {
     if (notWokeCheckbox.checked) {
-      // If "Not Woke" => disable all star inputs, uncheck them, reset color
       starInputs.forEach(input => {
         input.disabled = true;
         input.checked = false;
       });
-      highlightStarsUpTo(0); // none
+      highlightStarsUpTo(0);
     } else {
-      // enable star inputs
       starInputs.forEach(input => {
         input.disabled = false;
       });
-      // highlight the selected star if any
       let sel = getSelectedStar();
       highlightStarsUpTo(sel || 0);
     }
-
-    // If any star is selected => disable "Not Woke"
     notWokeCheckbox.disabled = !!getSelectedStar();
   }
-
-  // 2) Add event listeners for star hover
   starLabels.forEach(label => {
     const starValue = parseInt(label.getAttribute('data-value'), 10);
-
-    // Mouse over => highlight up to that star
     label.addEventListener('mouseover', () => {
-      // only if notWoke is not checked
       if (!notWokeCheckbox.checked) {
         highlightStarsUpTo(starValue);
       }
     });
-
-    // Mouse out => revert to selected star
     label.addEventListener('mouseout', () => {
       if (!notWokeCheckbox.checked) {
         let sel = getSelectedStar();
@@ -357,18 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
-
-  // 3) starInputs => on change => updateState
   starInputs.forEach(input => {
     input.addEventListener('change', () => {
       updateState();
     });
   });
-
-  // 4) notWoke => on change => updateState
   notWokeCheckbox.addEventListener('change', updateState);
-
-  // Initialize
   updateState();
 });
 </script>

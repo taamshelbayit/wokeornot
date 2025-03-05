@@ -1,9 +1,7 @@
 <% layout('layout') %>
 
 <div class="container mt-4 text-light">
-  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    Notifications
-  </h2>
+  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Notifications</h2>
 
   <% if (notifications.length === 0) { %>
     <p>No notifications yet.</p>
@@ -13,18 +11,14 @@
     </form>
 
     <% notifications.forEach(n => { %>
-      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+      <div class="card mb-3 notification-card <%= n.read ? '' : 'unread' %>" style="background-color: #1e1e1e; color: #fff;">
         <div class="card-body">
-          <p>
-            <%= n.message %>
-            <% if (n.link) { %>
-              <a href="<%= n.link %>" class="text-warning">View</a>
-            <% } %>
-          </p>
-          <% if (!n.read) { %>
-            <span class="badge badge-danger">Unread</span>
+          <p><%= n.message %></p>
+          <% if (n.link) { %>
+            <!-- If a link is provided, make the notification clickable -->
+            <a href="<%= n.link %>" class="text-warning">View details</a>
           <% } %>
-          <small class="text-muted d-block">Created: <%= n.createdAt.toDateString() %></small>
+          <small class="text-muted d-block">Received: <%= n.createdAt.toDateString() %></small>
         </div>
       </div>
     <% }) %>
