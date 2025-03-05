@@ -39,6 +39,8 @@ const UserSchema = new mongoose.Schema({
   verifyExpires: {
     type: Date
   }
+  following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+
   // etc. (badges, watchers, etc.)
 }, { timestamps: true });
 
