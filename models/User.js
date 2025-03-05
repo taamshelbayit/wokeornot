@@ -38,9 +38,9 @@ const UserSchema = new mongoose.Schema({
   },
   verifyExpires: {
     type: Date
-  }
-  following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-
+  },
+  // Add a comma after the previous field
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   // etc. (badges, watchers, etc.)
 }, { timestamps: true });
 
