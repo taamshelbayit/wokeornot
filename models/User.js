@@ -39,8 +39,10 @@ const UserSchema = new mongoose.Schema({
   verifyExpires: {
     type: Date
   },
-  // Add a comma after the previous field
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+  // Define the following field: users this user is following
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  // Define the followers field: users following this user
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   // etc. (badges, watchers, etc.)
 }, { timestamps: true });
 
