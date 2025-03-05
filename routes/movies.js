@@ -3,79 +3,77 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const Movie = require('../models/Movie');
-const Review = require('../models/Review'); // if you do category stats
+const Review = require('../models/Review'); // for category stats, if needed
 const { ensureAuthenticated } = require('../utils/auth');
 
 /**
  * GET /movies
- *   ?type=Movie|TV|Kids
- *   ?genre=XX
- *   ?q=title
- *   ?page=N  (for pagination)
+ *   Query params:
+ *   - ?type=Movie|TV|Kids
+ *   - ?genre=XX (TMDb numeric genre ID)
+ *   - ?q=title (search string)
+ *   - ?page=N  (for pagination)
+ *
+ * Steps:
+ * 1) If user typed q or picked genre => fetch from TMDb
+ * 2) Upsert those items into local DB
+ * 3) Also fetch local DB items for the given contentType
+ * 4) Merge everything, remove duplicates
+ * 5) Sort by averageRating desc, fallback popularity desc
+ * 6) Paginate with limit=12
+ * 7) If AJAX => return JSON, else render list.ejs
  */
 router.get('/', async (req, res) => {
   try {
     const { type, genre, q, page } = req.query;
     const contentType = type || 'Movie';
 
-    // "Load More" or basic pagination
-    const limit = 12; // how many items per page
+    // "Load More" style pagination
+    const limit = 12;
     const currentPage = parseInt(page, 10) || 1;
     const skip = (currentPage - 1) * limit;
 
     const apiKey = process.env.TMDB_API_KEY;
     let tmdbResults = [];
 
-    /********************************************************************
-     * 1) Decide if we fetch from TMDb or not:
-     *    - If user has q or genre => fetch from TMDb
-     *    - else => local DB only
-     ********************************************************************/
+    // 1) Possibly fetch from TMDb if q or genre is provided
     if ((q && q.trim() !== '') || genre) {
-      // User provided either a search q or a genre => do TMDb fetch
-
-      // We'll handle "contentType === 'TV'" vs "Kids" vs default "Movie"
+      // We handle searching vs discover, and contentType
       if (q && q.trim() !== '') {
-        // user typed a search query
+        // Searching by q
         if (contentType === 'TV') {
           const tvSearchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
           const tvResp = await axios.get(tvSearchUrl);
           tmdbResults = tvResp.data.results || [];
 
           if (genre) {
-            // numeric genre => filter
             tmdbResults = tmdbResults.filter(r =>
-              Array.isArray(r.genre_ids) &&
-              r.genre_ids.includes(parseInt(genre))
+              Array.isArray(r.genre_ids) && r.genre_ids.includes(parseInt(genre))
             );
           }
         } else if (contentType === 'Kids') {
-          // searching in "movies" but we label them "Kids"
           const kidsSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
           const kidsResp = await axios.get(kidsSearchUrl);
           tmdbResults = kidsResp.data.results || [];
 
           if (genre) {
             tmdbResults = tmdbResults.filter(r =>
-              Array.isArray(r.genre_ids) &&
-              r.genre_ids.includes(parseInt(genre))
+              Array.isArray(r.genre_ids) && r.genre_ids.includes(parseInt(genre))
             );
           }
         } else {
-          // default to searching movies
+          // default: searching Movies
           const movSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}`;
           const movResp = await axios.get(movSearchUrl);
           tmdbResults = movResp.data.results || [];
 
           if (genre) {
             tmdbResults = tmdbResults.filter(r =>
-              Array.isArray(r.genre_ids) &&
-              r.genre_ids.includes(parseInt(genre))
+              Array.isArray(r.genre_ids) && r.genre_ids.includes(parseInt(genre))
             );
           }
         }
-      }
-      else if (genre) {
+      } else if (genre) {
         // user only picked a genre => discover
         if (contentType === 'TV') {
           const tvDiscover = `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&with_genres=${genre}`;
@@ -92,66 +90,55 @@ router.get('/', async (req, res) => {
           tmdbResults = mdResp.data.results || [];
         }
       }
-
-    } else {
-      // no q, no genre => local DB only => skip TMDb fetch
     }
+    // else => no q, no genre => skip external fetch (local DB only)
 
-    /********************************************************************
-     * 2) Upsert TMDb items (if we have any in tmdbResults)
-     ********************************************************************/
+    // 2) Upsert any TMDb items
     let finalList = [];
-    if (tmdbResults.length > 0) {
-      for (let item of tmdbResults) {
-        const tmdbId = item.id.toString();
-        let found = await Movie.findOne({ tmdbId });
-        if (!found) {
-          // create new doc
-          const title = item.title || item.name || 'Untitled';
-          const releaseDate = item.release_date || item.first_air_date;
-          const posterPath = item.poster_path;
-          const description = item.overview || '';
-          const popularity = item.popularity || 0;
+    for (let item of tmdbResults) {
+      const tmdbId = item.id.toString();
+      let found = await Movie.findOne({ tmdbId });
+      if (!found) {
+        const title = item.title || item.name || 'Untitled';
+        const releaseDate = item.release_date || item.first_air_date;
+        const posterPath = item.poster_path || '';
+        const description = item.overview || '';
+        const popularity = item.popularity || 0;
 
-          let newDoc = new Movie({
-            title,
-            tmdbId,
-            description,
-            releaseDate,
-            posterPath,
-            contentType,
-            popularity
-          });
-          await newDoc.save();
-          finalList.push(newDoc);
-        } else {
-          finalList.push(found);
-        }
+        const newDoc = new Movie({
+          title,
+          tmdbId,
+          description,
+          releaseDate,
+          posterPath,
+          contentType,
+          popularity
+        });
+        await newDoc.save();
+        finalList.push(newDoc);
+      } else {
+        finalList.push(found);
       }
     }
 
-    /********************************************************************
-     * 3) Decide which items to show:
-     *    - If tmdbResults > 0 => show ONLY those items
-     *    - else => local DB items
-     ********************************************************************/
-    let allItems = [];
-    if (tmdbResults.length > 0) {
-      // user is searching or picking a genre => show only these new items
-      allItems = finalList;
-    } else {
-      // no q, no genre => local DB only
-      let dbQuery = { contentType };
-      let localDBItems = await Movie.find(dbQuery)
-        .sort({ averageRating: -1 })
-        .limit(200);
+    // 3) Also fetch local DB items for the given contentType
+    // (We do not store numeric genre IDs, so we can't filter local items by "genre=27")
+    const dbQuery = { contentType };
+    const localDBItems = await Movie.find(dbQuery)
+      .sort({ averageRating: -1 }) // or popularity, up to you
+      .limit(200);
 
-      allItems = localDBItems;
+    // 4) Merge local items + newly upserted
+    let allItems = [...localDBItems];
+    for (let doc of finalList) {
+      if (!allItems.find(d => d._id.equals(doc._id))) {
+        allItems.push(doc);
+      }
     }
 
     // remove duplicates
-    let uniqueMap = new Map();
-    let uniqueResults = [];
+    const uniqueMap = new Map();
+    const uniqueResults = [];
     for (let r of allItems) {
       if (!uniqueMap.has(r._id.toString())) {
         uniqueMap.set(r._id.toString(), true);
@@ -159,12 +146,10 @@ router.get('/', async (req, res) => {
       }
     }
 
-    /********************************************************************
-     * 4) Sort them => rating desc, fallback popularity
-     ********************************************************************/
+    // 5) Sort => rating desc, fallback popularity
     uniqueResults.sort((a, b) => {
-      const aHasRating = (a.ratings && a.ratings.length > 0);
-      const bHasRating = (b.ratings && b.ratings.length > 0);
+      const aHasRating = a.ratings && a.ratings.length > 0;
+      const bHasRating = b.ratings && b.ratings.length > 0;
 
       if (aHasRating && bHasRating) {
         return (b.averageRating || 0) - (a.averageRating || 0);
@@ -178,9 +163,7 @@ router.get('/', async (req, res) => {
       }
     });
 
-    /********************************************************************
-     * 5) Pagination
-     ********************************************************************/
+    // 6) Pagination
     const total = uniqueResults.length;
     const results = uniqueResults.slice(skip, skip + limit);
     const totalPages = Math.ceil(total / limit);
@@ -203,7 +186,6 @@ router.get('/', async (req, res) => {
       totalPages,
       totalCount: total
     });
-
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error fetching items');
@@ -212,8 +194,8 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /movies/add?tmdbId=...
- * Upsert from TMDb
+ * GET /movies/add?tmdbId=... => upsert from TMDb
+ * Must be defined BEFORE /:id so we don't treat "add" as an :id
  */
 router.get('/add', ensureAuthenticated, async (req, res) => {
   try {
@@ -295,12 +277,13 @@ router.get('/:id', async (req, res) => {
     const movie = await Movie.findById(req.params.id)
       .populate('reviews')
       .populate('forum'); // if you have a forum array
+
     if (!movie) {
       req.flash('error_msg', 'Movie not found');
       return res.redirect('/');
     }
 
-    // e.g. categoryCounts for woke categories
+    // If you want woke category stats
     const categoryCounts = await Review.aggregate([
       { $match: { movie: movie._id } },
       { $unwind: '$categories' },
