@@ -32,6 +32,13 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Add verification fields:
+  verifyToken: {
+    type: String
+  },
+  verifyExpires: {
+    type: Date
+  }
   // etc. (badges, watchers, etc.)
 }, { timestamps: true });
 
