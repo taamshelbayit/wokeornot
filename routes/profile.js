@@ -39,6 +39,25 @@ router.get('/', ensureAuthenticated, async (req, res) => {
 });
 
 /**
+ * GET /profile/edit => show form to edit current user's profile
+ * (Moved above /profile/:id to avoid "edit" being cast to ObjectId)
+ */
+router.get('/edit', ensureAuthenticated, async (req, res) => {
+  try {
+    const profileUser = await User.findById(req.user._id);
+    if (!profileUser) {
+      req.flash('error_msg', 'User not found');
+      return res.redirect('/profile');
+    }
+    res.render('profile-edit', { profileUser });
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error loading edit form');
+    res.redirect('/profile');
+  }
+});
+
+/**
  * GET /profile/:id => show another user's profile
  */
 router.get('/:id', ensureAuthenticated, async (req, res) => {
@@ -71,24 +90,6 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
     console.error(err);
     req.flash('error_msg', 'Error loading user profile');
     res.redirect('/');
-  }
-});
-
-/**
- * GET /profile/edit => show form to edit current user's profile
- */
-router.get('/edit', ensureAuthenticated, async (req, res) => {
-  try {
-    const profileUser = await User.findById(req.user._id);
-    if (!profileUser) {
-      req.flash('error_msg', 'User not found');
-      return res.redirect('/profile');
-    }
-    res.render('profile-edit', { profileUser });
-  } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error loading edit form');
-    res.redirect('/profile');
   }
 });
 
