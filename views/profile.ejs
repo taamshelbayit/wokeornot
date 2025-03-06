@@ -14,6 +14,22 @@
       </h2>
       <p><strong>Email:</strong> <%= profileUser.email %></p>
       <p><strong>Role:</strong> <%= profileUser.role %></p>
+      <% if (profileUser.bio) { %>
+        <p><strong>Bio:</strong> <%= profileUser.bio %></p>
+      <% } %>
+      <% if (profileUser.location) { %>
+        <p><strong>Location:</strong> <%= profileUser.location %></p>
+      <% } %>
+      <% if (profileUser.socialLinks) { %>
+        <p><strong>Social Links:</strong>
+          <% if (profileUser.socialLinks.twitter) { %>
+            <a href="<%= profileUser.socialLinks.twitter %>">Twitter</a>
+          <% } %>
+          <% if (profileUser.socialLinks.linkedin) { %>
+            | <a href="<%= profileUser.socialLinks.linkedin %>">LinkedIn</a>
+          <% } %>
+        </p>
+      <% } %>
       <% if (profileUser.badges && profileUser.badges.length > 0) { %>
         <p><strong>Badges:</strong> <%= profileUser.badges.join(', ') %></p>
       <% } %>

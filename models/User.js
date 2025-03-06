@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    // only required if googleId is not present
+    // Only required if googleId is not present
     required: function() {
       return !this.googleId;
     }
@@ -32,25 +32,35 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  // Add verification fields:
+  // Verification fields:
   verifyToken: {
     type: String
   },
   verifyExpires: {
     type: Date
   },
-  // Define the following field: users this user is following
+  // Additional profile fields:
+  profileImage: {
+    type: String
+  },
+  bio: {
+    type: String
+  },
+  location: {
+    type: String
+  },
+  socialLinks: {
+    twitter: { type: String },
+    linkedin: { type: String }
+  },
+  // Following system fields:
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  // Define the followers field: users following this user
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
-  // etc. (badges, watchers, etc.)
 }, { timestamps: true });
 
-// If password is modified and not empty, hash it
+// Hash the password if it is modified and not empty
 UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password') || !this.password) {
-    return next();
-  }
+  if (!this.isModified('password') || !this.password) return next();
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

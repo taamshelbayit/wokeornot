@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+
+<div class="container mt-4">
+  <div class="forum-thread">
+    <h2 class="text-warning"><%= post.title %></h2>
+    <p>Posted by <%= post.author.firstName %> <%= post.author.lastName %> on <%= new Date(post.createdAt).toDateString() %></p>
+    <div class="post-content">
+      <%= post.content %>
+    </div>
+    <hr>
+    <h3 class="text-warning">Comments</h3>
+    <div id="comments">
+      <% if (comments && comments.length > 0) { %>
+        <% comments.forEach(function(comment) { %>
+          <div class="card mb-2" style="background-color: #1e1e1e;">
+            <div class="card-body">
+              <p><strong><%= comment.author.firstName %>:</strong> <%= comment.content %></p>
+              <small class="text-muted"><%= new Date(comment.createdAt).toDateString() %></small>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p>No comments yet.</p>
+      <% } %>
+    </div>
+    <form action="/forum/<%= post._id %>/comment" method="POST">
+      <div class="form-group">
+        <textarea class="form-control" name="content" placeholder="Add your comment..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-warning">Post Comment</button>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
