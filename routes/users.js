@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Review = require('../models/Review'); // or wherever your Review model is
+const Post = require('../models/Post');     // forum posts
 const { ensureAuthenticated } = require('../utils/auth');
 const userController = require('../controllers/userController');
 
@@ -17,11 +19,20 @@ router.get('/', ensureAuthenticated, async (req, res) => {
         { email: { $regex: q, $options: 'i' } }
       ];
     }
-    // Exclude self from the search results
+    // Exclude the current user from the list
     query._id = { $ne: req.user._id };
 
     const users = await User.find(query).limit(50);
-    res.render('users-list', { users, searchQuery: q });
+
+    // For each user, fetch stats (reviews count, posts count)
+    const userStats = {};
+    for (let u of users) {
+      const reviewCount = await Review.countDocuments({ user: u._id });
+      const postCount = await Post.countDocuments({ author: u._id, parentPost: null }); // only top-level posts
+      userStats[u._id] = { reviewCount, postCount };
+    }
+
+    res.render('users-list', { users, userStats, searchQuery: q });
   } catch (err) {
     console.error(err);
     req.flash('error_msg', 'Error loading user list');

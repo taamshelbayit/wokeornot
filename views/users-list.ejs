@@ -1,43 +1,54 @@
-<% layout('layout', {
-  pageTitle: 'User Directory',
-  pageDescription: 'Browse or search for users to follow.'
-}) %>
+<!-- views/users-list.ejs -->
+<% layout('layout') %>
 
 <div class="container mt-4">
-  <h2 class="text-warning">User Directory</h2>
-
-  <form action="/users" method="GET" class="mb-3">
-    <input
-      type="text"
-      name="q"
-      placeholder="Search users..."
-      value="<%= searchQuery %>"
-      class="form-control"
-      style="max-width: 300px; display:inline-block;"
-    >
-    <button class="btn btn-primary">Search</button>
+  <h1 class="text-warning">User Directory</h1>
+  <form class="form-inline mb-3" method="GET" action="/users">
+    <input type="text" name="q" class="form-control mr-2" placeholder="Search users..." value="<%= searchQuery %>">
+    <button type="submit" class="btn btn-primary">Search</button>
   </form>
 
-  <% if (!users || users.length === 0) { %>
+  <% if (users.length === 0) { %>
     <p>No users found.</p>
   <% } else { %>
-    <ul class="list-group">
-      <% users.forEach(u => { %>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <span>
-            <%= u.firstName %> <%= u.lastName %> (<%= u.email %>)
-          </span>
-          <% if (!user.following.includes(u._id)) { %>
-            <form action="/users/follow/<%= u._id %>" method="POST" style="display:inline;">
-              <button class="btn btn-sm btn-success">Follow</button>
-            </form>
-          <% } else { %>
-            <form action="/users/unfollow/<%= u._id %>" method="POST" style="display:inline;">
-              <button class="btn btn-sm btn-danger">Unfollow</button>
-            </form>
-          <% } %>
-        </li>
-      <% }) %>
-    </ul>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Reviews</th>
+            <th>Forum Posts</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach(userItem => { %>
+            <tr>
+              <td>
+                <!-- Link to the user's profile -->
+                <a href="/profile/<%= userItem._id %>" class="text-warning">
+                  <%= userItem.firstName %> <%= userItem.lastName %>
+                </a>
+              </td>
+              <td><%= userItem.email %></td>
+              <td><%= userStats[userItem._id].reviewCount %></td>
+              <td><%= userStats[userItem._id].postCount %></td>
+              <td>
+                <% if (user.following && user.following.includes(userItem._id.toString())) { %>
+                  <form action="/users/unfollow/<%= userItem._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Unfollow</button>
+                  </form>
+                <% } else { %>
+                  <form action="/users/follow/<%= userItem._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-success btn-sm">Follow</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   <% } %>
 </div>

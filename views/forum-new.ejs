@@ -1,0 +1,18 @@
+<%- include('layout') %>
+
+<div class="container mt-4">
+  <h1 class="text-warning">Create New Thread</h1>
+  <form action="/forum/new" method="POST">
+    <div class="form-group">
+      <label for="title">Thread Title</label>
+      <input type="text" class="form-control" id="title" name="title" placeholder="Enter thread title" required>
+    </div>
+    <div class="form-group">
+      <label for="content">Content</label>
+      <textarea class="form-control" id="content" name="content" rows="5" placeholder="Write your post here..." required></textarea>
+    </div>
+    <button type="submit" class="btn btn-warning">Create Thread</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

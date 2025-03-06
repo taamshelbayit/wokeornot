@@ -1,104 +1,110 @@
 // routes/forum.js
 const express = require('express');
 const router = express.Router();
-const Comment = require('../models/Comment');
-const Movie = require('../models/Movie');
-const Notification = require('../models/Notification');
-const User = require('../models/User');
+const Post = require('../models/Post');
 const { ensureAuthenticated } = require('../utils/auth');
 
 /**
- * GET /forum/:movieId - View discussion forum for a movie (comments and replies)
+ * GET /forum - List all top-level forum posts
  */
-router.get('/:movieId', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.movieId);
-    if (!movie) {
-      req.flash('error_msg', 'Movie not found');
-      return res.redirect('/');
-    }
-    const sort = req.query.sort || 'newest';
-    let sortObj = { createdAt: -1 };
-    if (sort === 'oldest') sortObj = { createdAt: 1 };
-    // Fetch top-level comments for the movie
-    const comments = await Comment.find({ movie: movie._id, parentComment: null })
-      .sort(sortObj)
-      .populate('user');
-    // Fetch replies for each top-level comment
-    for (let c of comments) {
-      c.children = await Comment.find({ parentComment: c._id })
-        .sort({ createdAt: 1 })
-        .populate('user');
-    }
-    res.render('forum', { movie, comments, sort });
+    // Only show top-level posts (where parentPost is null)
+    const posts = await Post.find({ parentPost: null })
+      .populate('author')
+      .sort({ createdAt: -1 });
+
+    res.render('forum-list', { posts });
   } catch (err) {
-    console.error(err);
+    console.error('Error loading forum list:', err);
     req.flash('error_msg', 'Error loading forum');
     res.redirect('/');
   }
 });
 
 /**
- * POST /forum/add/:movieId - Add a new comment (or reply) to a movie's forum
+ * GET /forum/new - Show form to create a new thread
  */
-router.post('/add/:movieId', ensureAuthenticated, async (req, res) => {
+router.get('/new', ensureAuthenticated, (req, res) => {
+  res.render('forum-new');
+});
+
+/**
+ * POST /forum/new - Create a new top-level post (thread)
+ */
+router.post('/new', ensureAuthenticated, async (req, res) => {
   try {
-    const { content, parentId } = req.body;
-    const movie = await Movie.findById(req.params.movieId);
-    if (!movie) {
-      req.flash('error_msg', 'Movie not found');
-      return res.redirect('/');
+    const { title, content } = req.body;
+    if (!title || !content) {
+      req.flash('error_msg', 'Title and content are required');
+      return res.redirect('/forum/new');
     }
-    // Create and save the new comment
-    const newComment = new Comment({
-      movie: movie._id,
-      user: req.user._id,
+    const newPost = new Post({
+      title,
       content,
-      parentComment: parentId || null
+      author: req.user._id
     });
-    await newComment.save();
-    req.flash('success_msg', 'Comment added');
-    res.redirect(`/forum/${movie._id}`);
+    await newPost.save();
+    req.flash('success_msg', 'New thread created');
+    res.redirect('/forum');
   } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error adding comment');
-    res.redirect('/');
+    console.error('Error creating new thread:', err);
+    req.flash('error_msg', 'Error creating thread');
+    res.redirect('/forum');
   }
 });
 
 /**
- * POST /forum/flag/:commentId - Flag a comment for moderation
+ * GET /forum/:id - View a single thread with its replies
  */
-router.post('/flag/:commentId', ensureAuthenticated, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const comment = await Comment.findById(req.params.commentId).populate('movie');
-    if (!comment) {
-      req.flash('error_msg', 'Comment not found.');
-      return res.redirect('back');
+    const post = await Post.findById(req.params.id).populate('author');
+    if (!post) {
+      req.flash('error_msg', 'Thread not found');
+      return res.redirect('/forum');
     }
-    // Mark comment as flagged
-    comment.flagged = true;
-    await comment.save();
-    // Notify all admins about the flagged comment
-    const admins = await User.find({ role: 'admin' });
-    for (let admin of admins) {
-      await Notification.create({
-        user: admin._id,
-        message: `Comment flagged by ${req.user.firstName} on "${comment.movie.title}"`,
-        link: `/forum/${comment.movie._id}`,
-        read: false
-      });
-      // Emit real-time notification to admin if connected
-      req.io.to(admin._id.toString()).emit('notification', {
-        message: `A comment on "${comment.movie.title}" was flagged.`
-      });
-    }
-    req.flash('success_msg', 'Comment flagged for review.');
-    res.redirect(`/forum/${comment.movie._id}`);
+    // fetch replies for this post
+    const comments = await Post.find({ parentPost: post._id })
+      .populate('author')
+      .sort({ createdAt: 1 });
+
+    res.render('forum-thread', { post, comments });
   } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error flagging comment.');
-    res.redirect('back');
+    console.error('Error loading thread:', err);
+    req.flash('error_msg', 'Error loading thread');
+    res.redirect('/forum');
+  }
+});
+
+/**
+ * POST /forum/:id/comment - Post a reply to a thread
+ */
+router.post('/:id/comment', ensureAuthenticated, async (req, res) => {
+  try {
+    const { content } = req.body;
+    if (!content) {
+      req.flash('error_msg', 'Content cannot be empty');
+      return res.redirect(`/forum/${req.params.id}`);
+    }
+    // Create a new Post as a comment
+    const newComment = new Post({
+      title: 'Re: ' + req.params.id,
+      content,
+      author: req.user._id,
+      parentPost: req.params.id
+    });
+    await newComment.save();
+
+    // Update the parent post's comments array
+    await Post.findByIdAndUpdate(req.params.id, { $push: { comments: newComment._id } });
+
+    req.flash('success_msg', 'Reply posted');
+    res.redirect(`/forum/${req.params.id}`);
+  } catch (err) {
+    console.error('Error posting reply:', err);
+    req.flash('error_msg', 'Error posting reply');
+    res.redirect(`/forum/${req.params.id}`);
   }
 });
 

@@ -12,8 +12,8 @@ const { ensureAuthenticated } = require('../utils/auth');
 router.get('/', ensureAuthenticated, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate('following', 'firstName lastName email') // see who they follow
-      .populate('followers', 'firstName lastName email'); // if you track followers
+      .populate('following', 'firstName lastName email')
+      .populate('followers', 'firstName lastName email');
 
     // Fetch user’s reviews
     const reviews = await Review.find({ user: user._id })
@@ -25,9 +25,6 @@ router.get('/', ensureAuthenticated, async (req, res) => {
     if (user.watchlist && user.watchlist.length > 0) {
       watchlistMovies = await Movie.find({ _id: { $in: user.watchlist } });
     }
-
-    // Achievements
-    // e.g. 10-reviews, 50-reviews, first Not Woke mark, etc. stored in user.badges
 
     res.render('profile', {
       profileUser: user,
@@ -74,6 +71,55 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
     console.error(err);
     req.flash('error_msg', 'Error loading user profile');
     res.redirect('/');
+  }
+});
+
+/**
+ * GET /profile/edit => show form to edit current user's profile
+ */
+router.get('/edit', ensureAuthenticated, async (req, res) => {
+  try {
+    const profileUser = await User.findById(req.user._id);
+    if (!profileUser) {
+      req.flash('error_msg', 'User not found');
+      return res.redirect('/profile');
+    }
+    res.render('profile-edit', { profileUser });
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error loading edit form');
+    res.redirect('/profile');
+  }
+});
+
+/**
+ * POST /profile/edit => update current user's profile
+ */
+router.post('/edit', ensureAuthenticated, async (req, res) => {
+  try {
+    const { firstName, lastName, bio, location, twitter, linkedin } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      req.flash('error_msg', 'User not found');
+      return res.redirect('/profile');
+    }
+
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.bio = bio || user.bio;
+    user.location = location || user.location;
+    user.socialLinks = user.socialLinks || {};
+    user.socialLinks.twitter = twitter || user.socialLinks.twitter;
+    user.socialLinks.linkedin = linkedin || user.socialLinks.linkedin;
+
+    await user.save();
+    req.flash('success_msg', 'Profile updated successfully');
+    res.redirect('/profile');
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error updating profile');
+    res.redirect('/profile');
   }
 });
 

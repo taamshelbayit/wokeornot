@@ -93,6 +93,15 @@
 
           <!-- User Links -->
           <% if (user) { %>
+            <!-- New links for User Directory & Forum -->
+            <li class="nav-item">
+              <a class="nav-link" href="/users">User Directory</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/forum">Forum</a>
+            </li>
+
+            <!-- Greeting -->
             <li class="nav-item">
               <a class="nav-link" href="/profile">
                 Hello,
@@ -105,6 +114,11 @@
                 <% } %>
               </a>
             </li>
+            <!-- Link to Edit Profile -->
+            <li class="nav-item">
+              <a class="nav-link" href="/profile/edit">Edit Profile</a>
+            </li>
+
             <li class="nav-item">
               <a class="nav-link" href="/feed">Feed</a>
             </li>

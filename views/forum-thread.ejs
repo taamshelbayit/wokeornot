@@ -1,4 +1,4 @@
-<%- include('partials/header') %>
+<%- include('layout') %>
 
 <div class="container mt-4">
   <div class="forum-thread">
@@ -8,27 +8,34 @@
       <%= post.content %>
     </div>
     <hr>
-    <h3 class="text-warning">Comments</h3>
+    <h3 class="text-warning">Replies</h3>
     <div id="comments">
       <% if (comments && comments.length > 0) { %>
-        <% comments.forEach(function(comment) { %>
+        <% comments.forEach(function(reply) { %>
           <div class="card mb-2" style="background-color: #1e1e1e;">
             <div class="card-body">
-              <p><strong><%= comment.author.firstName %>:</strong> <%= comment.content %></p>
-              <small class="text-muted"><%= new Date(comment.createdAt).toDateString() %></small>
+              <p>
+                <strong><%= reply.author.firstName %>:</strong>
+                <%= reply.content %>
+              </p>
+              <small class="text-muted"><%= new Date(reply.createdAt).toDateString() %></small>
             </div>
           </div>
         <% }); %>
       <% } else { %>
-        <p>No comments yet.</p>
+        <p>No replies yet.</p>
       <% } %>
     </div>
-    <form action="/forum/<%= post._id %>/comment" method="POST">
-      <div class="form-group">
-        <textarea class="form-control" name="content" placeholder="Add your comment..." required></textarea>
-      </div>
-      <button type="submit" class="btn btn-warning">Post Comment</button>
-    </form>
+    <% if (user) { %>
+      <form action="/forum/<%= post._id %>/comment" method="POST">
+        <div class="form-group">
+          <textarea class="form-control" name="content" placeholder="Add your reply..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-warning">Post Reply</button>
+      </form>
+    <% } else { %>
+      <p>You must <a href="/auth/login" class="text-warning">login</a> to post a reply.</p>
+    <% } %>
   </div>
 </div>
 

@@ -1,8 +1,7 @@
 <!-- views/partials/header.ejs -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
   <a class="navbar-brand d-flex align-items-center" href="/">
-    <!-- Replace with your actual logo -->
-    <img src="/images/logo.png" alt="WokeOrNot Logo" width="40" height="40" class="mr-2">
+    <img src="/images/logo.webp" alt="WokeOrNot Logo" width="40" height="40" class="mr-2">
     <span>WokeOrNot</span>
   </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent">
@@ -12,9 +11,22 @@
   <div class="collapse navbar-collapse" id="navbarContent">
     <ul class="navbar-nav ml-auto">
       <% if (user) { %>
+        <!-- Link to user directory -->
         <li class="nav-item">
-          <a class="nav-link" href="#">Hello, <%= user.name || user.firstName %></a>
+          <a class="nav-link" href="/users">User Directory</a>
         </li>
+        <!-- Link to forum listing -->
+        <li class="nav-item">
+          <a class="nav-link" href="/forum">Forum</a>
+        </li>
+        <!-- Greeting -->
+        <li class="nav-item">
+          <a class="nav-link" href="#">Hello, <%= user.firstName || user.name %></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/profile/edit">Edit Profile</a>
+        </li>
+        <!-- Logout -->
         <li class="nav-item">
           <a class="nav-link" href="/auth/logout">Logout</a>
         </li>
