@@ -27,6 +27,9 @@ app.engine('ejs', ejsMate);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// *** Add this line to set the "basedir" for EJS partials ***
+app.locals.basedir = path.join(__dirname, 'views');
+
 // 3) Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 

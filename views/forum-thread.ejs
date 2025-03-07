@@ -1,7 +1,6 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <!-- The top-level post -->
   <h2 class="text-warning"><%= threadTree.title || 'Untitled Thread' %></h2>
   <p>
     Posted by
@@ -14,7 +13,6 @@
     <%= threadTree.content %>
   </div>
 
-  <!-- Form to reply to the top-level post -->
   <% if (user) { %>
     <form action="/forum/<%= threadTree._id %>/reply" method="POST" class="mb-4">
       <div class="form-group">
@@ -34,13 +32,11 @@
     </p>
   <% } %>
 
-  <!-- Nested replies (children) -->
   <h3 class="text-warning">Replies</h3>
   <% if (threadTree.children && threadTree.children.length > 0) { %>
     <ul class="list-group">
       <% threadTree.children.forEach(function(child) { %>
-        <!-- Use the relative path with a leading dot -->
-        <%- include('./partials/comment.ejs', { comment: child, user: user }) %>
+        <%- include('partials/comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>
   <% } else { %>

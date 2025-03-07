@@ -13,7 +13,6 @@
   <p><%= comment.content %></p>
 
   <% if (user) { %>
-    <!-- Reply to this comment -->
     <form action="/forum/<%= comment._id %>/reply" method="POST" class="mb-2 ml-3">
       <div class="form-group">
         <textarea
@@ -28,12 +27,10 @@
     </form>
   <% } %>
 
-  <!-- Render children (nested replies) -->
   <% if (comment.children && comment.children.length > 0) { %>
     <ul class="list-group mt-2 ml-4">
       <% comment.children.forEach(function(child) { %>
-        <!-- Also use the relative path with a leading dot -->
-        <%- include('./partials/comment.ejs', { comment: child, user: user }) %>
+        <%- include('partials/comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>
   <% } %>
