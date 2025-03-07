@@ -4,10 +4,11 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
+// Debug: log the User model to verify it has findOne
+console.log('User model in passport.js:', User);
+
 module.exports = function(passport) {
-  //
   // 1) Local Strategy
-  //
   passport.use(
     new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
       try {
@@ -48,9 +49,7 @@ module.exports = function(passport) {
     })
   );
 
-  //
   // 2) Google Strategy
-  //
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(
       new GoogleStrategy(
@@ -100,7 +99,7 @@ module.exports = function(passport) {
               lastName: profile.name?.familyName || 'NoLast',
               email: googleEmail,
               password: '', // not used for Google
-              verified: true, // Google users are automatically "verified"?
+              verified: true, // Google users are automatically verified
               role: 'user'
             });
             const savedUser = await newUser.save();
@@ -116,9 +115,7 @@ module.exports = function(passport) {
     );
   }
 
-  //
   // 3) Serialize & Deserialize
-  //
   passport.serializeUser((user, done) => {
     done(null, user.id);
   });
