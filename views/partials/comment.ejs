@@ -17,7 +17,7 @@
     <form action="/forum/<%= comment._id %>/reply" method="POST" class="mb-2 ml-3">
       <div class="form-group">
         <textarea
-          class="form-control"
+          class="form-control form-control-sm"
           name="content"
           rows="2"
           placeholder="Reply to this comment..."
@@ -32,7 +32,8 @@
   <% if (comment.children && comment.children.length > 0) { %>
     <ul class="list-group mt-2 ml-4">
       <% comment.children.forEach(function(child) { %>
-        <%- include('partials/comment', { comment: child, user: user }) %>
+        <!-- Fixed line below: now includes comment.ejs with extension -->
+        <%- include('partials/comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>
   <% } %>
