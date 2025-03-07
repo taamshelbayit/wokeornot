@@ -249,3 +249,10 @@ footer {
   scrollbar-width: thin;   /* "auto" or "thin" */
   scrollbar-color: #f5c518 #222; /* thumb color, track color */
 }
+
+.form-control {
+  border-radius: 6px;
+}
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
