@@ -1,4 +1,4 @@
-<!-- views/partials/comment.ejs -->
+<!-- views/comment.ejs -->
 <li class="list-group-item bg-dark text-light mb-2">
   <p>
     <strong>
@@ -30,7 +30,8 @@
   <% if (comment.children && comment.children.length > 0) { %>
     <ul class="list-group mt-2 ml-4">
       <% comment.children.forEach(function(child) { %>
-        <%- include('partials/comment.ejs', { comment: child, user: user }) %>
+        <!-- Recursively include comment.ejs from the same folder -->
+        <%- include('comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>
   <% } %>
