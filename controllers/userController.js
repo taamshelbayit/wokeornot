@@ -3,6 +3,7 @@ const User = require('../models/User');
 
 exports.followUser = async (req, res) => {
   try {
+    // Prevent self-following
     if (req.params.id === req.user._id.toString()) {
       req.flash('error_msg', 'Cannot follow yourself');
       return res.redirect('/users');
@@ -17,7 +18,7 @@ exports.followUser = async (req, res) => {
       req.user.following.push(targetUser._id);
       await req.user.save();
     }
-    // Add current user to target user's followers list
+    // Add current user to target user's followers list if not already present
     if (!targetUser.followers.includes(req.user._id)) {
       targetUser.followers.push(req.user._id);
       await targetUser.save();
@@ -38,8 +39,10 @@ exports.unfollowUser = async (req, res) => {
       req.flash('error_msg', 'User not found');
       return res.redirect('/users');
     }
+    // Remove target from current user's following list
     req.user.following = req.user.following.filter(u => !u.equals(targetUser._id));
     await req.user.save();
+    // Remove current user from target user's followers list
     targetUser.followers = targetUser.followers.filter(u => !u.equals(req.user._id));
     await targetUser.save();
     req.flash('success_msg', `You have unfollowed ${targetUser.firstName}`);

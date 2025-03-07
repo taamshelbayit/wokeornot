@@ -1,73 +1,52 @@
-// models/User.js
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+// routes/users.js
+const express = require('express');
+const router = express.Router();
+const csrf = require('csurf');
+const csrfProtection = csrf({ cookie: true });
+const User = require('../models/User');
+const Review = require('../models/Review'); // or wherever your Review model is
+const Post = require('../models/Post');     // forum posts
+const { ensureAuthenticated } = require('../utils/auth');
+const userController = require('../controllers/userController');
 
-const UserSchema = new mongoose.Schema({
-  googleId: {
-    type: String
-  },
-  firstName: {
-    type: String
-  },
-  lastName: {
-    type: String
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    // Only required if googleId is not present
-    required: function() {
-      return !this.googleId;
-    }
-  },
-  role: {
-    type: String,
-    default: 'user'
-  },
-  verified: {
-    type: Boolean,
-    default: false
-  },
-  // Verification fields:
-  verifyToken: {
-    type: String
-  },
-  verifyExpires: {
-    type: Date
-  },
-  // Additional profile fields:
-  profileImage: {
-    type: String
-  },
-  bio: {
-    type: String
-  },
-  location: {
-    type: String
-  },
-  socialLinks: {
-    twitter: { type: String },
-    linkedin: { type: String }
-  },
-  // Following system fields:
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
-}, { timestamps: true });
-
-// Hash the password if it is modified and not empty
-UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password') || !this.password) return next();
+// GET /users => user directory
+router.get('/', ensureAuthenticated, csrfProtection, async (req, res) => {
   try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
+    const q = req.query.q || '';
+    let query = {};
+    if (q.trim() !== '') {
+      query.$or = [
+        { firstName: { $regex: q, $options: 'i' } },
+        { lastName: { $regex: q, $options: 'i' } },
+        { email: { $regex: q, $options: 'i' } }
+      ];
+    }
+    // Exclude the current user from the list
+    query._id = { $ne: req.user._id };
+
+    const users = await User.find(query).limit(50);
+
+    // For each user, fetch stats (reviews count, posts count)
+    const userStats = {};
+    for (let u of users) {
+      const reviewCount = await Review.countDocuments({ user: u._id });
+      const postCount = await Post.countDocuments({ author: u._id, parentPost: null }); // only top-level posts
+      userStats[u._id] = { reviewCount, postCount };
+    }
+
+    // Pass the CSRF token to the view for any forms (like follow/unfollow buttons)
+    res.render('users-list', { users, userStats, searchQuery: q, csrfToken: req.csrfToken() });
   } catch (err) {
-    next(err);
+    console.error(err);
+    req.flash('error_msg', 'Error loading user list');
+    res.redirect('/');
   }
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// POST /users/follow/:id
+router.post('/follow/:id', ensureAuthenticated, csrfProtection, userController.followUser);
+
+// POST /users/unfollow/:id
+router.post('/unfollow/:id', ensureAuthenticated, csrfProtection, userController.unfollowUser);
+
+module.exports = router;
