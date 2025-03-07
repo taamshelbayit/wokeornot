@@ -5,18 +5,23 @@
   <% if (user) { %>
     <a href="/forum/new" class="btn btn-warning mb-3">Create New Thread</a>
   <% } %>
-  <% if (posts.length === 0) { %>
+  <% if (threads.length === 0) { %>
     <p>No threads yet. Be the first to create one!</p>
   <% } else { %>
     <ul class="list-group">
-      <% posts.forEach(post => { %>
+      <% threads.forEach(thread => { %>
         <li class="list-group-item bg-dark text-light mb-2">
           <h5>
-            <a href="/forum/<%= post._id %>" class="text-warning"><%= post.title %></a>
+            <a href="/forum/<%= thread._id %>" class="text-warning">
+              <%= thread.title || 'Untitled Thread' %>
+            </a>
           </h5>
           <small>
-            Posted by <%= post.author.firstName %> <%= post.author.lastName %> on
-            <%= new Date(post.createdAt).toDateString() %>
+            Posted by
+            <a href="/profile/<%= thread.author._id %>">
+              <%= thread.author.firstName %> <%= thread.author.lastName %>
+            </a>
+            on <%= new Date(thread.createdAt).toDateString() %>
           </small>
         </li>
       <% }) %>

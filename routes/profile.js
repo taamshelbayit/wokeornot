@@ -4,6 +4,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Review = require('../models/Review');
 const Movie = require('../models/Movie');
+const Post = require('../models/Post'); // <-- ADDED for forum posts
 const { ensureAuthenticated } = require('../utils/auth');
 
 /**
@@ -26,10 +27,16 @@ router.get('/', ensureAuthenticated, async (req, res) => {
       watchlistMovies = await Movie.find({ _id: { $in: user.watchlist } });
     }
 
+    // Fetch the user’s forum posts (both top-level threads and replies).
+    // If you only want top-level threads, use: { author: user._id, parentPost: null }
+    const userPosts = await Post.find({ author: user._id })
+      .sort({ createdAt: -1 });
+
     res.render('profile', {
       profileUser: user,
       reviews,
-      watchlistMovies
+      watchlistMovies,
+      userPosts // <-- pass forum posts to EJS
     });
   } catch (err) {
     console.error(err);
@@ -40,7 +47,6 @@ router.get('/', ensureAuthenticated, async (req, res) => {
 
 /**
  * GET /profile/edit => show form to edit current user's profile
- * (Moved above /profile/:id to avoid "edit" being cast to ObjectId)
  */
 router.get('/edit', ensureAuthenticated, async (req, res) => {
   try {
@@ -70,21 +76,26 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
       return res.redirect('/profile');
     }
 
-    // fetch their reviews
+    // Fetch their reviews
     const reviews = await Review.find({ user: profileUser._id })
       .populate('movie')
       .sort({ createdAt: -1 });
 
-    // watchlist
+    // Fetch their watchlist
     let watchlistMovies = [];
     if (profileUser.watchlist && profileUser.watchlist.length > 0) {
       watchlistMovies = await Movie.find({ _id: { $in: profileUser.watchlist } });
     }
 
+    // Fetch this user's forum posts
+    const userPosts = await Post.find({ author: profileUser._id })
+      .sort({ createdAt: -1 });
+
     res.render('profile', {
       profileUser,
       reviews,
-      watchlistMovies
+      watchlistMovies,
+      userPosts // <-- pass forum posts to EJS
     });
   } catch (err) {
     console.error(err);

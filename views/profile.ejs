@@ -5,15 +5,25 @@
     <!-- Profile Sidebar -->
     <div class="col-md-4">
       <!-- Profile Image (or default placeholder) -->
-      <img src="<%= profileUser.profileImage ? profileUser.profileImage : '/images/default-profile.png' %>" alt="Profile Image" class="img-fluid rounded-circle mb-3">
+      <img
+        src="<%= profileUser.profileImage ? profileUser.profileImage : '/images/default-profile.png' %>"
+        alt="Profile Image"
+        class="img-fluid rounded-circle mb-3"
+      >
     </div>
+
     <!-- Profile Details -->
     <div class="col-md-8">
       <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-        <%= profileUser.firstName %> <%= profileUser.lastName %>'s Profile
+        <% if (user && user._id.toString() === profileUser._id.toString()) { %>
+          My Profile
+        <% } else { %>
+          <%= profileUser.firstName %> <%= profileUser.lastName %>'s Profile
+        <% } %>
       </h2>
       <p><strong>Email:</strong> <%= profileUser.email %></p>
       <p><strong>Role:</strong> <%= profileUser.role %></p>
+
       <% if (profileUser.bio) { %>
         <p><strong>Bio:</strong> <%= profileUser.bio %></p>
       <% } %>
@@ -30,26 +40,9 @@
           <% } %>
         </p>
       <% } %>
-      <% if (profileUser.badges && profileUser.badges.length > 0) { %>
-        <p><strong>Badges:</strong> <%= profileUser.badges.join(', ') %></p>
-      <% } %>
-
-      <!-- Social Sharing Links for Profile -->
-      <p><strong>Share Profile:</strong>
-        <a href="#" id="share-twitter-profile">Twitter</a> |
-        <a href="#" id="share-facebook-profile">Facebook</a>
-      </p>
-      <script>
-        document.getElementById("share-twitter-profile").href =
-          "https://twitter.com/intent/tweet?text=" +
-          encodeURIComponent("Check out the profile of <%= profileUser.firstName %> <%= profileUser.lastName %> on WokeOrNot!") +
-          "&url=" + encodeURIComponent(window.location.href);
-        document.getElementById("share-facebook-profile").href =
-          "https://www.facebook.com/sharer.php?u=" + encodeURIComponent(window.location.href);
-      </script>
 
       <!-- Follow/Unfollow Button (only if viewing another user's profile) -->
-      <% if (user && (user._id.toString() !== profileUser._id.toString())) { %>
+      <% if (user && user._id.toString() !== profileUser._id.toString()) { %>
         <% if (user.following && user.following.includes(profileUser._id.toString())) { %>
           <form action="/profile/unfollow/<%= profileUser._id %>" method="POST">
             <button type="submit" class="btn btn-danger">Unfollow</button>
@@ -68,7 +61,13 @@
   <!-- User's Reviews Section -->
   <div class="row">
     <div class="col-md-12">
-      <h3 class="text-warning">My Reviews</h3>
+      <h3 class="text-warning">
+        <% if (user && user._id.toString() === profileUser._id.toString()) { %>
+          My Reviews
+        <% } else { %>
+          <%= profileUser.firstName %>'s Reviews
+        <% } %>
+      </h3>
       <% if (reviews && reviews.length > 0) { %>
         <% reviews.forEach(function(review) { %>
           <div class="card mb-3" style="background-color: #1e1e1e;">
@@ -88,15 +87,12 @@
               <% if (review.content) { %>
                 <p><%= review.content %></p>
               <% } %>
-              <% if (review.categories && review.categories.length > 0) { %>
-                <p><strong>Categories:</strong> <%= review.categories.join(', ') %></p>
-              <% } %>
               <small class="text-muted">Reviewed on: <%= new Date(review.createdAt).toDateString() %></small>
             </div>
           </div>
         <% }); %>
       <% } else { %>
-        <p>You haven't written any reviews yet.</p>
+        <p>No reviews yet.</p>
       <% } %>
     </div>
   </div>
@@ -106,27 +102,72 @@
   <!-- User's Watchlist Section -->
   <div class="row">
     <div class="col-md-12">
-      <h3 class="text-warning">My Watchlist</h3>
+      <h3 class="text-warning">
+        <% if (user && user._id.toString() === profileUser._id.toString()) { %>
+          My Watchlist
+        <% } else { %>
+          <%= profileUser.firstName %>'s Watchlist
+        <% } %>
+      </h3>
       <% if (watchlistMovies && watchlistMovies.length > 0) { %>
         <div class="row">
           <% watchlistMovies.forEach(function(movie) { %>
             <div class="col-md-3 mb-3">
               <div class="card hover-zoom">
-                <img src="<%= movie.posterPath ? ('https://image.tmdb.org/t/p/w300' + movie.posterPath) : '/images/placeholder.png' %>" class="card-img-top" alt="<%= movie.title %> Poster">
+                <img
+                  src="<%= movie.posterPath ? ('https://image.tmdb.org/t/p/w300' + movie.posterPath) : '/images/placeholder.png' %>"
+                  class="card-img-top"
+                  alt="<%= movie.title %> Poster"
+                >
                 <div class="card-body">
-                  <h5 class="card-title text-warning" style="font-family: 'Bebas Neue', sans-serif;"><%= movie.title %></h5>
+                  <h5 class="card-title text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+                    <%= movie.title %>
+                  </h5>
                   <a href="/movies/<%= movie._id %>" class="btn btn-warning btn-sm">View</a>
-                  <form action="/profile/watchlist/remove" method="POST" style="display:inline;">
-                    <input type="hidden" name="movieId" value="<%= movie._id %>">
-                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                  </form>
+                  <% if (user && user._id.toString() === profileUser._id.toString()) { %>
+                    <form action="/profile/watchlist/remove" method="POST" style="display:inline;">
+                      <input type="hidden" name="movieId" value="<%= movie._id %>">
+                      <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                  <% } %>
                 </div>
               </div>
             </div>
           <% }); %>
         </div>
       <% } else { %>
-        <p>Your watchlist is empty. Browse movies and add your favorites!</p>
+        <p>No movies in watchlist.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <hr class="bg-secondary">
+
+  <!-- User's Forum Posts Section -->
+  <div class="row">
+    <div class="col-md-12">
+      <h3 class="text-warning">
+        <% if (user && user._id.toString() === profileUser._id.toString()) { %>
+          My Forum Posts
+        <% } else { %>
+          <%= profileUser.firstName %>'s Forum Posts
+        <% } %>
+      </h3>
+      <% if (userPosts && userPosts.length > 0) { %>
+        <ul class="list-group">
+          <% userPosts.forEach(function(post) { %>
+            <li class="list-group-item bg-dark text-light mb-2">
+              <a href="/forum/<%= post._id %>" class="text-warning">
+                <%= post.title || 'Untitled Thread' %>
+              </a>
+              <small class="d-block">
+                Posted on <%= new Date(post.createdAt).toDateString() %>
+              </small>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p>No forum posts yet.</p>
       <% } %>
     </div>
   </div>

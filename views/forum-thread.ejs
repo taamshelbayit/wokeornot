@@ -1,40 +1,47 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <div class="forum-thread">
-    <h2 class="text-warning"><%= post.title %></h2>
-    <p>Posted by <%= post.author.firstName %> <%= post.author.lastName %> on <%= new Date(post.createdAt).toDateString() %></p>
-    <div class="post-content">
-      <%= post.content %>
-    </div>
-    <hr>
-    <h3 class="text-warning">Replies</h3>
-    <div id="comments">
-      <% if (comments && comments.length > 0) { %>
-        <% comments.forEach(function(reply) { %>
-          <div class="card mb-2" style="background-color: #1e1e1e;">
-            <div class="card-body">
-              <p>
-                <strong><%= reply.author.firstName %>:</strong>
-                <%= reply.content %>
-              </p>
-              <small class="text-muted"><%= new Date(reply.createdAt).toDateString() %></small>
-            </div>
-          </div>
-        <% }); %>
-      <% } else { %>
-        <p>No replies yet.</p>
-      <% } %>
-    </div>
-    <% if (user) { %>
-      <form action="/forum/<%= post._id %>/comment" method="POST">
-        <div class="form-group">
-          <textarea class="form-control" name="content" placeholder="Add your reply..." required></textarea>
-        </div>
-        <button type="submit" class="btn btn-warning">Post Reply</button>
-      </form>
-    <% } else { %>
-      <p>You must <a href="/auth/login" class="text-warning">login</a> to post a reply.</p>
-    <% } %>
+  <!-- The top-level post -->
+  <h2 class="text-warning"><%= threadTree.title || 'Untitled Thread' %></h2>
+  <p>
+    Posted by
+    <a href="/profile/<%= threadTree.author._id %>">
+      <%= threadTree.author.firstName %> <%= threadTree.author.lastName %>
+    </a>
+    on <%= new Date(threadTree.createdAt).toDateString() %>
+  </p>
+  <div class="post-content mb-3">
+    <%= threadTree.content %>
   </div>
+
+  <!-- Form to reply to the top-level post -->
+  <% if (user) { %>
+    <form action="/forum/<%= threadTree._id %>/reply" method="POST" class="mb-4">
+      <div class="form-group">
+        <textarea
+          class="form-control"
+          name="content"
+          placeholder="Add your reply..."
+          required
+        ></textarea>
+      </div>
+      <button type="submit" class="btn btn-warning">Reply</button>
+    </form>
+  <% } else { %>
+    <p>
+      You must <a href="/auth/login" class="text-warning">login</a> to reply.
+    </p>
+  <% } %>
+
+  <!-- Nested replies (children) -->
+  <h3 class="text-warning">Replies</h3>
+  <% if (threadTree.children && threadTree.children.length > 0) { %>
+    <ul class="list-group">
+      <% threadTree.children.forEach(function(child) { %>
+        <%- include('partials/comment', { comment: child, user: user }) %>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No replies yet.</p>
+  <% } %>
 </div>

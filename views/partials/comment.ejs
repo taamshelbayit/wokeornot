@@ -1,0 +1,39 @@
+<!-- views/partials/comment.ejs -->
+<li class="list-group-item bg-dark text-light mb-2">
+  <p>
+    <strong>
+      <a href="/profile/<%= comment.author._id %>">
+        <%= comment.author.firstName %> <%= comment.author.lastName %>
+      </a>
+    </strong>
+    <small class="text-muted ml-2">
+      <%= new Date(comment.createdAt).toDateString() %>
+    </small>
+  </p>
+  <p><%= comment.content %></p>
+
+  <% if (user) { %>
+    <!-- Reply to this comment -->
+    <form action="/forum/<%= comment._id %>/reply" method="POST" class="mb-2 ml-3">
+      <div class="form-group">
+        <textarea
+          class="form-control"
+          name="content"
+          rows="2"
+          placeholder="Reply to this comment..."
+          required
+        ></textarea>
+      </div>
+      <button type="submit" class="btn btn-sm btn-warning">Reply</button>
+    </form>
+  <% } %>
+
+  <!-- Render children (nested replies) -->
+  <% if (comment.children && comment.children.length > 0) { %>
+    <ul class="list-group mt-2 ml-4">
+      <% comment.children.forEach(function(child) { %>
+        <%- include('partials/comment', { comment: child, user: user }) %>
+      <% }) %>
+    </ul>
+  <% } %>
+</li>
