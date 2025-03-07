@@ -2,10 +2,12 @@
 const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
+const path = require('path');
 const User = require('../models/User');
 
-// Debug: log the User model to verify it has findOne
+// Debug: Log the User model and the type of findOne to ensure it is defined as a function.
 console.log('User model in passport.js:', User);
+console.log('Type of User.findOne:', typeof User.findOne);
 
 module.exports = function(passport) {
   // 1) Local Strategy
@@ -62,6 +64,11 @@ module.exports = function(passport) {
           try {
             console.log('Google Strategy triggered');
             console.log('Google profile:', profile);
+
+            // Check that User.findOne is available
+            if (typeof User.findOne !== 'function') {
+              throw new Error('User.findOne is not a function. Check your User model export.');
+            }
 
             // 1) Try to find user by googleId
             let userByGoogleId = await User.findOne({ googleId: profile.id });
