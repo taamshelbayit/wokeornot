@@ -19,8 +19,9 @@
     <form action="/forum/<%= threadTree._id %>/reply" method="POST" class="mb-4">
       <div class="form-group">
         <textarea
-          class="form-control"
+          class="form-control form-control-sm"
           name="content"
+          rows="3"
           placeholder="Add your reply..."
           required
         ></textarea>
@@ -38,7 +39,7 @@
   <% if (threadTree.children && threadTree.children.length > 0) { %>
     <ul class="list-group">
       <% threadTree.children.forEach(function(child) { %>
-        <%- include('partials/comment', { comment: child, user: user }) %>
+        <%- include('partials/comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>
   <% } else { %>
