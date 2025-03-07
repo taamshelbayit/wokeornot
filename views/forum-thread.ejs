@@ -39,7 +39,8 @@
   <% if (threadTree.children && threadTree.children.length > 0) { %>
     <ul class="list-group">
       <% threadTree.children.forEach(function(child) { %>
-        <%- include('partials/comment.ejs', { comment: child, user: user }) %>
+        <!-- Use the relative path with a leading dot -->
+        <%- include('./partials/comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>
   <% } else { %>

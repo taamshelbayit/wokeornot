@@ -32,8 +32,8 @@
   <% if (comment.children && comment.children.length > 0) { %>
     <ul class="list-group mt-2 ml-4">
       <% comment.children.forEach(function(child) { %>
-        <!-- Fixed line below: now includes comment.ejs with extension -->
-        <%- include('partials/comment.ejs', { comment: child, user: user }) %>
+        <!-- Also use the relative path with a leading dot -->
+        <%- include('./partials/comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>
   <% } %>
