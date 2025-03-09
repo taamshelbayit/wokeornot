@@ -158,31 +158,46 @@
     </script>
   <% } %>
 
-  <!-- Flash Messages (only show if non-empty) -->
+  <!-- FLASH MESSAGES -->
   <div class="container mt-2">
-    <% if (success_msg && success_msg.length > 0) { %>
-      <% success_msg.forEach(msg => { %>
-        <% if (msg.trim().length > 0) { %>
-          <div class="alert alert-success"><%= msg %></div>
-        <% } %>
-      <% }) %>
-    <% } %>
+    <script>
+      // Debug: log the flash arrays/strings to see if there's an empty or whitespace value
+      console.log("layout.ejs flash success_msg:", <%= JSON.stringify(success_msg) %>);
+      console.log("layout.ejs flash error_msg:", <%= JSON.stringify(error_msg) %>);
+      console.log("layout.ejs flash error:", <%= JSON.stringify(error) %>);
+    </script>
 
-    <% if (error_msg && error_msg.length > 0) { %>
-      <% error_msg.forEach(msg => { %>
-        <% if (msg.trim().length > 0) { %>
-          <div class="alert alert-danger"><%= msg %></div>
-        <% } %>
-      <% }) %>
-    <% } %>
+    <%
+      // Helper function to render flash messages safely
+      function renderFlashMessages(msgVar, alertClass) {
+        if (!msgVar) return;
 
-    <% if (error && error.length > 0) { %>
-      <% error.forEach(msg => { %>
-        <% if (msg.trim().length > 0) { %>
-          <div class="alert alert-danger"><%= msg %></div>
-        <% } %>
-      <% }) %>
-    <% } %>
+        // If it's an array, loop over each item
+        if (Array.isArray(msgVar)) {
+          msgVar.forEach(m => {
+            if (m && m.trim().length > 0) {
+    %>
+              <div class="alert <%= alertClass %>"><%= m %></div>
+    <%      }
+          });
+        // If it's a single string, check if it's non-empty
+        } else if (typeof msgVar === 'string') {
+          if (msgVar.trim().length > 0) {
+    %>
+            <div class="alert <%= alertClass %>"><%= msgVar %></div>
+    <%    }
+        }
+      }
+    %>
+
+    <!-- Render success messages -->
+    <% renderFlashMessages(success_msg, 'alert-success'); %>
+
+    <!-- Render error_msg array -->
+    <% renderFlashMessages(error_msg, 'alert-danger'); %>
+
+    <!-- Render error array -->
+    <% renderFlashMessages(error, 'alert-danger'); %>
   </div>
 
   <!-- Main Content -->
