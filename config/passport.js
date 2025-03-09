@@ -4,10 +4,12 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
 const path = require('path');
 
-// Force an absolute path to the User model to avoid ambiguous resolutions.
-const User = require(path.join(__dirname, '..', 'models', 'User.js'));
+// Use absolute path resolution to ensure we load the correct file from the models directory.
+const modelPath = path.resolve(__dirname, '..', 'models', 'User.js');
+const User = require(modelPath);
 
-// Debug: Log the User model and the type of findOne to ensure it is defined as a function.
+// Debug: Log the absolute path and the User model details to ensure it's the Mongoose model.
+console.log('User model loaded from:', modelPath);
 console.log('User model in passport.js:', User);
 console.log('Type of User.findOne:', typeof User.findOne);
 
