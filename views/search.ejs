@@ -6,15 +6,15 @@
   </h2>
 
   <!-- Advanced Search Form -->
-  <form action="/search" method="GET" class="form-inline mb-4 bg-dark p-3 rounded">
+  <form action="/search" method="GET" class="form-inline mb-4">
     <!-- Title (q) -->
-    <div class="form-group mr-3 mb-2">
+    <div class="form-group mr-2">
       <label for="q" class="mr-2">Title:</label>
       <input type="text" name="q" id="q" class="form-control">
     </div>
 
     <!-- contentType (Movie, TV, Kids, or empty => Any) -->
-    <div class="form-group mr-3 mb-2">
+    <div class="form-group mr-2">
       <label for="contentType" class="mr-2">Type:</label>
       <select name="contentType" id="contentType" class="form-control">
         <option value="">Any</option>
@@ -25,8 +25,8 @@
     </div>
 
     <!-- minRating (1–10) -->
-    <div class="form-group mr-3 mb-2">
-      <label for="minRating" class="mr-2">Min Rating:</label>
+    <div class="form-group mr-2">
+      <label for="minRating" class="mr-2">Min Woke Rating:</label>
       <input
         type="number"
         name="minRating"
@@ -37,21 +37,8 @@
       >
     </div>
 
-    <!-- maxRating (1–10) -->
-    <div class="form-group mr-3 mb-2">
-      <label for="maxRating" class="mr-2">Max Rating:</label>
-      <input
-        type="number"
-        name="maxRating"
-        id="maxRating"
-        class="form-control"
-        min="1"
-        max="10"
-      >
-    </div>
-
     <!-- category (wokeCategoryCounts) -->
-    <div class="form-group mr-3 mb-2">
+    <div class="form-group mr-2">
       <label for="category" class="mr-2">Category:</label>
       <select name="category" id="category" class="form-control">
         <option value="">Any</option>
@@ -65,7 +52,7 @@
     </div>
 
     <!-- Genre (TMDb numeric IDs) -->
-    <div class="form-group mr-3 mb-2">
+    <div class="form-group mr-2">
       <label for="genre" class="mr-2">Genre:</label>
       <select name="genre" id="genre" class="form-control">
         <option value="">Any</option>
@@ -79,8 +66,8 @@
       </select>
     </div>
 
-    <!-- sort (ratingDesc, notWokeDesc, popularity, releaseDate, title) -->
-    <div class="form-group mr-3 mb-2">
+    <!-- sort (ratingDesc, notWokeDesc) -->
+    <div class="form-group mr-2">
       <label for="sort" class="mr-2">Sort:</label>
       <select name="sort" id="sort" class="form-control">
         <option value="">None</option>
@@ -93,7 +80,7 @@
     </div>
 
     <!-- lang (e.g., en-US) -->
-    <div class="form-group mr-3 mb-2">
+    <div class="form-group mr-2">
       <label for="lang" class="mr-2">Language:</label>
       <select name="lang" id="lang" class="form-control">
         <option value="en-US" selected>English (US)</option>
@@ -105,7 +92,7 @@
     </div>
 
     <!-- "Not Woke Only" checkbox -->
-    <div class="form-group mr-3 mb-2">
+    <div class="form-group mr-2">
       <input
         type="checkbox"
         name="notWokeOnly"
@@ -115,13 +102,11 @@
       <label for="notWokeOnly" class="ml-1">Not Woke Only</label>
     </div>
 
-    <button type="submit" class="btn btn-warning mb-2">
-      Search
-    </button>
+    <button type="submit" class="btn btn-warning">Search</button>
   </form>
 
-  <!-- Display Results -->
-  <% if (results) { %>
+  <!-- Display Results (avoid ReferenceError by checking if results is defined) -->
+  <% if (typeof results !== 'undefined' && results.length > 0) { %>
     <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Results</h4>
     <div class="row">
       <% results.forEach(movie => { %>
@@ -155,5 +140,7 @@
         </div>
       <% }) %>
     </div>
+  <% } else { %>
+    <p>No results yet.</p>
   <% } %>
 </div>
