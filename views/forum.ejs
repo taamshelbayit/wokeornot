@@ -6,23 +6,25 @@
   </h2>
 
   <!-- Sorting links -->
-  <p>
+  <p class="text-light">
     Sort by:
     <a href="?sort=newest">Newest</a> |
     <a href="?sort=oldest">Oldest</a>
   </p>
 
-  <form action="/forum/add/<%= movie._id %>" method="POST" class="bg-dark p-3 mb-3">
-    <div class="form-group">
-      <textarea name="content" class="form-control" rows="3" placeholder="Join the discussion..." required></textarea>
+  <div class="card bg-dark text-light mb-3">
+    <div class="card-body">
+      <form action="/forum/add/<%= movie._id %>" method="POST">
+        <div class="form-group">
+          <textarea name="content" class="form-control" rows="3" placeholder="Join the discussion..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-warning">Post Comment</button>
+      </form>
     </div>
-    <!-- For threaded reply, user can pick a parentId if replying to a specific comment.
-         For simplicity, we do a hidden input if replying. Or you can do a separate route. -->
-    <button type="submit" class="btn btn-warning">Post Comment</button>
-  </form>
+  </div>
 
   <% comments.forEach(c => { %>
-    <div class="card mb-2" style="background-color:#1e1e1e;">
+    <div class="card mb-2 bg-secondary text-light">
       <div class="card-body">
         <p>
           <strong><%= c.user.firstName %> <%= c.user.lastName %></strong>
@@ -47,7 +49,7 @@
         <% if (c.children && c.children.length > 0) { %>
           <div class="ml-4 mt-2">
             <% c.children.forEach(child => { %>
-              <div class="card mb-1" style="background-color:#2e2e2e;">
+              <div class="card mb-1 bg-dark text-light">
                 <div class="card-body">
                   <p>
                     <strong><%= child.user.firstName %> <%= child.user.lastName %></strong>

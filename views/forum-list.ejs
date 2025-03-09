@@ -1,32 +1,40 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h1 class="text-warning">Forum</h1>
+  <h1 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    Forum
+  </h1>
 
   <% if (user) { %>
-    <a href="/forum/new" class="btn btn-warning mb-3">Create New Thread</a>
+    <a href="/forum/new" class="btn btn-warning mb-4">Create New Thread</a>
   <% } %>
 
   <% if (!threads || threads.length === 0) { %>
-    <p>No threads yet. Be the first to create one!</p>
+    <p class="text-light">No threads yet. Be the first to create one!</p>
   <% } else { %>
-    <ul class="list-group">
+    <div class="row">
       <% threads.forEach(thread => { %>
-        <li class="list-group-item bg-dark text-light mb-2">
-          <h5>
-            <a href="/forum/<%= thread._id %>" class="text-warning">
-              <%= thread.title || 'Untitled Thread' %>
-            </a>
-          </h5>
-          <small>
-            Posted by
-            <a href="/profile/<%= thread.author._id %>" class="text-light">
-              <%= thread.author.firstName %> <%= thread.author.lastName %>
-            </a>
-            on <%= new Date(thread.createdAt).toDateString() %>
-          </small>
-        </li>
+        <div class="col-12 col-md-6 col-lg-4 mb-3">
+          <div class="card bg-dark text-light h-100">
+            <div class="card-body">
+              <h5 class="card-title">
+                <a href="/forum/<%= thread._id %>" class="text-warning">
+                  <%= thread.title || 'Untitled Thread' %>
+                </a>
+              </h5>
+              <p class="card-text mb-1">
+                Posted by
+                <a href="/profile/<%= thread.author._id %>" class="text-light">
+                  <%= thread.author.firstName %> <%= thread.author.lastName %>
+                </a>
+              </p>
+              <small class="text-muted">
+                <%= new Date(thread.createdAt).toDateString() %>
+              </small>
+            </div>
+          </div>
+        </div>
       <% }) %>
-    </ul>
+    </div>
   <% } %>
 </div>

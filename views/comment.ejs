@@ -5,7 +5,9 @@
         <%= comment.author.firstName %> <%= comment.author.lastName %>
       </a>
     </strong>
-    on <%= new Date(comment.createdAt).toDateString() %>
+    <small class="text-muted">
+      (<%= new Date(comment.createdAt).toDateString() %>)
+    </small>
   </p>
   <p class="mb-1"><%= comment.content %></p>
 
@@ -32,7 +34,7 @@
 
   <!-- Nested children replies -->
   <% if (comment.children && comment.children.length > 0) { %>
-    <ul class="list-group mt-2 ml-4">
+    <ul class="list-group mt-2">
       <% comment.children.forEach(function(child) { %>
         <%- include('comment.ejs', { comment: child, user: user }) %>
       <% }) %>
