@@ -176,7 +176,6 @@ router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
       return res.redirect('/forum');
     }
 
-    // Admin can edit anything; user can only edit their own
     const isAdmin = req.user.role && req.user.role === 'admin';
     const isOwner = post.author.toString() === req.user._id.toString();
     if (!isOwner && !isAdmin) {
@@ -213,7 +212,6 @@ router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
       return res.redirect('/forum');
     }
 
-    // Update post fields (if title is not applicable for replies, keep it empty)
     post.title = title;
     post.content = content;
     await post.save();

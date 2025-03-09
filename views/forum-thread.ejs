@@ -17,12 +17,12 @@
         <%= threadTree.content %>
       </div>
 
-      <!-- If current user is the author, show Edit / Delete for the main thread -->
-      <% if (
-        user &&
-        threadTree.author &&
-        user._id.toString() === threadTree.author._id.toString()
-      ) { %>
+      <%
+        const isAdmin = user && user.role === 'admin';
+        const isOwner = user && threadTree.author && (user._id.toString() === threadTree.author._id.toString());
+      %>
+      <!-- If current user is the author OR admin, show Edit / Delete -->
+      <% if (isOwner || isAdmin) { %>
         <form
           action="/forum/delete/<%= threadTree._id %>"
           method="POST"
@@ -40,7 +40,7 @@
     </div>
   </div>
 
-  <!-- Reply form for the main thread -->
+  <!-- Reply form -->
   <% if (user) { %>
     <div class="card bg-dark text-light mb-4">
       <div class="card-body">

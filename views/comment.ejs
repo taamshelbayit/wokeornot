@@ -11,12 +11,12 @@
   </p>
   <p class="mb-1"><%= comment.content %></p>
 
-  <!-- Edit/Delete if user is author -->
-  <% if (
-    user &&
-    comment.author &&
-    user._id.toString() === comment.author._id.toString()
-  ) { %>
+  <%
+    const isAdmin = user && user.role === 'admin';
+    const isOwner = user && comment.author && (user._id.toString() === comment.author._id.toString());
+  %>
+  <!-- If user is the author OR admin, show Edit / Delete -->
+  <% if (isOwner || isAdmin) { %>
     <form
       action="/forum/delete/<%= comment._id %>"
       method="POST"
@@ -32,7 +32,6 @@
     </a>
   <% } %>
 
-  <!-- Nested children replies -->
   <% if (comment.children && comment.children.length > 0) { %>
     <ul class="list-group mt-2">
       <% comment.children.forEach(function(child) { %>

@@ -4,8 +4,12 @@
   <div class="card bg-dark text-light">
     <div class="card-body">
       <h1 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
-        Edit Your Post
+        Edit Post
       </h1>
+      <!-- If admin, show a small badge or note -->
+      <% if (user && user.role === 'admin') { %>
+        <p class="text-info">Admin privileges: You can edit any user's post.</p>
+      <% } %>
       <form action="/forum/edit/<%= post._id %>" method="POST">
         <div class="form-group">
           <label for="title">Title (optional for replies):</label>
