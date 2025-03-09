@@ -1,11 +1,21 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
+  <!-- Display success/error flash messages -->
+  <% if (success_msg) { %>
+    <div class="alert alert-success"><%= success_msg %></div>
+  <% } %>
+  <% if (error_msg) { %>
+    <div class="alert alert-danger"><%= error_msg %></div>
+  <% } %>
+
   <h1 class="text-warning">Forum</h1>
+
   <% if (user) { %>
     <a href="/forum/new" class="btn btn-warning mb-3">Create New Thread</a>
   <% } %>
-  <% if (threads.length === 0) { %>
+
+  <% if (!threads || threads.length === 0) { %>
     <p>No threads yet. Be the first to create one!</p>
   <% } else { %>
     <ul class="list-group">
@@ -18,7 +28,7 @@
           </h5>
           <small>
             Posted by
-            <a href="/profile/<%= thread.author._id %>">
+            <a href="/profile/<%= thread.author._id %>" class="text-light">
               <%= thread.author.firstName %> <%= thread.author.lastName %>
             </a>
             on <%= new Date(thread.createdAt).toDateString() %>

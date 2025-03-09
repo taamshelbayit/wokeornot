@@ -34,14 +34,15 @@ async function buildCommentTree(post) {
  */
 async function findTopLevelAncestor(postId) {
   let current = await Post.findById(postId);
-  while (current.parentPost) {
+  while (current && current.parentPost) {
     current = await Post.findById(current.parentPost);
   }
-  return current._id; // top-level thread ID
+  return current ? current._id : null; // top-level thread ID or null
 }
 
 /**
- * GET /forum - List all top-level threads (parentPost = null)
+ * GET /forum
+ *   List all top-level threads (parentPost = null)
  */
 router.get('/', async (req, res) => {
   try {
@@ -57,14 +58,16 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /forum/new - Show form to create a new thread
+ * GET /forum/new
+ *   Show form to create a new top-level thread
  */
 router.get('/new', ensureAuthenticated, (req, res) => {
   res.render('forum-new');
 });
 
 /**
- * POST /forum/new - Create a new top-level thread (parentPost = null)
+ * POST /forum/new
+ *   Create a new top-level thread (parentPost = null)
  */
 router.post('/new', ensureAuthenticated, async (req, res) => {
   try {
@@ -80,6 +83,7 @@ router.post('/new', ensureAuthenticated, async (req, res) => {
       parentPost: null
     });
     await newThread.save();
+
     req.flash('success_msg', 'New thread created');
     res.redirect('/forum');
   } catch (err) {
@@ -90,7 +94,8 @@ router.post('/new', ensureAuthenticated, async (req, res) => {
 });
 
 /**
- * GET /forum/:id - View a single thread with nested replies
+ * GET /forum/:id
+ *   View a single thread with nested replies
  */
 router.get('/:id', async (req, res) => {
   try {
@@ -102,6 +107,7 @@ router.get('/:id', async (req, res) => {
     }
     // Build a nested tree for the thread (with replies)
     const threadTree = await buildCommentTree(post);
+
     res.render('forum-thread', { threadTree });
   } catch (err) {
     console.error('Error loading thread:', err);
@@ -111,8 +117,9 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
- * POST /forum/:id/reply - Reply to a post in a thread
- * This route assumes :id is the parent post you want to reply to
+ * POST /forum/:id/reply
+ *   Reply to a post in a thread
+ *   This route assumes :id is the parent post you want to reply to
  */
 router.post('/:id/reply', ensureAuthenticated, async (req, res) => {
   try {
@@ -157,7 +164,8 @@ router.post('/:id/reply', ensureAuthenticated, async (req, res) => {
 });
 
 /**
- * GET /forum/edit/:id - Show form to edit a post
+ * GET /forum/edit/:id
+ *   Show form to edit a post
  */
 router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
   try {
@@ -171,7 +179,7 @@ router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
       req.flash('error_msg', 'You are not authorized to edit this post');
       return res.redirect('/forum');
     }
-    // Render edit form using flat view name "forum-edit"
+    // Render edit form (forum-edit.ejs)
     res.render('forum-edit', { post });
   } catch (err) {
     console.error('Error retrieving post for editing:', err);
@@ -181,7 +189,8 @@ router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
 });
 
 /**
- * POST /forum/edit/:id - Handle submission of an edited post
+ * POST /forum/edit/:id
+ *   Handle submission of an edited post
  */
 router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
   try {
@@ -195,10 +204,11 @@ router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
       req.flash('error_msg', 'You are not authorized to edit this post');
       return res.redirect('/forum');
     }
-    // Update post fields; if title is not applicable for replies, you can keep it unchanged
+    // Update post fields (if title is not applicable for replies, keep it empty)
     post.title = title;
     post.content = content;
     await post.save();
+
     req.flash('success_msg', 'Post updated successfully');
     res.redirect('/forum');
   } catch (err) {
@@ -209,7 +219,8 @@ router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
 });
 
 /**
- * POST /forum/delete/:id - Delete a post
+ * POST /forum/delete/:id
+ *   Delete a post (thread or reply)
  */
 router.post('/delete/:id', ensureAuthenticated, async (req, res) => {
   try {
@@ -223,6 +234,7 @@ router.post('/delete/:id', ensureAuthenticated, async (req, res) => {
       return res.redirect('/forum');
     }
     await Post.findByIdAndDelete(req.params.id);
+
     req.flash('success_msg', 'Post deleted successfully');
     res.redirect('/forum');
   } catch (err) {

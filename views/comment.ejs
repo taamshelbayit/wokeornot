@@ -1,36 +1,39 @@
-<!-- views/comment.ejs -->
 <li class="list-group-item bg-dark text-light mb-2">
-  <p>
+  <p class="mb-1">
     <strong>
-      <a href="/profile/<%= comment.author._id %>">
+      <a href="/profile/<%= comment.author._id %>" class="text-warning">
         <%= comment.author.firstName %> <%= comment.author.lastName %>
       </a>
     </strong>
-    <small class="text-muted ml-2">
-      <%= new Date(comment.createdAt).toDateString() %>
-    </small>
+    on <%= new Date(comment.createdAt).toDateString() %>
   </p>
-  <p><%= comment.content %></p>
+  <p class="mb-1"><%= comment.content %></p>
 
-  <% if (user) { %>
-    <form action="/forum/<%= comment._id %>/reply" method="POST" class="mb-2 ml-3">
-      <div class="form-group">
-        <textarea
-          class="form-control form-control-sm"
-          name="content"
-          rows="2"
-          placeholder="Reply to this comment..."
-          required
-        ></textarea>
-      </div>
-      <button type="submit" class="btn btn-sm btn-warning">Reply</button>
+  <!-- Edit/Delete if user is author -->
+  <% if (
+    user &&
+    comment.author &&
+    user._id.toString() === comment.author._id.toString()
+  ) { %>
+    <form
+      action="/forum/delete/<%= comment._id %>"
+      method="POST"
+      class="d-inline-block mr-2"
+      onsubmit="return confirm('Are you sure you want to delete this reply?');"
+    >
+      <button type="submit" class="btn btn-danger btn-sm">
+        Delete
+      </button>
     </form>
+    <a href="/forum/edit/<%= comment._id %>" class="btn btn-secondary btn-sm">
+      Edit
+    </a>
   <% } %>
 
+  <!-- Nested children replies -->
   <% if (comment.children && comment.children.length > 0) { %>
     <ul class="list-group mt-2 ml-4">
       <% comment.children.forEach(function(child) { %>
-        <!-- Recursively include comment.ejs from the same folder -->
         <%- include('comment.ejs', { comment: child, user: user }) %>
       <% }) %>
     </ul>

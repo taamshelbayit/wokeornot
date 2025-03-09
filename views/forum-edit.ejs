@@ -9,16 +9,16 @@
     <div class="alert alert-danger"><%= error_msg %></div>
   <% } %>
 
-  <h1 class="text-warning">Create New Thread</h1>
-  <form action="/forum/new" method="POST">
+  <h1 class="text-warning">Edit Your Post</h1>
+  <form action="/forum/edit/<%= post._id %>" method="POST">
     <div class="form-group">
-      <label for="title">Thread Title</label>
+      <label for="title">Title (optional for replies):</label>
       <input
         type="text"
         class="form-control"
         id="title"
         name="title"
-        placeholder="Enter thread title"
+        value="<%= post.title %>"
       >
     </div>
     <div class="form-group">
@@ -28,10 +28,10 @@
         id="content"
         name="content"
         rows="5"
-        placeholder="Write your post here..."
         required
-      ></textarea>
+      ><%= post.content %></textarea>
     </div>
-    <button type="submit" class="btn btn-warning">Create Thread</button>
+    <button type="submit" class="btn btn-warning">Save Changes</button>
   </form>
+  <a href="/forum" class="btn btn-secondary mt-2">Cancel</a>
 </div>
