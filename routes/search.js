@@ -7,45 +7,60 @@ const { ensureAuthenticated } = require('../utils/auth');
 
 /**
  * GET /search
- * - If no `q`, show advanced-search form
- * - If `q` present => merges local DB + TMDb with pagination
- * - Supports ?page=1..N, ?sort=rating|popularity|releaseDate|title
- * - If AJAX => return JSON for “Load More”
+ *  - If no `q`, we can do advanced local-only search (via query params),
+ *    or show a form if you prefer.
+ *  - If `q` present => merges local DB + TMDb results, then applies filters & sorting.
+ *  - Supports ?page=1..N, ?sort=ratingDesc|popularity|releaseDate|title|notWokeDesc
+ *  - Supports ?contentType=Movie|TV|Kids, ?minRating=..., ?maxRating=..., ?category=..., ?notWokeOnly=on
+ *  - If AJAX => return JSON for “Load More”
  */
 router.get('/', async (req, res) => {
   try {
-    const q = (req.query.q || '').trim();
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = 20;
-    const skip = (page - 1) * limit;
-    const sortParam = req.query.sort || 'rating';
+    // Extract query params
+    const {
+      q = '',               // partial title
+      page = 1,             // pagination
+      sort = 'ratingDesc',  // sort param
+      contentType,          // e.g. "Movie", "TV", "Kids"
+      minRating,            // e.g. "5"
+      maxRating,            // e.g. "9"
+      category,             // e.g. "Transgender Themes"
+      notWokeOnly           // "on" if checkbox
+      // If you store genre in an array => ?genre=...
+    } = req.query;
 
-    // If no search query => show advanced search form
-    if (!q) {
-      return res.render('advanced-search');
+    const currentPage = parseInt(page, 10) || 1;
+    const limit = 12;
+    const skip = (currentPage - 1) * limit;
+
+    // If no search query => optional advanced local search
+    // or just render a form. Let's show a form:
+    if (!q.trim()) {
+      // If you want to do advanced local-only searching with query params,
+      // you can handle that logic here. For now, let's just show the form.
+      return res.render('search'); // e.g. your advanced search form
     }
 
-    // 1) Local DB search (unpaginated for now)
+    // 1) We do the local DB search for partial matches on title
     const localResults = await Movie.find({
-      title: { $regex: q, $options: 'i' }
+      title: { $regex: q.trim(), $options: 'i' }
     });
 
-    // 2) TMDb calls
+    // 2) Also fetch from TMDb if q is present
     const apiKey = process.env.TMDB_API_KEY;
     const [movResp, tvResp] = await Promise.all([
       axios.get(
-        `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q)}&page=1`
+        `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`
       ),
       axios.get(
-        `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q)}&page=1`
+        `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=en-US&query=${encodeURIComponent(q.trim())}&page=1`
       )
     ]);
-
     let tmdbMovies = movResp.data.results || [];
     let tmdbTV = tvResp.data.results || [];
     let tmdbCombined = [...tmdbMovies, ...tmdbTV];
 
-    // 3) Upsert
+    // 3) Merge local + TMDb (upsert into DB)
     let finalResults = [...localResults];
     for (let item of tmdbCombined) {
       const tmdbId = item.id.toString();
@@ -63,7 +78,7 @@ router.get('/', async (req, res) => {
         await newDoc.save();
         finalResults.push(newDoc);
       } else {
-        // If not in finalResults, push it
+        // If found is not already in finalResults, push it
         if (!finalResults.find(r => r._id.equals(found._id))) {
           finalResults.push(found);
         }
@@ -71,8 +86,8 @@ router.get('/', async (req, res) => {
     }
 
     // 4) Remove duplicates
-    let uniqueMap = new Map();
-    let uniqueResults = [];
+    const uniqueMap = new Map();
+    const uniqueResults = [];
     for (let r of finalResults) {
       if (!uniqueMap.has(r._id.toString())) {
         uniqueMap.set(r._id.toString(), true);
@@ -80,33 +95,65 @@ router.get('/', async (req, res) => {
       }
     }
 
-    // 5) Sort
-    uniqueResults = sortResults(uniqueResults, sortParam);
+    // 5) Now apply advanced filters locally
 
-    // 6) Pagination
-    const total = uniqueResults.length;
-    const pageResults = uniqueResults.slice(skip, skip + limit);
+    // Filter by contentType
+    let filtered = uniqueResults;
+    if (contentType && contentType.trim()) {
+      filtered = filtered.filter(m => m.contentType === contentType);
+    }
+
+    // Filter by notWokeOnly
+    if (notWokeOnly === 'on') {
+      filtered = filtered.filter(m => (m.notWokeCount || 0) > 0);
+    }
+
+    // Filter by minRating / maxRating
+    if (minRating) {
+      const minVal = parseFloat(minRating);
+      filtered = filtered.filter(m => (m.averageRating || 0) >= minVal);
+    }
+    if (maxRating) {
+      const maxVal = parseFloat(maxRating);
+      filtered = filtered.filter(m => (m.averageRating || 0) <= maxVal);
+    }
+
+    // Filter by woke category
+    if (category && category.trim()) {
+      // if you store categories in wokeCategoryCounts.<cat> = number
+      filtered = filtered.filter(m => {
+        if (!m.wokeCategoryCounts) return false;
+        const count = m.wokeCategoryCounts.get(category) || 0;
+        return count > 0;
+      });
+    }
+
+    // 6) Sort
+    filtered = sortResults(filtered, sort);
+
+    // 7) Pagination
+    const total = filtered.length;
     const totalPages = Math.ceil(total / limit);
+    const pageResults = filtered.slice(skip, skip + limit);
 
-    // If AJAX => return JSON
+    // 8) If AJAX => return JSON
     if (req.xhr) {
       return res.json({
         items: pageResults,
-        currentPage: page,
+        currentPage,
         totalPages,
         totalCount: total
       });
     }
 
-    // Else => normal HTML
+    // 9) else => render search-results.ejs (or whichever)
     res.render('search-results', {
       q,
       results: pageResults,
-      currentPage: page,
+      currentPage,
       totalPages,
       totalCount: total,
-      limit,
-      sortParam
+      sortParam: sort
     });
   } catch (err) {
     console.error(err);
@@ -116,9 +163,9 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * POST /search => advanced local-only search
- * Body: { title, minRating, maxRating, notWoke, contentType, sortParam }
- * Renders advanced-search-results.ejs
+ * POST /search
+ *  - If you want to keep a separate advanced local-only approach (from your code),
+ *    you can keep this. Or you can rely entirely on the GET route above.
  */
 router.post('/', async (req, res) => {
   try {
@@ -142,7 +189,7 @@ router.post('/', async (req, res) => {
       query.notWokeCount = { $gt: 0 };
     }
 
-    let results = await Movie.find(query).limit(500); // bigger limit for local
+    let results = await Movie.find(query).limit(500);
     results = sortResults(results, sortParam || 'rating');
     results = results.slice(0, 100);
 
@@ -179,23 +226,29 @@ router.post('/save', ensureAuthenticated, async (req, res) => {
 
 // Helper for sorting
 function sortResults(arr, sortParam) {
-  if (sortParam === 'popularity') {
-    return arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-  } else if (sortParam === 'releaseDate') {
-    return arr.sort((a, b) => {
-      let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-      let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-      return bd - ad;
-    });
-  } else if (sortParam === 'title') {
-    return arr.sort((a, b) => {
-      let at = a.title.toLowerCase();
-      let bt = b.title.toLowerCase();
-      return at.localeCompare(bt);
-    });
-  } else {
-    // rating
-    return arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+  switch (sortParam) {
+    case 'ratingDesc':
+    case 'rating':
+      return arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+    case 'notWokeDesc':
+      return arr.sort((a, b) => (b.notWokeCount || 0) - (a.notWokeCount || 0));
+    case 'popularity':
+      return arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    case 'releaseDate':
+      return arr.sort((a, b) => {
+        let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+        let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+        return bd - ad;
+      });
+    case 'title':
+      return arr.sort((a, b) => {
+        let at = a.title.toLowerCase();
+        let bt = b.title.toLowerCase();
+        return at.localeCompare(bt);
+      });
+    default:
+      // fallback => ratingDesc
+      return arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
   }
 }
 
