@@ -3,10 +3,19 @@ const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
 
-// Log the resolved path to verify which file is loaded.
+// Use absolute path resolution to load the intended file.
 const resolvedUserModelPath = require.resolve('../models/User.js');
 console.log('Resolved User model path:', resolvedUserModelPath);
+
+// Read and log the first 300 characters of the file for verification.
+try {
+  const userModelSnippet = fs.readFileSync(resolvedUserModelPath, 'utf8').substring(0, 300);
+  console.log('Contents snippet of the User model file:\n', userModelSnippet);
+} catch (err) {
+  console.error('Error reading the User model file:', err);
+}
 
 // Load the User model using the resolved path.
 const User = require(resolvedUserModelPath);
