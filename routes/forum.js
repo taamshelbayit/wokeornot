@@ -166,6 +166,7 @@ router.post('/:id/reply', ensureAuthenticated, async (req, res) => {
 /**
  * GET /forum/edit/:id
  *   Show form to edit a post
+ *   Admin can edit any post; non-admin can only edit their own.
  */
 router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
   try {
@@ -174,12 +175,15 @@ router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
       req.flash('error_msg', 'Post not found');
       return res.redirect('/forum');
     }
-    // Only allow the post author to edit
-    if (post.author.toString() !== req.user._id.toString()) {
+
+    // Admin can edit anything; user can only edit their own
+    const isAdmin = req.user.role && req.user.role === 'admin';
+    const isOwner = post.author.toString() === req.user._id.toString();
+    if (!isOwner && !isAdmin) {
       req.flash('error_msg', 'You are not authorized to edit this post');
       return res.redirect('/forum');
     }
-    // Render edit form (forum-edit.ejs)
+
     res.render('forum-edit', { post });
   } catch (err) {
     console.error('Error retrieving post for editing:', err);
@@ -191,6 +195,7 @@ router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
 /**
  * POST /forum/edit/:id
  *   Handle submission of an edited post
+ *   Admin can edit any post; non-admin can only edit their own.
  */
 router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
   try {
@@ -200,10 +205,14 @@ router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
       req.flash('error_msg', 'Post not found');
       return res.redirect('/forum');
     }
-    if (post.author.toString() !== req.user._id.toString()) {
+
+    const isAdmin = req.user.role && req.user.role === 'admin';
+    const isOwner = post.author.toString() === req.user._id.toString();
+    if (!isOwner && !isAdmin) {
       req.flash('error_msg', 'You are not authorized to edit this post');
       return res.redirect('/forum');
     }
+
     // Update post fields (if title is not applicable for replies, keep it empty)
     post.title = title;
     post.content = content;
@@ -221,6 +230,7 @@ router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
 /**
  * POST /forum/delete/:id
  *   Delete a post (thread or reply)
+ *   Admin can delete any post; non-admin can only delete their own.
  */
 router.post('/delete/:id', ensureAuthenticated, async (req, res) => {
   try {
@@ -229,10 +239,14 @@ router.post('/delete/:id', ensureAuthenticated, async (req, res) => {
       req.flash('error_msg', 'Post not found');
       return res.redirect('/forum');
     }
-    if (post.author.toString() !== req.user._id.toString()) {
+
+    const isAdmin = req.user.role && req.user.role === 'admin';
+    const isOwner = post.author.toString() === req.user._id.toString();
+    if (!isOwner && !isAdmin) {
       req.flash('error_msg', 'You are not authorized to delete this post');
       return res.redirect('/forum');
     }
+
     await Post.findByIdAndDelete(req.params.id);
 
     req.flash('success_msg', 'Post deleted successfully');
