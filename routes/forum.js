@@ -13,12 +13,12 @@ async function buildCommentTree(post) {
   // Convert Mongoose doc to plain object so we can add fields
   const postObj = post.toObject();
 
-  // Populate each child (comment) with author
+  // Populate each child (comment) with author details
   const children = await Post.find({ parentPost: post._id })
     .populate('author', 'firstName lastName')
-    .sort({ createdAt: 1 }); // oldest first or newest first
+    .sort({ createdAt: 1 }); // oldest first
 
-  // Recurse for each child
+  // Recurse for each child to build nested structure
   postObj.children = [];
   for (let child of children) {
     const childTree = await buildCommentTree(child);
@@ -26,6 +26,18 @@ async function buildCommentTree(post) {
   }
 
   return postObj;
+}
+
+/**
+ * Helper: find the top-level ancestor of a post
+ * so we know which thread ID to redirect to
+ */
+async function findTopLevelAncestor(postId) {
+  let current = await Post.findById(postId);
+  while (current.parentPost) {
+    current = await Post.findById(current.parentPost);
+  }
+  return current._id; // top-level thread ID
 }
 
 /**
@@ -82,14 +94,14 @@ router.post('/new', ensureAuthenticated, async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate('author', 'firstName lastName');
+    const post = await Post.findById(req.params.id)
+      .populate('author', 'firstName lastName');
     if (!post) {
       req.flash('error_msg', 'Thread not found');
       return res.redirect('/forum');
     }
-    // Build a nested tree for this thread
+    // Build a nested tree for the thread (with replies)
     const threadTree = await buildCommentTree(post);
-
     res.render('forum-thread', { threadTree });
   } catch (err) {
     console.error('Error loading thread:', err);
@@ -109,30 +121,32 @@ router.post('/:id/reply', ensureAuthenticated, async (req, res) => {
       req.flash('error_msg', 'Content cannot be empty');
       return res.redirect(`/forum/${req.params.id}`);
     }
-    // The parent post
+    // Retrieve the parent post
     const parentPost = await Post.findById(req.params.id);
     if (!parentPost) {
       req.flash('error_msg', 'Parent post not found');
       return res.redirect('/forum');
     }
 
-    // Create a new post as a reply
+    // Create a new reply post
     const newReply = new Post({
-      title: '', // replies might not have a separate title
+      title: '', // Replies might not need a title
       content,
       author: req.user._id,
       parentPost: parentPost._id
     });
     await newReply.save();
 
-    // Update the parent post's comments array
-    parentPost.comments.push(newReply._id);
+    // Update parent's comments array if applicable
+    if (parentPost.comments) {
+      parentPost.comments.push(newReply._id);
+    } else {
+      parentPost.comments = [newReply._id];
+    }
     await parentPost.save();
 
     req.flash('success_msg', 'Reply posted');
-    // We redirect to the top-level thread
-    // If the parent is a nested reply, we still go to the top-level parent
-    // so we can see the entire thread
+    // Redirect to the top-level thread to view the complete conversation
     const topLevelAncestor = await findTopLevelAncestor(parentPost._id);
     res.redirect(`/forum/${topLevelAncestor}`);
   } catch (err) {
@@ -143,15 +157,79 @@ router.post('/:id/reply', ensureAuthenticated, async (req, res) => {
 });
 
 /**
- * Helper: find the top-level ancestor of a post
- * so we know which thread ID to redirect to
+ * GET /forum/edit/:id - Show form to edit a post
  */
-async function findTopLevelAncestor(postId) {
-  let current = await Post.findById(postId);
-  while (current.parentPost) {
-    current = await Post.findById(current.parentPost);
+router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      req.flash('error_msg', 'Post not found');
+      return res.redirect('/forum');
+    }
+    // Only allow the post author to edit
+    if (post.author.toString() !== req.user._id.toString()) {
+      req.flash('error_msg', 'You are not authorized to edit this post');
+      return res.redirect('/forum');
+    }
+    // Render edit form using flat view name "forum-edit"
+    res.render('forum-edit', { post });
+  } catch (err) {
+    console.error('Error retrieving post for editing:', err);
+    req.flash('error_msg', 'Error retrieving post for editing');
+    res.redirect('/forum');
   }
-  return current._id; // the top-level thread ID
-}
+});
+
+/**
+ * POST /forum/edit/:id - Handle submission of an edited post
+ */
+router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      req.flash('error_msg', 'Post not found');
+      return res.redirect('/forum');
+    }
+    if (post.author.toString() !== req.user._id.toString()) {
+      req.flash('error_msg', 'You are not authorized to edit this post');
+      return res.redirect('/forum');
+    }
+    // Update post fields; if title is not applicable for replies, you can keep it unchanged
+    post.title = title;
+    post.content = content;
+    await post.save();
+    req.flash('success_msg', 'Post updated successfully');
+    res.redirect('/forum');
+  } catch (err) {
+    console.error('Error updating post:', err);
+    req.flash('error_msg', 'Error updating post');
+    res.redirect('/forum');
+  }
+});
+
+/**
+ * POST /forum/delete/:id - Delete a post
+ */
+router.post('/delete/:id', ensureAuthenticated, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      req.flash('error_msg', 'Post not found');
+      return res.redirect('/forum');
+    }
+    if (post.author.toString() !== req.user._id.toString()) {
+      req.flash('error_msg', 'You are not authorized to delete this post');
+      return res.redirect('/forum');
+    }
+    await Post.findByIdAndDelete(req.params.id);
+    req.flash('success_msg', 'Post deleted successfully');
+    res.redirect('/forum');
+  } catch (err) {
+    console.error('Error deleting post:', err);
+    req.flash('error_msg', 'Error deleting post');
+    res.redirect('/forum');
+  }
+});
 
 module.exports = router;
