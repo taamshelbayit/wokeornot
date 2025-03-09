@@ -75,21 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentType = btn.getAttribute('data-contenttype') || 'Movie';
 
     // Construct the AJAX URL
-    // e.g. /movies?type=Movie&page=2
-    // If you also have genre, you'd parse it from location.href or store it in data- attributes
     let url = `/movies?type=${contentType}&page=${newPage}`;
-
-    // Optional: if you had &genre=27 in the URL, parse it
-    // or store it in data-genre attribute, etc.
 
     try {
       const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' }});
       if (!response.ok) throw new Error('Network error');
       const data = await response.json();
-      // data.items => array of movies
-      // data.currentPage => new page
-      // data.totalPages => totalPages
-      // data.totalCount => totalCount
 
       const container = document.getElementById('movieList');
       data.items.forEach(item => {
