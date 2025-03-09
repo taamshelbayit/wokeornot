@@ -1,14 +1,6 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <!-- Display success/error flash messages -->
-  <% if (success_msg) { %>
-    <div class="alert alert-success"><%= success_msg %></div>
-  <% } %>
-  <% if (error_msg) { %>
-    <div class="alert alert-danger"><%= error_msg %></div>
-  <% } %>
-
   <h1 class="text-warning">Forum</h1>
 
   <% if (user) { %>

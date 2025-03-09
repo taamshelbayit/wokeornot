@@ -92,7 +92,7 @@ router.get('/', ensureAuthenticated, ensureAdmin, async (req, res) => {
 router.post('/remove/:commentId', ensureAuthenticated, ensureAdmin, async (req, res) => {
   try {
     await Comment.findByIdAndDelete(req.params.commentId);
-    req.flash('success_msg', 'Comment removed');
+    req.flash   ('success_msg', 'Comment removed');
     res.redirect('/admin');
   } catch (err) {
     console.error(err);
