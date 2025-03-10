@@ -1,22 +1,34 @@
 <% layout('layout') %>
 
+<!-- Hero Carousel -->
 <div id="heroCarousel" class="carousel slide carousel-fade" data-ride="carousel">
-  <!-- Indicators, etc. -->
+  <ol class="carousel-indicators">
+    <li data-target="#heroCarousel" data-slide-to="0" class="active"></li>
+    <li data-target="#heroCarousel" data-slide-to="1"></li>
+    <li data-target="#heroCarousel" data-slide-to="2"></li>
+  </ol>
+
   <div class="carousel-inner">
-    <% heroItems.forEach((item, idx) => { %>
-      <div class="carousel-item hero-slide <%= idx === 0 ? 'active' : '' %>">
+    <% heroItems.forEach((item, index) => { %>
+      <div class="carousel-item hero-slide <%= index === 0 ? 'active' : '' %>">
         <div
           class="hero-slide-content d-flex align-items-center justify-content-center"
           style="
-            background: url('https://image.tmdb.org/t/p/original<%= item.poster_path %>')
-                      center/cover no-repeat;
-            min-height: 500px;
+            background: url('https://image.tmdb.org/t/p/original<%= item.poster_path %>') center/cover no-repeat;
+            min-height: 450px;
           "
         >
-          <div class="container text-center">
-            <h1><%= item.title || item.name %></h1>
-            <p>Trending Now</p>
-            <a href="/movies/add?tmdbId=<%= item.id %>" class="btn btn-warning btn-lg animated-button">
+          <div class="container text-center" style="color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.7);">
+            <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 3rem;">
+              <%= item.title || item.name %>
+            </h1>
+            <p class="mb-3" style="font-size: 1.2rem;">Trending Now</p>
+            <!-- "Rate This" button -->
+            <a
+              href="/movies/add?tmdbId=<%= item.id %>"
+              class="btn btn-warning btn-lg animated-button"
+              style="font-weight:600;"
+            >
               Rate This
             </a>
           </div>
@@ -24,12 +36,19 @@
       </div>
     <% }) %>
   </div>
-  <!-- Prev/Next controls -->
+
+  <!-- Carousel Controls -->
+  <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+  </a>
+  <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+  </a>
 </div>
 
-<!-- Then your "Top 5" sections with .scroll-container -->
-<div class="container mt-4">
-  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+<!-- TOP 5 MOVIES -->
+<div class="container mt-5">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
     Top 5 Most Woke Movies
   </h3>
   <div class="scroll-container position-relative">
@@ -38,7 +57,7 @@
     </button>
     <div class="scroll-wrapper" id="topMoviesScroll">
       <% topMovies.forEach(m => { %>
-        <div class="scroll-item card hover-zoom" data-aos="fade-up">
+        <div class="scroll-item card" data-aos="fade-up">
           <% if (m.posterPath) { %>
             <img
               src="https://image.tmdb.org/t/p/w500<%= m.posterPath %>"
@@ -48,30 +67,187 @@
           <% } %>
           <div class="card-body">
             <h5 class="card-title"><%= m.title %></h5>
+
+            <!-- Woke Meter / Rating Display -->
             <% if (m.ratings && m.ratings.length > 0) { %>
               <div class="woke-meter mb-2">
                 <div
                   class="woke-meter-fill"
-                  style="width:<%= (m.averageRating / 10) * 100 %>%;"
+                  style="width: <%= (m.averageRating / 10) * 100 %>%;"
                 ></div>
               </div>
-              <p class="mb-1" style="color:#bbb;">
+              <p class="mb-1 text-muted" style="font-size:0.9rem;">
                 <%= m.averageRating.toFixed(1) %>/10
                 <% if (m.notWokeCount > 0) { %>
                   - <%= m.notWokeCount %> Not Woke
                 <% } %>
               </p>
             <% } else if (m.notWokeCount > 0) { %>
-              <p><%= m.notWokeCount %> Not Woke</p>
+              <p style="font-size:0.9rem;"><%= m.notWokeCount %> Not Woke</p>
             <% } else { %>
-              <p>No Ratings</p>
+              <p style="font-size:0.9rem;">No Ratings</p>
             <% } %>
+
             <a href="/movies/<%= m._id %>" class="btn btn-sm btn-outline-warning">View</a>
           </div>
         </div>
       <% }) %>
     </div>
     <button class="scroll-btn right-btn" data-target="topMoviesScroll">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- TOP 5 TV -->
+<div class="container mt-5">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
+    Top 5 Most Woke TV Shows
+  </h3>
+  <div class="scroll-container position-relative">
+    <button class="scroll-btn left-btn" data-target="topTVScroll">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="scroll-wrapper" id="topTVScroll">
+      <% topTV.forEach(t => { %>
+        <div class="scroll-item card" data-aos="fade-up">
+          <% if (t.posterPath) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= t.posterPath %>"
+              class="card-img-top"
+              alt="<%= t.title %>"
+            >
+          <% } %>
+          <div class="card-body">
+            <h5 class="card-title"><%= t.title %></h5>
+
+            <% if (t.ratings && t.ratings.length > 0) { %>
+              <div class="woke-meter mb-2">
+                <div
+                  class="woke-meter-fill"
+                  style="width: <%= (t.averageRating / 10) * 100 %>%;"
+                ></div>
+              </div>
+              <p class="mb-1 text-muted" style="font-size:0.9rem;">
+                <%= t.averageRating.toFixed(1) %>/10
+                <% if (t.notWokeCount > 0) { %>
+                  - <%= t.notWokeCount %> Not Woke
+                <% } %>
+              </p>
+            <% } else if (t.notWokeCount > 0) { %>
+              <p style="font-size:0.9rem;"><%= t.notWokeCount %> Not Woke</p>
+            <% } else { %>
+              <p style="font-size:0.9rem;">No Ratings</p>
+            <% } %>
+
+            <a href="/movies/<%= t._id %>" class="btn btn-sm btn-outline-warning">View</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    <button class="scroll-btn right-btn" data-target="topTVScroll">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- TOP 5 KIDS -->
+<div class="container mt-5">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
+    Top 5 Most Woke Kids Titles
+  </h3>
+  <div class="scroll-container position-relative">
+    <button class="scroll-btn left-btn" data-target="topKidsScroll">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="scroll-wrapper" id="topKidsScroll">
+      <% topKids.forEach(k => { %>
+        <div class="scroll-item card" data-aos="fade-up">
+          <% if (k.posterPath) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= k.posterPath %>"
+              class="card-img-top"
+              alt="<%= k.title %>"
+            >
+          <% } %>
+          <div class="card-body">
+            <h5 class="card-title"><%= k.title %></h5>
+
+            <% if (k.ratings && k.ratings.length > 0) { %>
+              <div class="woke-meter mb-2">
+                <div
+                  class="woke-meter-fill"
+                  style="width: <%= (k.averageRating / 10) * 100 %>%;"
+                ></div>
+              </div>
+              <p class="mb-1 text-muted" style="font-size:0.9rem;">
+                <%= k.averageRating.toFixed(1) %>/10
+                <% if (k.notWokeCount > 0) { %>
+                  - <%= k.notWokeCount %> Not Woke
+                <% } %>
+              </p>
+            <% } else if (k.notWokeCount > 0) { %>
+              <p style="font-size:0.9rem;"><%= k.notWokeCount %> Not Woke</p>
+            <% } else { %>
+              <p style="font-size:0.9rem;">No Ratings</p>
+            <% } %>
+
+            <a href="/movies/<%= k._id %>" class="btn btn-sm btn-outline-warning">View</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    <button class="scroll-btn right-btn" data-target="topKidsScroll">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- TOP 5 NOT WOKE -->
+<div class="container mt-5 mb-5">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
+    Top 5 Not Woke Titles
+  </h3>
+  <div class="scroll-container position-relative">
+    <button class="scroll-btn left-btn" data-target="topNotWokeScroll">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <div class="scroll-wrapper" id="topNotWokeScroll">
+      <% topNotWoke.forEach(n => { %>
+        <div class="scroll-item card" data-aos="fade-up">
+          <% if (n.posterPath) { %>
+            <img
+              src="https://image.tmdb.org/t/p/w500<%= n.posterPath %>"
+              class="card-img-top"
+              alt="<%= n.title %>"
+            >
+          <% } %>
+          <div class="card-body">
+            <h5 class="card-title"><%= n.title %></h5>
+
+            <% if (n.ratings && n.ratings.length > 0) { %>
+              <div class="woke-meter mb-2">
+                <div
+                  class="woke-meter-fill"
+                  style="width: <%= (n.averageRating / 10) * 100 %>%;"
+                ></div>
+              </div>
+              <p class="mb-1 text-muted" style="font-size:0.9rem;">
+                <%= n.averageRating.toFixed(1) %>/10
+                - <%= n.notWokeCount %> Not Woke
+              </p>
+            <% } else if (n.notWokeCount > 0) { %>
+              <p style="font-size:0.9rem;"><%= n.notWokeCount %> Not Woke</p>
+            <% } else { %>
+              <p style="font-size:0.9rem;">No Ratings</p>
+            <% } %>
+
+            <a href="/movies/<%= n._id %>" class="btn btn-sm btn-outline-warning">View</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+    <button class="scroll-btn right-btn" data-target="topNotWokeScroll">
       <i class="fas fa-chevron-right"></i>
     </button>
   </div>

@@ -1,17 +1,16 @@
 /* public/css/style.css */
 
 /* -------------------------------------------------- */
-/* 0) Color Variables (optional if using plain CSS)   */
+/* 0) Color Variables (Optional)                       */
 /* -------------------------------------------------- */
-/* If you prefer, define custom properties: */
 /*
 :root {
   --brand-color: #f5c518;
-  --bg-dark: #121212;
-  --card-bg: #1e1e1e;
-  --text-light: #fff;
-  --text-muted: #999;
-  --navbar-bg: #181818;
+  --navbar-bg: #1f1f1f;
+  --body-bg: #f9f9f9;
+  --text-color: #333;
+  --card-bg: #fff;
+  --accent-text: #f5c518;
 }
 */
 
@@ -21,13 +20,11 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
-  background-color: #121212; /* Dark background */
-  color: #fff;              /* Light text for contrast */
+  background-color: #f9f9f9; /* Light background */
+  color: #333;              /* Dark text for contrast */
 }
 
-/* A quick reset for container backgrounds */
-.container,
-.container-fluid {
+.container, .container-fluid {
   background-color: transparent;
 }
 
@@ -35,7 +32,7 @@ body {
 /* 2) Navbar                                          */
 /* -------------------------------------------------- */
 .imdb-topbar {
-  background-color: #181818; /* slightly lighter than body for contrast */
+  background-color: #1f1f1f;
   border-bottom: 2px solid #333;
 }
 .funky-logo {
@@ -43,7 +40,7 @@ body {
   font-size: 1.8rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #f5c518 !important; /* Brand color for the “WokeOrNot” text */
+  color: #f5c518 !important; /* brand color for “WokeOrNot” text */
 }
 .navbar-brand img {
   margin-right: 8px;
@@ -55,8 +52,6 @@ body {
 .navbar-nav .nav-link:hover {
   color: #f5c518 !important;
 }
-
-/* Make toggler icon visible on dark bg */
 .navbar-toggler-icon {
   filter: invert(1);
 }
@@ -72,11 +67,11 @@ body {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  /* Darker overlay for better text contrast */
+  /* Light overlay for a subtle fade */
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.7) 0%,
-    rgba(0,0,0,0.7) 100%
+    rgba(255,255,255,0.2) 0%,
+    rgba(255,255,255,0.2) 100%
   );
   pointer-events: none;
   z-index: 1;
@@ -84,12 +79,8 @@ body {
 .hero-slide-content {
   position: relative;
   z-index: 2;
-  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
-}
-.hero-slide-content h1,
-.hero-slide-content p {
-  color: #fff;
-  margin: 0.5rem 0;
+  color: #fff; /* If your images are dark enough; otherwise #333 if the images are bright. */
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
 }
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
@@ -130,12 +121,12 @@ body {
 /* 5) Cards, Container, & Elements                    */
 /* -------------------------------------------------- */
 .card {
-  background-color: #1e1e1e;
-  border: 1px solid #2a2a2a;
+  background-color: #fff;
+  border: none;
   border-radius: 6px;
-  color: #fff;
-  overflow: hidden;
-  transition: transform 0.3s ease;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
 }
 .card:hover {
   transform: scale(1.01);
@@ -144,7 +135,7 @@ body {
   padding: 1rem;
 }
 hr.bg-secondary {
-  border-top: 1px solid #444;
+  border-top: 1px solid #ccc;
 }
 
 /* -------------------------------------------------- */
@@ -155,7 +146,7 @@ hr.bg-secondary {
   overflow: hidden;
   padding: 0 40px;
   margin-bottom: 1rem;
-  background-color: transparent; /* on dark background */
+  background-color: transparent;
 }
 .scroll-wrapper {
   display: flex;
@@ -167,22 +158,22 @@ hr.bg-secondary {
 .scroll-item {
   min-width: 200px;
   flex: 0 0 auto;
-  background-color: #1e1e1e;
-  color: #fff;
-  border: 1px solid #2a2a2a;
+  background-color: #fff;
   border-radius: 6px;
   width: 200px;
   margin-right: 8px;
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 .scroll-item:hover {
   transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 .scroll-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.3);
   color: #fff;
   border: none;
   width: 36px;
@@ -193,10 +184,9 @@ hr.bg-secondary {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
 }
 .scroll-btn:hover {
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.5);
 }
 .left-btn {
   left: 10px;
@@ -212,7 +202,7 @@ hr.bg-secondary {
   position: relative;
   width: 100%;
   height: 8px;
-  background-color: #333;
+  background-color: #eee;
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 0.5rem;
@@ -236,7 +226,7 @@ hr.bg-secondary {
 }
 .star-rating label {
   font-size: 2rem;
-  color: #555;
+  color: #ccc;
   cursor: pointer;
   transition: color 0.2s, transform 0.2s;
 }
@@ -266,14 +256,14 @@ hr.bg-secondary {
   margin: 0.5rem 0;
 }
 .alert-success {
-  background-color: #2a2a2a;
-  border-color: #2a2a2a;
-  color: #bada55; /* or #fff; up to you */
+  background-color: #dff0d8;
+  border-color: #c8e5bc;
+  color: #3c763d;
 }
 .alert-danger {
-  background-color: #3a1f1f;
-  border-color: #3a1f1f;
-  color: #ffaaaa;
+  background-color: #f2dede;
+  border-color: #ebcccc;
+  color: #a94442;
 }
 
 /* -------------------------------------------------- */
@@ -284,16 +274,16 @@ hr.bg-secondary {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #2a2a2a;
+  background: #eee;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #555;
+  background-color: #ccc;
   border-radius: 8px;
-  border: 1px solid #2a2a2a;
+  border: 1px solid #eee;
 }
 * {
   scrollbar-width: thin;
-  scrollbar-color: #555 #2a2a2a;
+  scrollbar-color: #ccc #eee;
 }
 
 /* -------------------------------------------------- */
@@ -301,17 +291,17 @@ hr.bg-secondary {
 /* -------------------------------------------------- */
 .form-control {
   border-radius: 6px;
-  background-color: #2a2a2a;
-  color: #fff;
-  border: 1px solid #444;
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
 }
 .form-control:focus {
-  box-shadow: 0 0 0 0.2rem rgba(245, 197, 24, 0.25);
-  background-color: #333;
+  box-shadow: 0 0 0 0.2rem rgba(245, 197, 24, 0.2);
+  background-color: #fff;
 }
 .form-check-input {
-  background-color: transparent;
-  border: 1px solid #888;
+  background-color: #fff;
+  border: 1px solid #aaa;
 }
 .form-check-input:checked {
   background-color: #f5c518;
@@ -321,9 +311,9 @@ hr.bg-secondary {
   margin-left: 0.5rem;
 }
 
-/* Make placeholders lighter */
+/* placeholders lighter gray */
 ::placeholder {
-  color: #bbb;
+  color: #aaa;
 }
 
 /* -------------------------------------------------- */
