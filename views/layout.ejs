@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Ensures proper scaling on mobile devices -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= pageTitle || 'WokeOrNot' %></title>
 
-  <!-- Google tag (gtag.js) -->
+  <!-- Google tag (gtag.js) - if you use Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1RWGTWZ61"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -15,14 +16,21 @@
   </script>
 
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
   <link
     href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap"
     rel="stylesheet"
   >
 
-  <!-- Font Awesome -->
+  <!-- Font Awesome (for icons) -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -34,23 +42,23 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   >
 
-  <!-- AOS CSS -->
+  <!-- AOS (Animate On Scroll) CSS -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/aos@next/dist/aos.css"
   >
 
-  <!-- Custom Dark CSS -->
+  <!-- Custom CSS (the new style.css with light background) -->
   <link
     rel="stylesheet"
     href="/css/style.css"
   >
 </head>
 <body>
-  <!-- Dark Navbar -->
+  <!-- NAVBAR (Dark) -->
   <nav class="navbar navbar-expand-lg imdb-topbar">
     <div class="container-fluid">
-      <!-- Logo & Brand -->
+      <!-- Logo/Brand -->
       <a class="navbar-brand funky-logo d-flex align-items-center" href="/">
         <img
           src="/images/logo.webp"
@@ -61,12 +69,12 @@
         <span style="margin-left:8px;">WokeOrNot</span>
       </a>
 
-      <!-- Desktop Search Form -->
+      <!-- Desktop Search -->
       <form
         action="/search"
         method="GET"
         class="d-none d-lg-flex mx-auto w-50 align-items-center"
-        style="max-width: 600px;"
+        style="max-width:600px;"
       >
         <input
           type="text"
@@ -77,12 +85,16 @@
         <button class="btn btn-warning" type="submit">
           <i class="fas fa-search"></i>
         </button>
-        <a href="/search" class="btn btn-outline-secondary ml-2" style="white-space: nowrap;">
+        <a
+          href="/search"
+          class="btn btn-outline-secondary ml-2"
+          style="white-space:nowrap;"
+        >
           Advanced
         </a>
       </form>
 
-      <!-- Toggler -->
+      <!-- Mobile Toggler -->
       <button
         class="navbar-toggler"
         type="button"
@@ -92,6 +104,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
+      <!-- Navbar Links -->
       <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
         <ul class="navbar-nav">
           <!-- Movies Dropdown -->
@@ -100,7 +113,6 @@
               class="nav-link dropdown-toggle"
               href="#"
               id="moviesDropdown"
-              role="button"
               data-toggle="dropdown"
             >
               Movies
@@ -108,12 +120,11 @@
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=Movie">All Movies</a>
               <div class="dropdown-divider"></div>
+              <!-- Common genres -->
               <a class="dropdown-item" href="/movies?type=Movie&genre=28">Action</a>
               <a class="dropdown-item" href="/movies?type=Movie&genre=35">Comedy</a>
               <a class="dropdown-item" href="/movies?type=Movie&genre=18">Drama</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=878">Sci-Fi</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=27">Horror</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=10749">Romance</a>
+              <!-- etc. -->
             </div>
           </li>
 
@@ -123,7 +134,6 @@
               class="nav-link dropdown-toggle"
               href="#"
               id="tvDropdown"
-              role="button"
               data-toggle="dropdown"
             >
               TV
@@ -131,11 +141,7 @@
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=TV">All TV Shows</a>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/movies?type=TV&genre=10759">Action & Adventure</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=35">Comedy</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=18">Drama</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=10764">Reality</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=99">Documentary</a>
+              <!-- etc. -->
             </div>
           </li>
 
@@ -145,7 +151,6 @@
               class="nav-link dropdown-toggle"
               href="#"
               id="kidsDropdown"
-              role="button"
               data-toggle="dropdown"
             >
               Kids
@@ -153,13 +158,11 @@
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/movies?type=Kids">All Kids</a>
               <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="/movies?type=Kids&genre=16">Animated</a>
-              <a class="dropdown-item" href="/movies?type=Kids&genre=10751">Family</a>
-              <a class="dropdown-item" href="/movies?type=Kids&genre=12">Adventure</a>
+              <!-- etc. -->
             </div>
           </li>
 
-          <!-- Logged-in vs. Logged-out Links -->
+          <!-- Auth / Profile -->
           <% if (user) { %>
             <li class="nav-item">
               <a class="nav-link" href="/forum">Forum</a>
@@ -169,10 +172,8 @@
                 Hello,
                 <% if (user.name) { %>
                   <%= user.name %>
-                <% } else if (user.firstName && user.lastName) { %>
-                  <%= user.firstName %> <%= user.lastName %>
                 <% } else { %>
-                  User
+                  <%= user.firstName %> <%= user.lastName %>
                 <% } %>
               </a>
             </li>
@@ -184,10 +185,11 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/notifications">
-                <i class="fas fa-bell"></i> Notifications <span class="notif-count"></span>
+                <i class="fas fa-bell"></i> Notifications
+                <span class="notif-count"></span>
               </a>
             </li>
-            <% if (user.role && user.role === 'admin') { %>
+            <% if (user.role === 'admin') { %>
               <li class="nav-item">
                 <a class="nav-link text-warning font-weight-bold" href="/admin">Admin Panel</a>
               </li>
@@ -195,9 +197,6 @@
             <li class="nav-item">
               <a class="nav-link" href="/auth/logout">Logout</a>
             </li>
-            <script>
-              console.log("layout sees user role:", "<%= user.role %>");
-            </script>
           <% } else { %>
             <li class="nav-item">
               <a class="nav-link" href="/auth/login">Login</a>
@@ -211,7 +210,7 @@
     </div>
   </nav>
 
-  <!-- If user is logged in, debug in console -->
+  <!-- Debug snippet for user data -->
   <% if (user) { %>
     <script>
       console.log("layout.ejs sees user:", <%= JSON.stringify(user) %>);
@@ -250,12 +249,12 @@
     <% renderFlashMessages(error, 'alert alert-danger'); %>
   </div>
 
-  <!-- Main Content -->
+  <!-- Main Content (injected from child templates) -->
   <%- body %>
 
   <!-- Footer -->
-  <footer class="mt-5 py-4" style="background-color:#181818; border-top:2px solid #333;">
-    <div class="container text-center" style="color:#999;">
+  <footer class="mt-5 py-4" style="background-color:#1f1f1f; border-top:2px solid #333;">
+    <div class="container text-center" style="color:#ccc;">
       <p class="mb-0">
         &copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.
       </p>

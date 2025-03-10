@@ -18,12 +18,11 @@
             min-height: 450px;
           "
         >
-          <div class="container text-center" style="color: #fff; text-shadow: 1px 1px 4px rgba(0,0,0,0.7);">
-            <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 3rem;">
+          <div class="container text-center" style="color:#fff; text-shadow:1px 1px 4px rgba(0,0,0,0.7);">
+            <h1 style="font-family: 'Bebas Neue', sans-serif; font-size:3rem;">
               <%= item.title || item.name %>
             </h1>
-            <p class="mb-3" style="font-size: 1.2rem;">Trending Now</p>
-            <!-- "Rate This" button -->
+            <p class="mb-3" style="font-size:1.2rem;">Trending Now</p>
             <a
               href="/movies/add?tmdbId=<%= item.id %>"
               class="btn btn-warning btn-lg animated-button"
@@ -37,7 +36,6 @@
     <% }) %>
   </div>
 
-  <!-- Carousel Controls -->
   <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
   </a>
@@ -46,9 +44,9 @@
   </a>
 </div>
 
-<!-- TOP 5 MOVIES -->
+<!-- Top 5 Movies -->
 <div class="container mt-5">
-  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color:#333;">
     Top 5 Most Woke Movies
   </h3>
   <div class="scroll-container position-relative">
@@ -68,7 +66,7 @@
           <div class="card-body">
             <h5 class="card-title"><%= m.title %></h5>
 
-            <!-- Woke Meter / Rating Display -->
+            <!-- Woke Meter / Ratings -->
             <% if (m.ratings && m.ratings.length > 0) { %>
               <div class="woke-meter mb-2">
                 <div
@@ -99,9 +97,9 @@
   </div>
 </div>
 
-<!-- TOP 5 TV -->
+<!-- Top 5 TV -->
 <div class="container mt-5">
-  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color:#333;">
     Top 5 Most Woke TV Shows
   </h3>
   <div class="scroll-container position-relative">
@@ -151,9 +149,9 @@
   </div>
 </div>
 
-<!-- TOP 5 KIDS -->
+<!-- Top 5 Kids -->
 <div class="container mt-5">
-  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color:#333;">
     Top 5 Most Woke Kids Titles
   </h3>
   <div class="scroll-container position-relative">
@@ -203,9 +201,9 @@
   </div>
 </div>
 
-<!-- TOP 5 NOT WOKE -->
+<!-- Top 5 Not Woke -->
 <div class="container mt-5 mb-5">
-  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color: #333;">
+  <h3 class="mb-3" style="font-family: 'Bebas Neue', sans-serif; color:#333;">
     Top 5 Not Woke Titles
   </h3>
   <div class="scroll-container position-relative">
