@@ -1,163 +1,110 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h2 class="text-warning mb-4" style="font-family: 'Bebas Neue', sans-serif;">
+  <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Advanced Search
   </h2>
 
-  <!-- We'll place the entire form in a Bootstrap card for a neat, uniform look -->
-  <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <div class="card bg-dark text-light">
-        <div class="card-body">
-          <form action="/search" method="GET">
-            <!-- Title (q) -->
-            <div class="form-group">
-              <label for="q" class="font-weight-bold">Title (partial)</label>
-              <input
-                type="text"
-                name="q"
-                id="q"
-                class="form-control"
-                placeholder="e.g. Star Wars, Stranger Things"
-              >
-              <small class="form-text text-muted">
-                Enter all or part of a title you’re looking for.
-              </small>
-            </div>
-
-            <!-- Row for Type & Genre -->
-            <div class="form-row">
-              <!-- contentType (Movie, TV, Kids) -->
-              <div class="form-group col-md-6">
-                <label for="contentType" class="font-weight-bold">Type</label>
-                <select name="contentType" id="contentType" class="form-control">
-                  <option value="">Any</option>
-                  <option value="Movie">Movies</option>
-                  <option value="TV">TV</option>
-                  <option value="Kids">Kids</option>
-                </select>
-              </div>
-
-              <!-- genre (TMDb numeric IDs) -->
-              <div class="form-group col-md-6">
-                <label for="genre" class="font-weight-bold">Genre</label>
-                <select name="genre" id="genre" class="form-control">
-                  <option value="">Any</option>
-                  <option value="28">Action</option>
-                  <option value="35">Comedy</option>
-                  <option value="18">Drama</option>
-                  <option value="27">Horror</option>
-                  <option value="878">Sci-Fi</option>
-                  <option value="10749">Romance</option>
-                  <!-- etc. -->
-                </select>
-              </div>
-            </div>
-
-            <!-- Row for minRating / maxRating -->
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="minRating" class="font-weight-bold">Min Woke Rating</label>
-                <input
-                  type="number"
-                  name="minRating"
-                  id="minRating"
-                  class="form-control"
-                  min="1"
-                  max="10"
-                  placeholder="1"
-                >
-              </div>
-              <div class="form-group col-md-6">
-                <label for="maxRating" class="font-weight-bold">Max Woke Rating</label>
-                <input
-                  type="number"
-                  name="maxRating"
-                  id="maxRating"
-                  class="form-control"
-                  min="1"
-                  max="10"
-                  placeholder="10"
-                >
-              </div>
-            </div>
-
-            <!-- Woke Category -->
-            <div class="form-group">
-              <label for="category" class="font-weight-bold">Woke Category</label>
-              <select name="category" id="category" class="form-control">
-                <option value="">Any</option>
-                <option value="Transgender Themes">Transgender Themes</option>
-                <option value="Gay Marriage">Gay Marriage</option>
-                <option value="Race Swapping">Race Swapping</option>
-                <option value="Feminist Agenda">Feminist Agenda</option>
-                <option value="Political">Political</option>
-                <!-- etc. -->
-              </select>
-              <small class="form-text text-muted">
-                Only find titles that contain this specific category.
-              </small>
-            </div>
-
-            <!-- Language -->
-            <div class="form-group">
-              <label for="lang" class="font-weight-bold">Language</label>
-              <select name="lang" id="lang" class="form-control">
-                <option value="en-US" selected>English (US)</option>
-                <option value="es-ES">Spanish (Spain)</option>
-                <option value="fr-FR">French (France)</option>
-                <option value="de-DE">German (Germany)</option>
-                <!-- etc. -->
-              </select>
-              <small class="form-text text-muted">
-                For TMDb fetching if you plan to retrieve localized data.
-              </small>
-            </div>
-
-            <!-- Not Woke Only -->
-            <div class="form-check mb-3">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                name="notWokeOnly"
-                id="notWokeOnly"
-                value="on"
-              >
-              <label for="notWokeOnly" class="form-check-label font-weight-bold">
-                Not Woke Only
-              </label>
-            </div>
-
-            <!-- Sort Param -->
-            <div class="form-group">
-              <label for="sort" class="font-weight-bold">Sort By</label>
-              <select name="sort" id="sort" class="form-control">
-                <option value="">None</option>
-                <option value="ratingDesc">Highest Woke Rating</option>
-                <option value="notWokeDesc">Most Not Woke</option>
-                <option value="popularity">Popularity</option>
-                <option value="releaseDate">Release Date (Newest)</option>
-                <option value="title">Title (A-Z)</option>
-              </select>
-            </div>
-
-            <!-- Submit -->
-            <button type="submit" class="btn btn-warning btn-block mt-3">
-              <i class="fas fa-search mr-1"></i> Search
-            </button>
-          </form>
-        </div>
-      </div>
+  <!-- Basic advanced search form (GET /search) -->
+  <form action="/search" method="GET" class="form-inline mb-4">
+    <!-- Title (q) -->
+    <div class="form-group mr-2">
+      <label for="q" class="mr-2">Title:</label>
+      <input type="text" name="q" id="q" class="form-control">
     </div>
-  </div>
 
-  <!-- Display Results (if results is defined and not empty) -->
+    <!-- contentType -->
+    <div class="form-group mr-2">
+      <label for="contentType" class="mr-2">Type:</label>
+      <select name="contentType" id="contentType" class="form-control">
+        <option value="">Any</option>
+        <option value="Movie">Movies</option>
+        <option value="TV">TV</option>
+        <option value="Kids">Kids</option>
+      </select>
+    </div>
+
+    <!-- minRating -->
+    <div class="form-group mr-2">
+      <label for="minRating" class="mr-2">Min Woke Rating:</label>
+      <input
+        type="number"
+        name="minRating"
+        id="minRating"
+        class="form-control"
+        min="1"
+        max="10"
+      >
+    </div>
+
+    <!-- category -->
+    <div class="form-group mr-2">
+      <label for="category" class="mr-2">Category:</label>
+      <select name="category" id="category" class="form-control">
+        <option value="">Any</option>
+        <option value="Transgender Themes">Transgender Themes</option>
+        <option value="Gay Marriage">Gay Marriage</option>
+        <option value="Race Swapping">Race Swapping</option>
+        <option value="Feminist Agenda">Feminist Agenda</option>
+        <option value="Political">Political</option>
+      </select>
+    </div>
+
+    <!-- genre -->
+    <div class="form-group mr-2">
+      <label for="genre" class="mr-2">Genre:</label>
+      <select name="genre" id="genre" class="form-control">
+        <option value="">Any</option>
+        <option value="28">Action</option>
+        <option value="35">Comedy</option>
+        <option value="18">Drama</option>
+        <option value="27">Horror</option>
+        <option value="878">Sci-Fi</option>
+        <option value="10749">Romance</option>
+      </select>
+    </div>
+
+    <!-- sort -->
+    <div class="form-group mr-2">
+      <label for="sort" class="mr-2">Sort:</label>
+      <select name="sort" id="sort" class="form-control">
+        <option value="">None</option>
+        <option value="ratingDesc">Highest Woke Rating</option>
+        <option value="notWokeDesc">Most Not Woke</option>
+        <option value="popularity">Popularity</option>
+        <option value="releaseDate">Release Date (Newest)</option>
+        <option value="title">Title (A-Z)</option>
+      </select>
+    </div>
+
+    <!-- lang -->
+    <div class="form-group mr-2">
+      <label for="lang" class="mr-2">Language:</label>
+      <select name="lang" id="lang" class="form-control">
+        <option value="en-US" selected>English (US)</option>
+        <option value="es-ES">Spanish (Spain)</option>
+        <option value="fr-FR">French (France)</option>
+        <option value="de-DE">German (Germany)</option>
+      </select>
+    </div>
+
+    <!-- notWokeOnly -->
+    <div class="form-group mr-2">
+      <input
+        type="checkbox"
+        name="notWokeOnly"
+        id="notWokeOnly"
+        value="on"
+      >
+      <label for="notWokeOnly" class="ml-1">Not Woke Only</label>
+    </div>
+
+    <button type="submit" class="btn btn-warning">Search</button>
+  </form>
+
+  <!-- Display Results (avoid reference error by checking if results is defined) -->
   <% if (typeof results !== 'undefined' && results.length > 0) { %>
-    <hr class="bg-secondary">
-    <h4 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
-      Results
-    </h4>
+    <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Results</h4>
     <div class="row">
       <% results.forEach(movie => { %>
         <div class="col-md-3 col-sm-6 mb-4 position-relative">
