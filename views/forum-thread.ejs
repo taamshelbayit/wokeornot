@@ -1,80 +1,26 @@
-<% layout('layout') %>
-
-<div class="container mt-4">
-  <div class="card bg-dark text-light mb-4">
-    <div class="card-body">
-      <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-        <%= threadTree.title || 'Untitled Thread' %>
-      </h2>
-      <p class="mb-2">
-        Posted by
-        <a href="/profile/<%= threadTree.author._id %>" class="text-warning">
-          <%= threadTree.author.firstName %> <%= threadTree.author.lastName %>
-        </a>
-        on <%= new Date(threadTree.createdAt).toDateString() %>
-      </p>
-      <div class="post-content mb-3">
-        <%= threadTree.content %>
-      </div>
-
-      <%
-        const isAdmin = user && user.role === 'admin';
-        const isOwner = user && threadTree.author && (user._id.toString() === threadTree.author._id.toString());
-      %>
-      <!-- If current user is the author OR admin, show Edit / Delete -->
-      <% if (isOwner || isAdmin) { %>
-        <form
-          action="/forum/delete/<%= threadTree._id %>"
-          method="POST"
-          class="d-inline-block mr-2"
-          onsubmit="return confirm('Are you sure you want to delete this thread?');"
-        >
-          <button type="submit" class="btn btn-danger btn-sm">
-            Delete
-          </button>
-        </form>
-        <a href="/forum/edit/<%= threadTree._id %>" class="btn btn-secondary btn-sm">
-          Edit
-        </a>
-      <% } %>
-    </div>
-  </div>
-
-  <!-- Reply form -->
-  <% if (user) { %>
-    <div class="card bg-dark text-light mb-4">
-      <div class="card-body">
-        <h4 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">Reply to This Thread</h4>
-        <form action="/forum/<%= threadTree._id %>/reply" method="POST">
-          <div class="form-group">
-            <textarea
-              class="form-control"
-              name="content"
-              rows="3"
-              placeholder="Add your reply..."
-              required
-            ></textarea>
-          </div>
-          <button type="submit" class="btn btn-warning">Reply</button>
-        </form>
-      </div>
-    </div>
+<% layout('layout', { title: 'Thread Details' }) %>
+<div class="card">
+  <h2><%= thread.title %></h2>
+  <p><%= thread.content %></p>
+  <small>By <%= thread.author.username %> on <%= new Date(thread.date).toLocaleDateString() %></small>
+</div>
+<div class="card">
+  <h3>Comments</h3>
+  <% if (comments.length === 0) { %>
+    <p>No comments yet.</p>
   <% } else { %>
-    <p class="text-light">
-      You must
-      <a href="/auth/login" class="text-warning">login</a>
-      to reply.
-    </p>
+    <% comments.forEach(function(comment) { %>
+      <div class="card" style="margin-bottom: 10px;">
+        <p><%= comment.comment %></p>
+        <small>By <%= comment.user.username %> on <%= new Date(comment.date).toLocaleDateString() %></small>
+      </div>
+    <% }); %>
   <% } %>
-
-  <h3 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Replies</h3>
-  <% if (threadTree.children && threadTree.children.length > 0) { %>
-    <ul class="list-group">
-      <% threadTree.children.forEach(function(child) { %>
-        <%- include('comment.ejs', { comment: child, user: user }) %>
-      <% }) %>
-    </ul>
-  <% } else { %>
-    <p class="text-light">No replies yet.</p>
-  <% } %>
+  <form action="/forum/comment/<%= thread._id %>" method="post">
+    <div class="form-group">
+      <label for="comment">Add a Comment</label>
+      <textarea id="comment" name="comment" placeholder="Your comment here" required></textarea>
+    </div>
+    <button type="submit" class="button">Submit Comment</button>
+  </form>
 </div>

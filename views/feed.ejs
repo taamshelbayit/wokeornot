@@ -1,33 +1,15 @@
-<% layout('layout', {
-  pageTitle: 'Your Feed',
-  pageDescription: 'Latest reviews from people you follow.'
-}) %>
-
-<div class="container mt-4 text-light">
-  <h2 class="text-warning">Your Feed</h2>
-
-  <% if (!reviews || reviews.length === 0) { %>
-    <p>No recent reviews from people you follow.</p>
+<% layout('layout', { title: 'Your Feed' }) %>
+<div class="card">
+  <h2>Your Feed</h2>
+  <% if (posts.length === 0) { %>
+    <p>No posts available yet. Be the first to share something!</p>
   <% } else { %>
-    <% reviews.forEach(r => { %>
-      <div class="card mb-3" style="background-color:#1e1e1e;">
-        <div class="card-body">
-          <p>
-            <strong><%= r.user.firstName %> <%= r.user.lastName %></strong>
-            rated
-            <strong><%= r.movie.title %></strong>
-            <% if (r.rating === 0) { %>
-              (Not Woke)
-            <% } else { %>
-              (<%= r.rating %>/10)
-            <% } %>
-          </p>
-          <% if (r.content) { %>
-            <p><%= r.content %></p>
-          <% } %>
-          <small class="text-muted"><%= r.createdAt.toDateString() %></small>
-        </div>
+    <% posts.forEach(function(post) { %>
+      <div class="card" style="margin-bottom: 10px;">
+        <h3><%= post.title %></h3>
+        <p><%= post.content %></p>
+        <small>By <%= post.author.username %> on <%= new Date(post.date).toLocaleDateString() %></small>
       </div>
-    <% }) %>
+    <% }); %>
   <% } %>
 </div>

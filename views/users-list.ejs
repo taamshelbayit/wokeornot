@@ -1,54 +1,9 @@
-<!-- views/users-list.ejs -->
-<% layout('layout') %>
-
-<div class="container mt-4">
-  <h1 class="text-warning">User Directory</h1>
-  <form class="form-inline mb-3" method="GET" action="/users">
-    <input type="text" name="q" class="form-control mr-2" placeholder="Search users..." value="<%= searchQuery %>">
-    <button type="submit" class="btn btn-primary">Search</button>
-  </form>
-
-  <% if (users.length === 0) { %>
-    <p>No users found.</p>
-  <% } else { %>
-    <div class="table-responsive">
-      <table class="table table-dark table-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Reviews</th>
-            <th>Forum Posts</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% users.forEach(userItem => { %>
-            <tr>
-              <td>
-                <!-- Link to the user's profile -->
-                <a href="/profile/<%= userItem._id %>" class="text-warning">
-                  <%= userItem.firstName %> <%= userItem.lastName %>
-                </a>
-              </td>
-              <td><%= userItem.email %></td>
-              <td><%= userStats[userItem._id].reviewCount %></td>
-              <td><%= userStats[userItem._id].postCount %></td>
-              <td>
-                <% if (user.following && user.following.includes(userItem._id.toString())) { %>
-                  <form action="/users/unfollow/<%= userItem._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Unfollow</button>
-                  </form>
-                <% } else { %>
-                  <form action="/users/follow/<%= userItem._id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-success btn-sm">Follow</button>
-                  </form>
-                <% } %>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
-  <% } %>
+<% layout('layout', { title: 'Users List' }) %>
+<div class="card">
+  <h2>Users</h2>
+  <ul>
+    <% users.forEach(function(user) { %>
+      <li><%= user.username %> (<%= user.email %>)</li>
+    <% }); %>
+  </ul>
 </div>
