@@ -1,8 +1,9 @@
+// config/passport.js
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('../models/User');
 
-// Set up the local strategy for email/password login
+// Local Strategy for email/password login
 passport.use(new LocalStrategy(
   { usernameField: 'email' },
   async (email, password, done) => {

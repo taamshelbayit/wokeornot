@@ -1,55 +1,23 @@
 // routes/index.js
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
-// const apicache = require('apicache');
-// const cache = apicache.middleware;
-
+const Post = require('../models/Post');
 const Movie = require('../models/Movie');
 
-// GET / => homepage with trending
+// Homepage route
 router.get('/', async (req, res) => {
   try {
-    console.log("Homepage user:", req.user);
-
-    const apiKey = process.env.TMDB_API_KEY;
-    // Example trending call
-    const trendingRes = await axios.get(
-      `https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}&language=en-US`
-    );
-    let heroItems = trendingRes.data.results.slice(0, 3);
-
-    // local DB queries for top sections
-    const topMovies = await Movie.find({
-      contentType: 'Movie',
-      ratings: { $exists: true, $ne: [] }
-    }).sort({ averageRating: -1 }).limit(5);
-
-    const topTV = await Movie.find({
-      contentType: 'TV',
-      ratings: { $exists: true, $ne: [] }
-    }).sort({ averageRating: -1 }).limit(5);
-
-    const topKids = await Movie.find({
-      contentType: 'Kids',
-      ratings: { $exists: true, $ne: [] }
-    }).sort({ averageRating: -1 }).limit(5);
-
-    const topNotWoke = await Movie.find({
-      notWokeCount: { $gt: 0 }
-    }).sort({ notWokeCount: -1 }).limit(5);
-
+    // Example: Retrieve movies to display on the homepage
+    const movies = await Movie.find();
     res.render('index', {
-      heroItems,
-      topMovies,
-      topTV,
-      topKids,
-      topNotWoke
+      title: 'Home',
+      movies: movies,
+      user: req.user
     });
   } catch (err) {
-    console.error(err);
+    console.error('Error loading homepage:', err);
     req.flash('error_msg', 'Error loading homepage');
-    return res.redirect('/');
+    res.render('index', { title: 'Home', movies: [], user: req.user });
   }
 });
 
