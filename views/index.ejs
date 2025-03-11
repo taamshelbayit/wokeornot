@@ -1,40 +1,73 @@
 <%- include('partials/header') %>
 
-<section class="hero-section">
-    <div class="container">
-        <h1>Welcome to <span class="highlight">WokeOrNot</span></h1>
-        <p class="tagline">Rate and discover how woke your favorite movies and shows are.</p>
-        <form action="/search" method="GET" class="search-form">
-            <input type="text" name="q" placeholder="Search movies, series, discussions...">
-            <button type="submit">Search</button>
-        </form>
-    </div>
-</section>
-
-<section class="featured-section">
-    <div class="container">
-        <h2>Trending Reviews</h2>
-        <div class="cards-grid">
-            <% featuredReviews.forEach(review => { %>
-                <div class="card">
-                    <img src="<%= review.movie.poster %>" alt="<%= review.movie.title %>">
-                    <div class="card-content">
-                        <h3><%= review.movie.title %></h3>
-                        <p><%= review.summary %></p>
-                        <a href="/movies/<%= review.movie._id %>" class="btn">Read More</a>
-                    </div>
-                </div>
-            <% }) %>
+<!-- Modernized Hero Carousel -->
+<div id="heroCarousel" class="carousel slide carousel-fade hero-modern-carousel" data-ride="carousel">
+  <ol class="carousel-indicators">
+    <% heroItems.forEach((_, idx) => { %>
+      <li data-target="#heroCarousel" data-slide-to="<%= idx %>" class="<%= idx === 0 ? 'active' : '' %>"></li>
+    <% }) %>
+  </ol>
+  <div class="carousel-inner">
+    <% heroItems.forEach((item, index) => { %>
+      <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+        <div class="carousel-background" style="
+          background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)),
+          url('https://image.tmdb.org/t/p/original<%= item.poster_path %>');
+        ">
+          <div class="carousel-caption">
+            <h1><%= item.title || item.name %></h1>
+            <p class="lead">Trending Now</p>
+            <a href="/movies/add?tmdbId=<%= item.id %>" class="btn btn-primary">Rate This</a>
+          </div>
         </div>
-    </div>
-</section>
+      </div>
+    <% }) %>
+  </div>
+  <a class="carousel-control-prev" href="#heroCarousel" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </a>
+  <a class="carousel-control-next" href="#heroCarousel" role="button" data-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </a>
+</div>
 
-<section class="community-section">
-    <div class="container">
-        <h2>Join the Conversation</h2>
-        <p>Share your thoughts and participate in lively discussions.</p>
-        <a href="/forum" class="btn-primary">Visit Forum</a>
-    </div>
-</section>
+<!-- Sections for Top Movies, TV, Kids, Not Woke -->
+<div class="container categories-container">
+  <% const sections = [
+    {title: 'Top 5 Most Woke Movies', data: topMovies},
+    {title: 'Top 5 Most Woke TV Shows', data: topTV},
+    {title: 'Top 5 Most Woke Kids Titles', data: topKids},
+    {title: 'Top 5 Not Woke Titles', data: topNotWoke}
+  ]; %>
+
+  <% sections.forEach((section, idx) => { %>
+    <section class="mt-5">
+      <h3 class="section-title"><%= section.title %></h3>
+      <div class="scroll-container">
+        <% section.data.forEach(item => { %>
+          <div class="card modern-card">
+            <img src="https://image.tmdb.org/t/p/w500<%= item.posterPath %>" class="card-img-top">
+            <div class="card-body">
+              <h5><%= item.title %></h5>
+              <% if (item.ratings && item.ratings.length) { %>
+                <div class="woke-meter">
+                  <div class="fill" style="width: <%= (item.averageRating * 10) %>%"></div>
+                </div>
+                <p class="rating"><%= item.averageRating.toFixed(1) %>/10
+                  <% if(item.notWokeCount) { %> - <%= item.notWokeCount %> Not Woke<% } %>
+                </p>
+              <% } else if(item.notWokeCount) { %>
+                <p class="rating"><%= item.notWokeCount %> Not Woke</p>
+              <% } else { %>
+                <p class="rating">No Ratings Yet</p>
+              <% } %>
+              <a href="/movies/<%= item._id %>" class="btn btn-outline-primary">View Details</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  <% }) %>
+</div>
 
 <%- include('partials/footer') %>
