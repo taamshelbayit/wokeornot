@@ -1,234 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <!-- Ensures proper scaling on mobile devices -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <title><%= pageTitle || 'WokeOrNot' %></title>
-  <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C1RWGTWZ61"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle || "WokeOrNot - Rate Movies" %></title>
+    <meta name="description" content="<%= pageDescription || 'Rate and discuss movies based on their wokeness level.' %>">
+    <meta property="og:image" content="<%= ogImage || '/images/logo.webp' %>">
+    <meta property="og:url" content="<%= ogUrl || 'https://www.wokeornot.net' %>">
 
-    // Replace with your actual Measurement ID
-    gtag('config', 'G-C1RWGTWZ61');
-    </script>
-
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <!-- Font Awesome (for icons) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- AOS (Animate On Scroll) CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-  <!-- Top Nav Bar -->
-  <nav class="navbar navbar-dark bg-dark navbar-expand-lg imdb-topbar">
-    <div class="container-fluid">
-      <!-- Logo -->
-      <a class="navbar-brand funky-logo d-flex align-items-center" href="/">
-        <img src="/images/logo.webp" alt="WokeOrNot Logo" width="50" height="50" class="mr-2">
-        <span>WokeOrNot</span>
-      </a>
 
-      <!-- Search bar -->
-      <form action="/search" method="GET" class="d-none d-lg-flex mx-auto w-50 align-items-center" style="max-width: 600px;">
-        <input type="text" name="q" class="form-control" placeholder="Search for movies, TV shows, or kids titles..." aria-label="Search">
-        <button class="btn btn-warning" type="submit">
-          <i class="fas fa-search"></i>
-        </button>
-        <!-- Advanced Search link -->
-        <a href="/search" class="btn btn-outline-secondary ml-2" style="white-space: nowrap;">Advanced</a>
-      </form>
+    <%- include('partials/header') %>
 
-      <!-- Mobile menu toggler -->
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <main class="container mt-4">
+        <%- body %>
+    </main>
 
-      <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
-        <ul class="navbar-nav">
-          <!-- Movies Dropdown -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="moviesDropdown" role="button" data-toggle="dropdown">Movies</a>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="/movies?type=Movie">All Movies</a>
-              <div class="dropdown-divider"></div>
-              <!-- Common Movie genres -->
-              <a class="dropdown-item" href="/movies?type=Movie&genre=28">Action</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=35">Comedy</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=18">Drama</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=878">Sci-Fi</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=27">Horror</a>
-              <a class="dropdown-item" href="/movies?type=Movie&genre=10749">Romance</a>
-            </div>
-          </li>
+    <%- include('partials/footer') %>
 
-          <!-- TV Dropdown -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="tvDropdown" role="button" data-toggle="dropdown">TV</a>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="/movies?type=TV">All TV Shows</a>
-              <div class="dropdown-divider"></div>
-              <!-- Common TV genres -->
-              <a class="dropdown-item" href="/movies?type=TV&genre=10759">Action & Adventure</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=35">Comedy</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=18">Drama</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=10764">Reality</a>
-              <a class="dropdown-item" href="/movies?type=TV&genre=99">Documentary</a>
-            </div>
-          </li>
-
-          <!-- Kids Dropdown -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="kidsDropdown" role="button" data-toggle="dropdown">Kids</a>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="/movies?type=Kids">All Kids</a>
-              <div class="dropdown-divider"></div>
-              <!-- Kids genres -->
-              <a class="dropdown-item" href="/movies?type=Kids&genre=16">Animated</a>
-              <a class="dropdown-item" href="/movies?type=Kids&genre=10751">Family</a>
-              <a class="dropdown-item" href="/movies?type=Kids&genre=12">Adventure</a>
-            </div>
-          </li>
-
-          <!-- User Links -->
-          <% if (user) { %>
-            <!-- New links for User Directory & Forum -->
-           <!-- <li class="nav-item">
-              <a class="nav-link" href="/users">User Directory</a>
-            </li> -->
-            <li class="nav-item">
-              <a class="nav-link" href="/forum">Forum</a>
-            </li>
-
-            <!-- Greeting -->
-            <li class="nav-item">
-              <a class="nav-link" href="/profile">
-                Hello,
-                <% if (user.name) { %>
-                  <%= user.name %>
-                <% } else if (user.firstName && user.lastName) { %>
-                  <%= user.firstName %> <%= user.lastName %>
-                <% } else { %>
-                  User
-                <% } %>
-              </a>
-            </li>
-            <!-- Link to Edit Profile -->
-            <li class="nav-item">
-              <a class="nav-link" href="/profile/edit">Edit Profile</a>
-            </li>
-
-            <li class="nav-item">
-              <a class="nav-link" href="/feed">Feed</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/notifications">
-                <i class="fas fa-bell"></i> Notifications <span class="notif-count"></span>
-              </a>
-            </li>
-            <% if (user.role && user.role === 'admin') { %>
-              <li class="nav-item">
-                <a class="nav-link text-warning font-weight-bold" href="/admin">Admin Panel</a>
-              </li>
-            <% } %>
-            <li class="nav-item">
-              <a class="nav-link" href="/auth/logout">Logout</a>
-            </li>
-            <script>
-              console.log("layout sees user role:", "<%= user.role %>");
-            </script>
-          <% } else { %>
-            <li class="nav-item">
-              <a class="nav-link" href="/auth/login">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/auth/register">Register</a>
-            </li>
-          <% } %>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Debug snippet to see user in the console -->
-  <% if (user) { %>
-    <script>
-      console.log("layout.ejs sees user:", <%= JSON.stringify(user) %>);
-    </script>
-  <% } %>
-
-  <!-- FLASH MESSAGES -->
-  <div class="container mt-2">
-    <script>
-      // Debug: log the flash arrays/strings to see if there's an empty or whitespace value
-      console.log("layout.ejs flash success_msg:", <%= JSON.stringify(success_msg) %>);
-      console.log("layout.ejs flash error_msg:", <%= JSON.stringify(error_msg) %>);
-      console.log("layout.ejs flash error:", <%= JSON.stringify(error) %>);
-    </script>
-
-    <%
-      // Helper function to render flash messages safely
-      function renderFlashMessages(msgVar, alertClass) {
-        if (!msgVar) return;
-
-        // If it's an array, loop over each item
-        if (Array.isArray(msgVar)) {
-          msgVar.forEach(m => {
-            if (m && m.trim().length > 0) {
-    %>
-              <div class="alert <%= alertClass %>"><%= m %></div>
-    <%      }
-          });
-        // If it's a single string, check if it's non-empty
-        } else if (typeof msgVar === 'string') {
-          if (msgVar.trim().length > 0) {
-    %>
-            <div class="alert <%= alertClass %>"><%= msgVar %></div>
-    <%    }
-        }
-      }
-    %>
-
-    <!-- Render success messages -->
-    <% renderFlashMessages(success_msg, 'alert-success'); %>
-
-    <!-- Render error_msg array -->
-    <% renderFlashMessages(error_msg, 'alert-danger'); %>
-
-    <!-- Render error array -->
-    <% renderFlashMessages(error, 'alert-danger'); %>
-  </div>
-
-  <!-- Main Content -->
-  <%- body %>
-
-  <!-- Footer -->
-  <footer class="bg-dark text-light py-4 mt-5">
-    <div class="container text-center">
-      <p class="mb-0">&copy; <%= new Date().getFullYear() %> WokeOrNot. All rights reserved.</p>
-    </div>
-  </footer>
-
-  <!-- Scripts -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-  <script>AOS.init();</script>
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    window.USER_ID = "<%= user ? user._id : '' %>";
-  </script>
-  <script src="/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/main.js"></script>
 </body>
 </html>

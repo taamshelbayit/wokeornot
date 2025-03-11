@@ -1,43 +1,37 @@
-<!-- views/partials/header.ejs -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-  <a class="navbar-brand d-flex align-items-center" href="/">
-    <img src="/images/logo.webp" alt="WokeOrNot Logo" width="40" height="40" class="mr-2">
-    <span>WokeOrNot</span>
-  </a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="/images/logo.webp" alt="WokeOrNot Logo" width="40" height="40" class="me-2">
+            <span class="fw-bold">WokeOrNot</span>
+        </a>
 
-  <div class="collapse navbar-collapse" id="navbarContent">
-    <ul class="navbar-nav ml-auto">
-      <% if (user) { %>
-        <!-- Link to user directory -->
-        <li class="nav-item">
-          <a class="nav-link" href="/users">User Directory</a>
-        </li>
-        <!-- Link to forum listing -->
-        <li class="nav-item">
-          <a class="nav-link" href="/forum">Forum</a>
-        </li>
-        <!-- Greeting -->
-        <li class="nav-item">
-          <a class="nav-link" href="#">Hello, <%= user.firstName || user.name %></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/profile/edit">Edit Profile</a>
-        </li>
-        <!-- Logout -->
-        <li class="nav-item">
-          <a class="nav-link" href="/auth/logout">Logout</a>
-        </li>
-      <% } else { %>
-        <li class="nav-item">
-          <a class="nav-link" href="/auth/login">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/auth/register">Register</a>
-        </li>
-      <% } %>
-    </ul>
-  </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/movies">Movies</a></li>
+                <li class="nav-item"><a class="nav-link" href="/forum">Forum</a></li>
+                <li class="nav-item"><a class="nav-link" href="/search">Search</a></li>
+
+                <% if (user) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                            <%= user.firstName || user.email %>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/profile">My Profile</a></li>
+                            <li><a class="dropdown-item" href="/profile/edit">Edit Profile</a></li>
+                            <li><a class="dropdown-item" href="/notifications">Notifications</a></li>
+                            <li><a class="dropdown-item text-danger" href="/auth/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                <% } else { %>
+                    <li class="nav-item"><a class="nav-link" href="/auth/login">Login</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-warning text-dark" href="/auth/register">Sign Up</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
 </nav>
