@@ -1,70 +1,12 @@
-<% layout('layout') %>
-
-<div class="container mt-4">
-  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
-    Discussion for <%= movie.title %>
-  </h2>
-
-  <!-- Sorting links -->
-  <p class="text-light">
-    Sort by:
-    <a href="?sort=newest">Newest</a> |
-    <a href="?sort=oldest">Oldest</a>
-  </p>
-
-  <div class="card bg-dark text-light mb-3">
-    <div class="card-body">
-      <form action="/forum/add/<%= movie._id %>" method="POST">
-        <div class="form-group">
-          <textarea name="content" class="form-control" rows="3" placeholder="Join the discussion..." required></textarea>
-        </div>
-        <button type="submit" class="btn btn-warning">Post Comment</button>
-      </form>
-    </div>
-  </div>
-
-  <% comments.forEach(c => { %>
-    <div class="card mb-2 bg-secondary text-light">
-      <div class="card-body">
-        <p>
-          <strong><%= c.user.firstName %> <%= c.user.lastName %></strong>
-          <small class="text-muted">(<%= c.createdAt.toDateString() %>)</small>
-        </p>
-        <p><%= c.content %></p>
-        <!-- Flag button -->
-        <form action="/forum/flag/<%= c._id %>" method="POST" style="display:inline;">
-          <button class="btn btn-sm btn-outline-danger">Flag</button>
-        </form>
-
-        <!-- Reply form -->
-        <form action="/forum/add/<%= movie._id %>" method="POST" class="mt-2">
-          <input type="hidden" name="parentId" value="<%= c._id %>">
-          <div class="form-group">
-            <textarea name="content" class="form-control" rows="2" placeholder="Reply to this comment..."></textarea>
-          </div>
-          <button class="btn btn-sm btn-secondary">Reply</button>
-        </form>
-
-        <!-- Show children (threaded replies) -->
-        <% if (c.children && c.children.length > 0) { %>
-          <div class="ml-4 mt-2">
-            <% c.children.forEach(child => { %>
-              <div class="card mb-1 bg-dark text-light">
-                <div class="card-body">
-                  <p>
-                    <strong><%= child.user.firstName %> <%= child.user.lastName %></strong>
-                    <small class="text-muted">(<%= child.createdAt.toDateString() %>)</small>
-                  </p>
-                  <p><%= child.content %></p>
-                  <form action="/forum/flag/<%= child._id %>" method="POST" style="display:inline;">
-                    <button class="btn btn-sm btn-outline-danger">Flag</button>
-                  </form>
-                </div>
-              </div>
-            <% }) %>
-          </div>
-        <% } %>
-      </div>
+<%- include('partials/header') %>
+<div class="container forum-container">
+  <h2>Community Forum</h2>
+  <% threads.forEach(thread => { %>
+    <div class="thread-item">
+      <h4><a href="/forum/<%= thread._id %>"><%= thread.title %></a></h4>
+      <p><%= thread.comments.length %> comments</p>
     </div>
   <% }) %>
+  <a href="/forum/new" class="btn-primary">New Thread</a>
 </div>
+<%- include('partials/footer') %>

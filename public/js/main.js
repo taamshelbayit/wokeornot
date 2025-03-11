@@ -1,41 +1,13 @@
-// public/js/main.js
+// Carousel autoplay (optional but recommended)
+$('.carousel').carousel({
+    interval: 5000
+});
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Horizontal scroll buttons for carousels
-  const leftButtons = document.querySelectorAll('.scroll-btn.left-btn');
-  const rightButtons = document.querySelectorAll('.scroll-btn.right-btn');
-  leftButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetId = btn.getAttribute('data-target');
-      const wrapper = document.getElementById(targetId);
-      wrapper.scrollBy({ left: -300, behavior: 'smooth' });
-    });
-  });
-  rightButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetId = btn.getAttribute('data-target');
-      const wrapper = document.getElementById(targetId);
-      wrapper.scrollBy({ left: 300, behavior: 'smooth' });
-    });
-  });
-
-  // Connect to Socket.IO for real-time notifications
-  if (window.USER_ID) {
-    const socket = io();  // establish socket connection
-    socket.emit('join', window.USER_ID);  // join user-specific room
-    socket.on('notification', data => {
-      // When a notification event is received, update the nav link badge
-      const notifLink = document.querySelector('a[href="/notifications"]');
-      if (notifLink) {
-        let countSpan = notifLink.querySelector('.notif-count');
-        if (!countSpan) {
-          countSpan = document.createElement('span');
-          countSpan.className = 'notif-count';
-          notifLink.appendChild(countSpan);
-        }
-        const current = parseInt(countSpan.textContent) || 0;
-        countSpan.textContent = current + 1;
-      }
-    });
-  }
+// Optional horizontal scrolling buttons
+$('.scroll-btn').click(function() {
+    const direction = $(this).hasClass('left-btn') ? -1 : 1;
+    const scrollTarget = $('#' + $(this).data('target'));
+    scrollTarget.animate({
+        scrollLeft: scrollTarget.scrollLeft() + (direction * 300)
+    }, 400);
 });

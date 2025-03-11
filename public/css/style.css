@@ -1,87 +1,66 @@
-/* Carousel Modernized */
-.hero-modern-carousel .carousel-background {
-  min-height: 500px;
-  background-size: cover;
-  background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f8fa;
+    color: #333;
 }
 
-.hero-modern-carousel .carousel-caption {
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-.hero-modern-carousel .btn-primary {
-  background-color: #ffea00;
-  color: #333;
-  font-weight: bold;
-  border: none;
+.hero-section {
+    background: linear-gradient(135deg, #009ffd, #2a2a72);
+    color: #fff;
+    text-align: center;
+    padding: 80px 20px;
 }
 
-.hero-modern-carousel .btn-primary:hover {
-  background-color: #ffd700;
+.search-form input {
+    padding: 12px 15px;
+    width: 60%;
+    border-radius: 50px 0 0 50px;
+    border: none;
 }
 
-/* Section Titles */
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  color: #009ffd;
-  font-size: 2rem;
-  margin-bottom: 1rem;
+.search-form button {
+    padding: 12px 20px;
+    border-radius: 0 50px 50px 0;
+    border: none;
+    background-color: #ffea00;
+    cursor: pointer;
 }
 
-/* Modern Scroll Cards */
-.scroll-container {
-  display: flex;
-  overflow-x: auto;
-  gap: 15px;
-  padding-bottom: 15px;
+.featured-section .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
 }
 
-.modern-card {
-  min-width: 220px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: transform .3s;
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
-.modern-card:hover {
-  transform: translateY(-8px);
+.card-content {
+    padding: 15px;
 }
 
-.modern-card img {
-  border-radius: 10px 10px 0 0;
-  height: 320px;
-  object-fit: cover;
+.btn-primary {
+    background-color: #ffea00;
+    color: #333;
+    padding: 12px 25px;
+    border-radius: 50px;
+    text-decoration: none;
 }
 
-.woke-meter {
-  background: #ddd;
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 8px 0;
-}
-
-.woke-meter .fill {
-  background-color: #009ffd;
-  height: 100%;
-}
-
-.rating {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-/* Button outline primary */
-.btn-outline-primary {
-  border: 1px solid #009ffd;
-  color: #009ffd;
-}
-
-.btn-outline-primary:hover {
-  background: #009ffd;
-  color: #fff;
+footer, header {
+    background-color: #2a2a72;
+    color: #fff;
+    text-align: center;
+    padding: 15px 0;
 }
