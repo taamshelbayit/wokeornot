@@ -1,66 +1,258 @@
+/* public/css/style.css */
+
+/* 1) Base Fonts & Body */
 body {
-    font-family: 'Inter', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f5f8fa;
-    color: #333;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: #121212; /* dark background */
+  color: #fff;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+/* Navbar top bar - IMDb style */
+.imdb-topbar {
+  border-bottom: 2px solid #444;
+}
+.funky-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  text-transform: uppercase;
 }
 
-.hero-section {
-    background: linear-gradient(135deg, #009ffd, #2a2a72);
-    color: #fff;
-    text-align: center;
-    padding: 80px 20px;
+/* 2) Carousel & Hero Slides */
+.carousel-item {
+  height: 500px; /* or auto if you prefer */
+  position: relative;
+}
+/* The overlay to ensure text is visible on bright images */
+.hero-slide::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.6) 0%,
+    rgba(0,0,0,0.6) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+.hero-slide-content {
+  position: relative;
+  z-index: 2; /* text above overlay */
+}
+.hero-slide h1,
+.hero-slide p {
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
 }
 
-.search-form input {
-    padding: 12px 15px;
-    width: 60%;
-    border-radius: 50px 0 0 50px;
-    border: none;
+/* Darken carousel controls so they're visible on bright images */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.8));
 }
 
-.search-form button {
-    padding: 12px 20px;
-    border-radius: 0 50px 50px 0;
-    border: none;
-    background-color: #ffea00;
-    cursor: pointer;
+/* 3) Buttons & Brand Colors */
+.btn-warning {
+  background-color: #f5c518;
+  border-color: #f5c518;
+  color: #000;
+  font-weight: bold;
+  transition: background-color 0.3s, color 0.3s;
+}
+.btn-warning:hover {
+  background-color: #e5b50f;
+  color: #000;
+}
+.btn-outline-warning {
+  color: #f5c518;
+  border-color: #f5c518;
+}
+.btn-outline-warning:hover {
+  background-color: #f5c518;
+  color: #000;
+}
+.animated-button {
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+}
+.animated-button:hover {
+  background-color: #e5b50f;
+  color: #000;
+  transform: scale(1.05);
 }
 
-.featured-section .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+/* 4) Card Hover Zoom & Micro Interaction */
+.hover-zoom {
+  transition: transform 0.3s ease;
+}
+.hover-zoom:hover {
+  transform: scale(1.02) rotate(0.5deg);
 }
 
+/* 5) Woke Meter (progress bar) */
+.woke-meter {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background-color: #444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.woke-meter-fill {
+  height: 100%;
+  background-color: #f5c518;
+  transition: width 0.3s ease;
+}
+
+/* 6) Horizontal Scroll for Top 5 sections */
+.scroll-container {
+  overflow: hidden; /* hide the scrollbar area */
+  padding: 0 40px;  /* space for arrow buttons */
+}
+.scroll-wrapper {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 8px 0;
+}
+.scroll-item {
+  min-width: 200px;
+  flex: 0 0 auto;
+  background-color: #1e1e1e;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  width: 200px;
+  margin-right: 8px;
+}
+.scroll-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  z-index: 2;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.left-btn {
+  left: 0;
+}
+.right-btn {
+  right: 0;
+}
+.scroll-btn:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+/* 7) Additional styling, spacing, etc. */
+hr.bg-secondary {
+  border-top: 1px solid #444;
+}
 .card {
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  border: none;
+  background-color: #1e1e1e;
+}
+footer {
+  background-color: #000;
+  color: #999;
+  border-top: 2px solid #444;
 }
 
-.card-content {
-    padding: 15px;
+/* 8) Example star rating (if needed in detail pages) */
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse; /* Reverse order for better hover effect */
+  justify-content: flex-end;
+}
+.star-rating input {
+  display: none;
+}
+.star-rating label {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input[type="radio"]:checked ~ label {
+  transform: scale(1.1);
+  color: #f5c518;
+  transition: transform 0.2s ease;
+}
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: #f5c518; /* Gold color for selected/hovered stars */
 }
 
-.btn-primary {
-    background-color: #ffea00;
-    color: #333;
-    padding: 12px 25px;
-    border-radius: 50px;
-    text-decoration: none;
+/* Fade-up animation tweak for AOS */
+[data-aos="fade-up"] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s, transform .6s;
 }
 
-footer, header {
-    background-color: #2a2a72;
-    color: #fff;
-    text-align: center;
-    padding: 15px 0;
+/* 9) Notifications & Badges */
+.navbar .notif-count {
+  background-color: #dc3545;  /* red badge for unread count */
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 0.8em;
+  margin-left: 5px;
+}
+.navbar .notif-count:empty {
+  display: none;
+}
+.notification-card.unread {
+  border-left: 4px solid #f5c518;  /* gold bar for unread notifications */
+}
+.navbar-nav .nav-link.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* ------------------------ */
+/* 10) Custom Scrollbars    */
+/* ------------------------ */
+/*
+   The following rules style BOTH horizontal & vertical scrollbars site-wide.
+   - Adjust the colors (track vs. thumb) as you like.
+   - "height" in ::-webkit-scrollbar sets horizontal bar thickness,
+     "width" sets vertical bar thickness.
+*/
+
+/* For Chrome, Safari, Edge (WebKit/Blink) */
+::-webkit-scrollbar {
+  width: 10px;  /* vertical scrollbar width */
+  height: 10px; /* horizontal scrollbar height */
+}
+::-webkit-scrollbar-track {
+  background: #222; /* dark track */
+}
+::-webkit-scrollbar-thumb {
+  background-color: #f5c518; /* gold thumb */
+  border-radius: 8px;
+  border: 2px solid #222; /* adds a bit of spacing around thumb */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;   /* "auto" or "thin" */
+  scrollbar-color: #f5c518 #222; /* thumb color, track color */
+}
+
+.form-control {
+  border-radius: 6px;
+}
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
 }

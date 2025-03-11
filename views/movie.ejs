@@ -1,12 +1,365 @@
-<%- include('partials/header') %>
-<div class="container movie-detail">
-  <img src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>" class="movie-poster">
-  <div class="movie-info">
-    <h1><%= movie.title %></h1>
-    <div class="woke-meter"><div class="fill" style="width:<%= (movie.averageRating / 10)*100 %>%"></div></div>
-    <p><%= movie.averageRating.toFixed(1) %>/10 (<%= movie.ratings.length %> ratings)</p>
-    <p><%= movie.description %></p>
-    <a href="/movies/<%= movie._id %>/rate" class="btn-primary">Rate This Movie</a>
+<% layout('layout') %>
+
+<!-- Include Chart.js for the category trends chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mt-4 movie-details text-light">
+  <div class="row">
+    <!-- Movie Poster -->
+    <div class="col-md-4">
+      <% if (movie.posterPath) { %>
+        <img
+          src="https://image.tmdb.org/t/p/w500<%= movie.posterPath %>"
+          class="img-fluid mb-3"
+          alt="<%= movie.title %> Poster"
+        >
+      <% } else { %>
+        <img src="/images/placeholder.png" class="img-fluid mb-3" alt="Placeholder">
+      <% } %>
+    </div>
+    <!-- Movie Details -->
+    <div class="col-md-8">
+      <h2 style="font-family: 'Bebas Neue', sans-serif;"><%= movie.title %></h2>
+      <p><%= movie.description %></p>
+      <p>
+        <strong>Release Date:</strong>
+        <%= movie.releaseDate ? new Date(movie.releaseDate).toDateString() : 'Unknown' %>
+      </p>
+      <!-- Show average rating or "No Ratings" -->
+      <% if (movie.ratings && movie.ratings.length > 0) { %>
+        <p>
+          <strong>Average Woke Rating:</strong>
+          <%= movie.averageRating.toFixed(1) %>/10
+        </p>
+      <% } else { %>
+        <p>
+          <strong>Average Woke Rating:</strong>
+          No Ratings
+        </p>
+      <% } %>
+
+      <!-- Display Woke Categories if available -->
+      <% if (categoryCounts && categoryCounts.length > 0) { %>
+        <h5 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+          Woke Categories Chosen:
+        </h5>
+        <ul>
+          <% categoryCounts.forEach(cc => { %>
+            <li><strong><%= cc.category %>:</strong> <%= cc.count %></li>
+          <% }) %>
+        </ul>
+      <% } %>
+
+      <!-- Social Sharing Links for Movie -->
+      <p>
+        <strong>Share this movie:</strong>
+        <a href="#" id="share-twitter-movie">Twitter</a> |
+        <a href="#" id="share-facebook-movie">Facebook</a>
+      </p>
+      <script>
+        document.getElementById("share-twitter-movie").href =
+          "https://twitter.com/intent/tweet?text=" +
+          encodeURIComponent("Check out the movie <%= movie.title %> on WokeOrNot!") +
+          "&url=" + encodeURIComponent(window.location.href);
+        document.getElementById("share-facebook-movie").href =
+          "https://www.facebook.com/sharer.php?u=" + encodeURIComponent(window.location.href);
+      </script>
+    </div>
   </div>
 </div>
-<%- include('partials/footer') %>
+
+<hr class="bg-secondary">
+
+<!-- Add Your Rating Form -->
+<div class="container mt-5 text-light">
+  <div class="card bg-dark">
+    <div class="card-body">
+      <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+        Add Your Rating
+      </h3>
+      <form
+        action="/reviews/add/<%= movie._id %>"
+        method="POST"
+        class="p-2"
+      >
+        <!-- Clarify star meaning -->
+        <p class="mb-2">
+          <em>
+            1 star = Not Woke ... 10 stars = Completely Woke
+          </em>
+        </p>
+
+        <!-- Star Rating (1-10) -->
+        <div class="form-group">
+          <label class="font-weight-bold d-block">Woke Rating (1-10)</label>
+          <div class="star-rating mb-3">
+            <% for (let i = 10; i >= 1; i--) { %>
+              <input
+                type="radio"
+                name="rating"
+                id="rating-<%= i %>"
+                value="<%= i %>"
+                aria-label="<%= i %> stars"
+                data-value="<%= i %>"
+              >
+              <label
+                for="rating-<%= i %>"
+                title="<%= i %> stars"
+                data-value="<%= i %>"
+              >
+                <i class="fas fa-star"></i>
+              </label>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Mark as Not Woke checkbox -->
+        <div class="form-group">
+          <input
+            type="checkbox"
+            name="notWoke"
+            id="notWoke"
+          >
+          <label for="notWoke" class="ml-2">
+            Not Woke!
+          </label>
+        </div>
+
+        <!-- Optional Text Review -->
+        <div class="form-group">
+          <label class="font-weight-bold">Optional Review</label>
+          <textarea
+            name="content"
+            class="form-control"
+            rows="3"
+            placeholder="Share your thoughts..."
+          ></textarea>
+        </div>
+
+        <!-- Woke Categories -->
+        <div class="form-group">
+          <label class="font-weight-bold">Select Woke Categories:</label>
+          <div class="checkbox-list">
+            <% let allCats = [
+              "Transgender Themes","Gay Marriage","Race Swapping","Feminist Agenda",
+              "LGBT Representation","Gender Nonconformity","Allyship","Diversity Casting",
+              "Intersectionality","Equity Over Merit","Gender Swapping","Political",
+              "Queer Representation","Drag","Environmental Agenda","Anti-Patriarchy"
+            ]; %>
+            <% allCats.forEach(cat => { %>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="categories"
+                  value="<%= cat %>"
+                  id="<%= cat %>"
+                >
+                <label class="form-check-label" for="<%= cat %>">
+                  <%= cat %>
+                </label>
+              </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-warning btn-lg mt-2 animated-button">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<hr class="bg-secondary">
+
+<!-- Display Existing Reviews -->
+<div class="container mt-4 text-light">
+  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    User Reviews
+  </h3>
+  <% if (movie.reviews.length === 0) { %>
+    <p>No reviews yet. Be the first to review this movie!</p>
+  <% } else { %>
+    <% movie.reviews.forEach(review => { %>
+      <div class="card mb-3" style="background-color: #1e1e1e; color: #fff;">
+        <div class="card-body">
+          <% if (review.rating === 0) { %>
+            <p><strong>Marked as Not Woke</strong></p>
+          <% } else { %>
+            <p><strong>Rating:</strong> <%= review.rating %>/10</p>
+          <% } %>
+
+          <% if (review.content) { %>
+            <p><strong>Review:</strong> <%= review.content %></p>
+          <% } %>
+          <% if (review.categories && review.categories.length > 0) { %>
+            <p>
+              <strong>Woke Categories:</strong>
+              <%= review.categories.join(', ') %>
+            </p>
+          <% } %>
+          <small class="text-muted">
+            Reviewed on: <%= new Date(review.createdAt).toDateString() %>
+          </small>
+        </div>
+      </div>
+    <% }); %>
+  <% } %>
+</div>
+
+<hr class="bg-secondary">
+
+<!-- Discussion Forum -->
+<div class="container forum mt-4 text-light">
+  <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+    Discussion Forum
+  </h3>
+  <div class="card bg-dark">
+    <div class="card-body">
+      <form
+        action="/forum/add/<%= movie._id %>"
+        method="POST"
+        class="p-2"
+      >
+        <div class="form-group">
+          <textarea
+            name="content"
+            class="form-control"
+            placeholder="Join the discussion..."
+            rows="3"
+            required
+          ></textarea>
+        </div>
+        <button type="submit" class="btn btn-warning">
+          Post Comment
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <% if (movie.forum.length === 0) { %>
+    <p class="mt-3">No comments yet. Start the discussion!</p>
+  <% } else { %>
+    <% movie.forum.forEach(comment => { %>
+      <div class="card mt-2" style="background-color: #1e1e1e; color: #fff;">
+        <div class="card-body">
+          <p><%= comment.content %></p>
+          <small class="text-muted">
+            Posted by <%= comment.user && comment.user.name ? comment.user.name : "Unknown" %>
+            on <%= new Date(comment.createdAt).toDateString() %>
+          </small>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<!-- Woke Category Trends Chart -->
+<% if (categoryCounts && categoryCounts.length > 0) { %>
+  <div class="container mt-5 text-light">
+    <h3 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
+      Woke Category Trends
+    </h3>
+    <canvas id="categoryChart" width="400" height="200"></canvas>
+    <script>
+      const ctx = document.getElementById('categoryChart').getContext('2d');
+      const labels = [<% categoryCounts.forEach(cc => { %>'<%= cc.category %>',<% }) %>];
+      const data = [<% categoryCounts.forEach(cc => { %><%= cc.count %>,<% }) %>];
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Category Counts',
+            data: data,
+            backgroundColor: 'rgba(245, 197, 24, 0.7)',
+            borderColor: '#f5c518',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    </script>
+  </div>
+<% } %>
+
+<!-- JavaScript for Star Rating Interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const notWokeCheckbox = document.getElementById('notWoke');
+  const starInputs = Array.from(document.querySelectorAll('.star-rating input[type="radio"]'));
+  const starLabels = Array.from(document.querySelectorAll('.star-rating label'));
+  const starLabelsAsc = starLabels.slice().sort((a, b) => {
+    let av = parseInt(a.getAttribute('data-value'), 10);
+    let bv = parseInt(b.getAttribute('data-value'), 10);
+    return av - bv;
+  });
+  function getHue(starValue) {
+    return 120 - ((starValue - 1) * (120 / 9));
+  }
+  function colorStar(label, starValue) {
+    const hue = getHue(starValue);
+    label.style.color = `hsl(${hue}, 100%, 50%)`;
+  }
+  function resetStar(label) {
+    label.style.color = '#ccc';
+  }
+  function highlightStarsUpTo(value) {
+    for (let i = 1; i <= 10; i++) {
+      let label = starLabelsAsc[i-1];
+      if (i <= value) {
+        colorStar(label, i);
+      } else {
+        resetStar(label);
+      }
+    }
+  }
+  function getSelectedStar() {
+    let checkedRadio = starInputs.find(r => r.checked);
+    if (!checkedRadio) return null;
+    return parseInt(checkedRadio.value, 10);
+  }
+  function updateState() {
+    if (notWokeCheckbox.checked) {
+      starInputs.forEach(input => {
+        input.disabled = true;
+        input.checked = false;
+      });
+      highlightStarsUpTo(0);
+    } else {
+      starInputs.forEach(input => {
+        input.disabled = false;
+      });
+      let sel = getSelectedStar();
+      highlightStarsUpTo(sel || 0);
+    }
+    notWokeCheckbox.disabled = !!getSelectedStar();
+  }
+  starLabels.forEach(label => {
+    const starValue = parseInt(label.getAttribute('data-value'), 10);
+    label.addEventListener('mouseover', () => {
+      if (!notWokeCheckbox.checked) {
+        highlightStarsUpTo(starValue);
+      }
+    });
+    label.addEventListener('mouseout', () => {
+      if (!notWokeCheckbox.checked) {
+        let sel = getSelectedStar();
+        highlightStarsUpTo(sel || 0);
+      }
+    });
+  });
+  starInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      updateState();
+    });
+  });
+  notWokeCheckbox.addEventListener('change', updateState);
+  updateState();
+});
+</script>
