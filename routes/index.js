@@ -1,55 +1,32 @@
 // routes/index.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const axios = require('axios');
-// const apicache = require('apicache');
-// const cache = apicache.middleware;
+const Movie = require("../models/Movie"); // Ensure this model exists
 
-const Movie = require('../models/Movie');
-
-// GET / => homepage with trending
-router.get('/', async (req, res) => {
+// GET Homepage
+router.get("/", async (req, res) => {
   try {
-    console.log("Homepage user:", req.user);
+    console.log("Fetching top woke movies...");
 
-    const apiKey = process.env.TMDB_API_KEY;
-    // Example trending call
-    const trendingRes = await axios.get(
-      `https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}&language=en-US`
-    );
-    let heroItems = trendingRes.data.results.slice(0, 3);
+    // Fetch the top 5 most woke movies
+    const topWokeMovies = await Movie.find().sort({ averageRating: -1 }).limit(5);
 
-    // local DB queries for top sections
-    const topMovies = await Movie.find({
-      contentType: 'Movie',
-      ratings: { $exists: true, $ne: [] }
-    }).sort({ averageRating: -1 }).limit(5);
+    // Fetch the top 5 least woke movies
+    const topNotWokeMovies = await Movie.find().sort({ notWokeCount: -1 }).limit(5);
 
-    const topTV = await Movie.find({
-      contentType: 'TV',
-      ratings: { $exists: true, $ne: [] }
-    }).sort({ averageRating: -1 }).limit(5);
-
-    const topKids = await Movie.find({
-      contentType: 'Kids',
-      ratings: { $exists: true, $ne: [] }
-    }).sort({ averageRating: -1 }).limit(5);
-
-    const topNotWoke = await Movie.find({
-      notWokeCount: { $gt: 0 }
-    }).sort({ notWokeCount: -1 }).limit(5);
-
-    res.render('index', {
-      heroItems,
-      topMovies,
-      topTV,
-      topKids,
-      topNotWoke
+    res.render("index", {
+      pageTitle: "WokeOrNot - Rate Movies & TV Shows",
+      topWokeMovies,
+      topNotWokeMovies,
     });
-  } catch (err) {
-    console.error(err);
-    req.flash('error_msg', 'Error loading homepage');
-    return res.redirect('/');
+
+  } catch (error) {
+    console.error("Error fetching homepage data:", error);
+    res.render("index", {
+      pageTitle: "WokeOrNot - Rate Movies & TV Shows",
+      topWokeMovies: [],
+      topNotWokeMovies: [],
+    });
   }
 });
 
