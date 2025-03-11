@@ -1,30 +1,43 @@
 <% layout('layout') %>
 
-<div class="hero-banner text-center text-light">
-    <div class="overlay"></div>
-    <div class="container">
-        <h1 class="fw-bold display-4">Discover the Wokeness of Your Favorite Movies</h1>
-        <p class="lead">Rate and discuss movies & TV shows based on their wokeness level.</p>
-        <a href="/movies" class="btn btn-lg btn-warning mt-3">Explore Movies</a>
-    </div>
+<div class="hero-section text-center text-white py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner.jpg') center/cover;">
+    <h1 class="fw-bold">Welcome to WokeOrNot</h1>
+    <p class="lead">Rate and discover movies & TV shows based on their wokeness.</p>
+    <a href="/movies" class="btn btn-warning btn-lg mt-3">Explore Movies</a>
 </div>
 
-<div class="container mt-5">
-    <h2 class="section-title">Trending Movies</h2>
+<section class="container my-5">
+    <h2 class="text-primary fw-bold">Top 5 Most Woke Movies</h2>
     <div class="row">
-        <% movies.forEach(movie => { %>
-            <div class="col-md-4 mb-4">
-                <div class="movie-card">
-                    <img src="<%= movie.posterPath || '/images/default-movie.jpg' %>" class="movie-poster">
-                    <div class="movie-info">
-                        <h5 class="movie-title"><%= movie.title %></h5>
-                        <span class="badge bg-<%= movie.averageRating >= 5 ? 'success' : 'danger' %>">
-                            <%= movie.averageRating.toFixed(1) %>/10
-                        </span>
-                        <a href="/movies/<%= movie._id %>" class="btn btn-sm btn-outline-light mt-2">View</a>
+        <% topWokeMovies.forEach(movie => { %>
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card movie-card shadow-sm">
+                    <img src="<%= movie.posterPath %>" class="card-img-top" alt="<%= movie.title %>">
+                    <div class="card-body">
+                        <h5 class="card-title text-dark"><%= movie.title %></h5>
+                        <p class="badge bg-warning text-dark">Rating: <%= movie.averageRating %>/10</p>
+                        <a href="/movies/<%= movie._id %>" class="btn btn-outline-primary btn-sm">View</a>
                     </div>
                 </div>
             </div>
         <% }) %>
     </div>
-</div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-danger fw-bold">Top 5 Not Woke Movies</h2>
+    <div class="row">
+        <% topNotWokeMovies.forEach(movie => { %>
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card movie-card shadow-sm">
+                    <img src="<%= movie.posterPath %>" class="card-img-top" alt="<%= movie.title %>">
+                    <div class="card-body">
+                        <h5 class="card-title text-dark"><%= movie.title %></h5>
+                        <p class="badge bg-danger text-light">Not Woke Count: <%= movie.notWokeCount %></p>
+                        <a href="/movies/<%= movie._id %>" class="btn btn-outline-danger btn-sm">View</a>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</section>
