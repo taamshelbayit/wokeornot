@@ -41,6 +41,12 @@ body {
     transform: scale(1.05);
 }
 
+/* Star Rating */
+.rating-stars i {
+    color: #ffc107;
+    font-size: 1.2rem;
+}
+
 /* Footer */
 footer {
     border-top: 3px solid #ffc107;

@@ -12,10 +12,14 @@
         <% topWokeMovies.forEach(movie => { %>
             <div class="col-md-4 col-lg-3 mb-4">
                 <div class="card movie-card shadow-sm">
-                    <img src="<%= movie.posterPath %>" class="card-img-top" alt="<%= movie.title %>">
+                    <img src="<%= movie.posterPath || '/images/default-movie.jpg' %>" class="card-img-top" alt="<%= movie.title %>">
                     <div class="card-body">
                         <h5 class="card-title text-dark"><%= movie.title %></h5>
-                        <p class="badge bg-warning text-dark">Rating: <%= movie.averageRating %>/10</p>
+                        <div class="rating-stars">
+                            <% for (let i = 1; i <= 10; i++) { %>
+                                <i class="fa-star <%= i <= movie.averageRating ? 'fas' : 'far' %>"></i>
+                            <% } %>
+                        </div>
                         <a href="/movies/<%= movie._id %>" class="btn btn-outline-primary btn-sm">View</a>
                     </div>
                 </div>
@@ -30,11 +34,33 @@
         <% topNotWokeMovies.forEach(movie => { %>
             <div class="col-md-4 col-lg-3 mb-4">
                 <div class="card movie-card shadow-sm">
-                    <img src="<%= movie.posterPath %>" class="card-img-top" alt="<%= movie.title %>">
+                    <img src="<%= movie.posterPath || '/images/default-movie.jpg' %>" class="card-img-top" alt="<%= movie.title %>">
                     <div class="card-body">
                         <h5 class="card-title text-dark"><%= movie.title %></h5>
                         <p class="badge bg-danger text-light">Not Woke Count: <%= movie.notWokeCount %></p>
                         <a href="/movies/<%= movie._id %>" class="btn btn-outline-danger btn-sm">View</a>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</section>
+
+<section class="container my-5">
+    <h2 class="text-warning fw-bold">Top 5 Most Woke TV Shows</h2>
+    <div class="row">
+        <% topWokeShows.forEach(show => { %>
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card movie-card shadow-sm">
+                    <img src="<%= show.posterPath || '/images/default-show.jpg' %>" class="card-img-top" alt="<%= show.title %>">
+                    <div class="card-body">
+                        <h5 class="card-title text-dark"><%= show.title %></h5>
+                        <div class="rating-stars">
+                            <% for (let i = 1; i <= 10; i++) { %>
+                                <i class="fa-star <%= i <= show.averageRating ? 'fas' : 'far' %>"></i>
+                            <% } %>
+                        </div>
+                        <a href="/tv/<%= show._id %>" class="btn btn-outline-warning btn-sm">View</a>
                     </div>
                 </div>
             </div>
