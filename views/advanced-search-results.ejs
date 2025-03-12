@@ -1,7 +1,7 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h2 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">
+  <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
     Advanced Search Results
   </h2>
 
@@ -11,7 +11,7 @@
     <div class="row">
       <% results.forEach(item => { %>
         <div class="col-md-3 col-sm-6 mb-4">
-          <div class="card h-100">
+          <div class="card bg-dark h-100 text-light hover-zoom">
             <% if (item.posterPath) { %>
               <img
                 src="https://image.tmdb.org/t/p/w500<%= item.posterPath %>"
@@ -28,21 +28,13 @@
               <% } else { %>
                 <p>No Ratings</p>
               <% } %>
-              <a href="/movies/<%= item._id %>" class="btn btn-sm btn-outline-warning">View</a>
+              <a href="/movies/<%= item._id %>" class="btn btn-sm btn-outline-warning">
+                View
+              </a>
             </div>
           </div>
         </div>
       <% }) %>
     </div>
   <% } %>
-
-  <!-- Optionally let user save this search -->
-  <form action="/search/save" method="POST" class="mt-3">
-    <input type="hidden" name="queryString" value="<%= JSON.stringify(results.map(r => r._id)) %>">
-    <div class="form-group">
-      <label for="searchName">Save this search as:</label>
-      <input type="text" name="searchName" id="searchName" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-warning">Save Search</button>
-  </form>
 </div>

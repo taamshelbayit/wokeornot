@@ -7,9 +7,9 @@ const { ensureAuthenticated } = require('../utils/auth');
 
 /**
  * GET /search
- * - If no `q`, show advanced-search form
- * - If `q` present => merges local DB + TMDb with pagination
- * - Supports ?page=1..N, ?sort=rating|popularity|releaseDate|title
+ * - If no `q`, we render the advanced search form with an empty `results` array
+ * - If `q` is present => merges local DB + TMDb with pagination
+ * - Supports ?page=1..N, ?sort=rating|popularity|releaseDate|title|notWokeDesc
  * - If AJAX => return JSON for “Load More”
  */
 router.get('/', async (req, res) => {
@@ -20,12 +20,12 @@ router.get('/', async (req, res) => {
     const skip = (page - 1) * limit;
     const sortParam = req.query.sort || 'rating';
 
-    // If no search query => show advanced search form
+    // If no search query => show advanced search form but pass { results: [] }
     if (!q) {
-      return res.render('advanced-search');
+      return res.render('advanced-search', { results: [] });
     }
 
-    // 1) Local DB search (unpaginated for now)
+    // 1) Local DB search (partial title match)
     const localResults = await Movie.find({
       title: { $regex: q, $options: 'i' }
     });
@@ -45,7 +45,7 @@ router.get('/', async (req, res) => {
     let tmdbTV = tvResp.data.results || [];
     let tmdbCombined = [...tmdbMovies, ...tmdbTV];
 
-    // 3) Upsert
+    // 3) Upsert into local DB
     let finalResults = [...localResults];
     for (let item of tmdbCombined) {
       const tmdbId = item.id.toString();
@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
         await newDoc.save();
         finalResults.push(newDoc);
       } else {
-        // If not in finalResults, push it
+        // If found but not in finalResults, push it
         if (!finalResults.find(r => r._id.equals(found._id))) {
           finalResults.push(found);
         }
@@ -71,8 +71,8 @@ router.get('/', async (req, res) => {
     }
 
     // 4) Remove duplicates
-    let uniqueMap = new Map();
-    let uniqueResults = [];
+    const uniqueMap = new Map();
+    const uniqueResults = [];
     for (let r of finalResults) {
       if (!uniqueMap.has(r._id.toString())) {
         uniqueMap.set(r._id.toString(), true);
@@ -81,11 +81,11 @@ router.get('/', async (req, res) => {
     }
 
     // 5) Sort
-    uniqueResults = sortResults(uniqueResults, sortParam);
+    const sortedResults = sortResults(uniqueResults, sortParam);
 
     // 6) Pagination
-    const total = uniqueResults.length;
-    const pageResults = uniqueResults.slice(skip, skip + limit);
+    const total = sortedResults.length;
+    const pageResults = sortedResults.slice(skip, skip + limit);
     const totalPages = Math.ceil(total / limit);
 
     // If AJAX => return JSON
@@ -98,7 +98,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Else => normal HTML
+    // Else => normal HTML => search-results.ejs
     res.render('search-results', {
       q,
       results: pageResults,
@@ -179,23 +179,28 @@ router.post('/save', ensureAuthenticated, async (req, res) => {
 
 // Helper for sorting
 function sortResults(arr, sortParam) {
-  if (sortParam === 'popularity') {
-    return arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-  } else if (sortParam === 'releaseDate') {
-    return arr.sort((a, b) => {
-      let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-      let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-      return bd - ad;
-    });
-  } else if (sortParam === 'title') {
-    return arr.sort((a, b) => {
-      let at = a.title.toLowerCase();
-      let bt = b.title.toLowerCase();
-      return at.localeCompare(bt);
-    });
-  } else {
-    // rating
-    return arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+  switch (sortParam) {
+    case 'popularity':
+      return arr.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+    case 'releaseDate':
+      return arr.sort((a, b) => {
+        let bd = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+        let ad = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+        return bd - ad;
+      });
+    case 'title':
+      return arr.sort((a, b) => {
+        let at = a.title.toLowerCase();
+        let bt = b.title.toLowerCase();
+        return at.localeCompare(bt);
+      });
+    case 'notWokeDesc':
+      return arr.sort((a, b) => (b.notWokeCount || 0) - (a.notWokeCount || 0));
+    case 'ratingDesc':
+    case 'rating':
+    default:
+      // default => highest rating first
+      return arr.sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
   }
 }
 

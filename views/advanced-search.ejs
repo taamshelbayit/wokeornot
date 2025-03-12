@@ -1,87 +1,98 @@
 <% layout('layout') %>
 
 <div class="container mt-4">
-  <h2 class="text-warning mb-3" style="font-family: 'Bebas Neue', sans-serif;">
-    Advanced Search
+  <h2 class="text-warning mb-4" style="font-family: 'Bebas Neue', sans-serif;">
+    Advanced Local Search
   </h2>
-  <form action="/search" method="POST" class="bg-dark p-4">
-    <div class="form-group">
-      <label for="title">Title (partial):</label>
-      <input
-        type="text"
-        name="title"
-        id="title"
-        class="form-control"
-      >
-    </div>
 
-    <div class="form-group">
-      <label for="minRating">Min Rating:</label>
-      <input
-        type="number"
-        name="minRating"
-        id="minRating"
-        class="form-control"
-        min="0"
-        max="10"
-      >
-    </div>
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card bg-dark text-light">
+        <div class="card-body">
+          <form action="/search" method="POST">
+            <!-- Title -->
+            <div class="form-group">
+              <label for="title" class="font-weight-bold">Title (partial)</label>
+              <input
+                type="text"
+                name="title"
+                id="title"
+                class="form-control"
+                placeholder="e.g. Star Wars"
+              >
+            </div>
 
-    <div class="form-group">
-      <label for="maxRating">Max Rating:</label>
-      <input
-        type="number"
-        name="maxRating"
-        id="maxRating"
-        class="form-control"
-        min="0"
-        max="10"
-      >
-    </div>
+            <!-- contentType -->
+            <div class="form-group">
+              <label for="contentType" class="font-weight-bold">Type</label>
+              <select name="contentType" id="contentType" class="form-control">
+                <option value="">Any</option>
+                <option value="Movie">Movies</option>
+                <option value="TV">TV</option>
+                <option value="Kids">Kids</option>
+              </select>
+            </div>
 
-    <div class="form-check mb-3">
-      <input
-        type="checkbox"
-        name="notWoke"
-        id="notWoke"
-        class="form-check-input"
-      >
-      <label for="notWoke" class="form-check-label">
-        Only titles marked as Not Woke
-      </label>
-    </div>
+            <!-- Min/Max Rating -->
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="minRating" class="font-weight-bold">Min Rating</label>
+                <input
+                  type="number"
+                  name="minRating"
+                  id="minRating"
+                  class="form-control"
+                  min="1"
+                  max="10"
+                  placeholder="1"
+                >
+              </div>
+              <div class="form-group col-md-6">
+                <label for="maxRating" class="font-weight-bold">Max Rating</label>
+                <input
+                  type="number"
+                  name="maxRating"
+                  id="maxRating"
+                  class="form-control"
+                  min="1"
+                  max="10"
+                  placeholder="10"
+                >
+              </div>
+            </div>
 
-    <div class="form-group">
-      <label for="contentType">Type:</label>
-      <select
-        name="contentType"
-        id="contentType"
-        class="form-control"
-      >
-        <option value="">Any</option>
-        <option value="Movie">Movies</option>
-        <option value="TV">TV Shows</option>
-        <option value="Kids">Kids</option>
-      </select>
-    </div>
+            <!-- Not Woke Only -->
+            <div class="form-check mb-3">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                name="notWoke"
+                id="notWoke"
+                value="on"
+              >
+              <label for="notWoke" class="form-check-label font-weight-bold">
+                Not Woke Only
+              </label>
+            </div>
 
-    <!-- New Sort Param -->
-    <div class="form-group">
-      <label for="sortParam">Sort By:</label>
-      <select
-        name="sortParam"
-        id="sortParam"
-        class="form-control"
-      >
-        <option value="rating">Rating</option>
-        <option value="popularity">Popularity</option>
-        <option value="releaseDate">Release Date</option>
-        <option value="title">Title (A-Z)</option>
-      </select>
-    </div>
+            <!-- Sort Param -->
+            <div class="form-group">
+              <label for="sortParam" class="font-weight-bold">Sort By</label>
+              <select name="sortParam" id="sortParam" class="form-control">
+                <option value="rating">Highest Rating</option>
+                <option value="popularity">Popularity</option>
+                <option value="releaseDate">Release Date</option>
+                <option value="title">Title (A-Z)</option>
+                <option value="notWokeDesc">Most Not Woke</option>
+              </select>
+            </div>
 
-    <button type="submit" class="btn btn-warning mt-2">
-      Search
-    </button>
-  </form>
+            <button type="submit" class="btn btn-warning btn-block mt-3">
+              <i class="fas fa-search mr-1"></i> Search
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

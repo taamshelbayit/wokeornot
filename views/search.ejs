@@ -5,7 +5,7 @@
     Advanced Search
   </h2>
 
-  <!-- Advanced Search Form -->
+  <!-- Basic advanced search form (GET /search) -->
   <form action="/search" method="GET" class="form-inline mb-4">
     <!-- Title (q) -->
     <div class="form-group mr-2">
@@ -13,7 +13,7 @@
       <input type="text" name="q" id="q" class="form-control">
     </div>
 
-    <!-- contentType (Movie, TV, Kids, or empty => Any) -->
+    <!-- contentType -->
     <div class="form-group mr-2">
       <label for="contentType" class="mr-2">Type:</label>
       <select name="contentType" id="contentType" class="form-control">
@@ -24,7 +24,7 @@
       </select>
     </div>
 
-    <!-- minRating (1–10) -->
+    <!-- minRating -->
     <div class="form-group mr-2">
       <label for="minRating" class="mr-2">Min Woke Rating:</label>
       <input
@@ -37,7 +37,7 @@
       >
     </div>
 
-    <!-- category (wokeCategoryCounts) -->
+    <!-- category -->
     <div class="form-group mr-2">
       <label for="category" class="mr-2">Category:</label>
       <select name="category" id="category" class="form-control">
@@ -47,11 +47,10 @@
         <option value="Race Swapping">Race Swapping</option>
         <option value="Feminist Agenda">Feminist Agenda</option>
         <option value="Political">Political</option>
-        <!-- ... add more categories as needed ... -->
       </select>
     </div>
 
-    <!-- Genre (TMDb numeric IDs) -->
+    <!-- genre -->
     <div class="form-group mr-2">
       <label for="genre" class="mr-2">Genre:</label>
       <select name="genre" id="genre" class="form-control">
@@ -62,21 +61,23 @@
         <option value="27">Horror</option>
         <option value="878">Sci-Fi</option>
         <option value="10749">Romance</option>
-        <!-- add more if you want for TV (10759, etc.) -->
       </select>
     </div>
 
-    <!-- sort (ratingDesc, notWokeDesc) -->
+    <!-- sort -->
     <div class="form-group mr-2">
       <label for="sort" class="mr-2">Sort:</label>
       <select name="sort" id="sort" class="form-control">
         <option value="">None</option>
         <option value="ratingDesc">Highest Woke Rating</option>
         <option value="notWokeDesc">Most Not Woke</option>
+        <option value="popularity">Popularity</option>
+        <option value="releaseDate">Release Date (Newest)</option>
+        <option value="title">Title (A-Z)</option>
       </select>
     </div>
 
-    <!-- lang (e.g., en-US) -->
+    <!-- lang -->
     <div class="form-group mr-2">
       <label for="lang" class="mr-2">Language:</label>
       <select name="lang" id="lang" class="form-control">
@@ -84,11 +85,10 @@
         <option value="es-ES">Spanish (Spain)</option>
         <option value="fr-FR">French (France)</option>
         <option value="de-DE">German (Germany)</option>
-        <!-- add more if you want -->
       </select>
     </div>
 
-    <!-- "Not Woke Only" checkbox -->
+    <!-- notWokeOnly -->
     <div class="form-group mr-2">
       <input
         type="checkbox"
@@ -102,12 +102,12 @@
     <button type="submit" class="btn btn-warning">Search</button>
   </form>
 
-  <!-- Display Results -->
-  <% if (results) { %>
+  <!-- Display Results (avoid reference error by checking if results is defined) -->
+  <% if (typeof results !== 'undefined' && results.length > 0) { %>
     <h4 class="text-warning" style="font-family: 'Bebas Neue', sans-serif;">Results</h4>
     <div class="row">
       <% results.forEach(movie => { %>
-        <div class="col-md-3 col-sm-6 mb-4 position-relative" data-aos="fade-up">
+        <div class="col-md-3 col-sm-6 mb-4 position-relative">
           <div class="card h-100 hover-zoom">
             <% if (movie.posterPath) { %>
               <img
@@ -137,5 +137,7 @@
         </div>
       <% }) %>
     </div>
+  <% } else { %>
+    <p>No results yet.</p>
   <% } %>
 </div>

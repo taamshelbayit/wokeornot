@@ -1,4 +1,3 @@
-<!-- views/search-results.ejs -->
 <% layout('layout') %>
 
 <div class="container mt-4 text-light">
@@ -6,7 +5,6 @@
     Search Results for "<%= q %>"
   </h2>
 
-  <!-- Sort param or any other info you want to show -->
   <p class="text-muted">
     Showing page <%= currentPage %> of <%= totalPages %> (Total: <%= totalCount %>)
   </p>
@@ -34,14 +32,16 @@
               <% } else { %>
                 <p>No Ratings</p>
               <% } %>
-              <a href="/movies/<%= item._id %>" class="btn btn-sm btn-outline-warning">View</a>
+              <a href="/movies/<%= item._id %>" class="btn btn-sm btn-outline-warning">
+                View
+              </a>
             </div>
           </div>
         </div>
       <% }) %>
     </div>
 
-    <!-- Load More button if more pages remain -->
+    <!-- "Load More" if more pages remain -->
     <% if (currentPage < totalPages) { %>
       <div class="text-center mt-3">
         <button
@@ -58,23 +58,39 @@
 </div>
 
 <script>
-  // If there's a loadMoreBtn, we attach an event listener for AJAX "Load More"
   const loadMoreBtn = document.getElementById('loadMoreBtn');
   if (loadMoreBtn) {
     loadMoreBtn.addEventListener('click', async function() {
       const nextPage = this.dataset.nextpage;
-      const sortParam = this.dataset.sortparam;
-      // We'll request /search?q=...&page=...&sort=... via fetch with 'X-Requested-With': 'XMLHttpRequest'
+      const sortParam = this.dataset.sortparam || '';
+
+      // We'll parse the current query string from location
       const urlParams = new URLSearchParams(window.location.search);
       const q = urlParams.get('q') || '';
+      const contentType = urlParams.get('contentType') || '';
+      const minRating = urlParams.get('minRating') || '';
+      const maxRating = urlParams.get('maxRating') || '';
+      const category = urlParams.get('category') || '';
+      const genre = urlParams.get('genre') || '';
+      const notWokeOnly = urlParams.get('notWokeOnly') || '';
+
+      // Construct fetch URL
+      let fetchUrl = `/search?page=${nextPage}&sort=${sortParam}`;
+      if (q) fetchUrl += `&q=${encodeURIComponent(q)}`;
+      if (contentType) fetchUrl += `&contentType=${encodeURIComponent(contentType)}`;
+      if (minRating) fetchUrl += `&minRating=${minRating}`;
+      if (maxRating) fetchUrl += `&maxRating=${maxRating}`;
+      if (category) fetchUrl += `&category=${encodeURIComponent(category)}`;
+      if (genre) fetchUrl += `&genre=${encodeURIComponent(genre)}`;
+      if (notWokeOnly) fetchUrl += `&notWokeOnly=on`;
+
       try {
-        const res = await fetch(`/search?q=${encodeURIComponent(q)}&page=${nextPage}&sort=${sortParam}`, {
+        const res = await fetch(fetchUrl, {
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-        if (!res.ok) throw new Error('Failed to load more');
+        if (!res.ok) throw new Error('Network error');
         const data = await res.json();
 
-        // data.items => array of movies
         const container = document.getElementById('searchResults');
         data.items.forEach(item => {
           const col = document.createElement('div');
@@ -91,14 +107,16 @@
               <div class="card-body">
                 <h5 class="card-title">${item.title}</h5>
                 ${renderRatingOrNotWoke(item)}
-                <a href="/movies/${item._id}" class="btn btn-sm btn-outline-warning">View</a>
+                <a href="/movies/${item._id}" class="btn btn-sm btn-outline-warning">
+                  View
+                </a>
               </div>
             </div>
           `;
           container.appendChild(col);
         });
 
-        // if we have more pages, update nextpage data. else remove button
+        // If we have more pages, update nextpage. Else remove button
         if (data.currentPage < data.totalPages) {
           loadMoreBtn.dataset.nextpage = data.currentPage + 1;
         } else {
